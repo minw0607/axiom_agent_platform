@@ -102,9 +102,11 @@ axiom_agent_platform/
 │   ├── synthetic/      # borrower packages, credit policy, golden set
 │   └── lending_refs/   # public lending references + provenance manifest
 ├── evals/              # eval, red-team, alignment, and fairness suites
+├── scripts/            # gate checks and developer tools
 ├── tests/              # unit, contract, and integration tests
 ├── infra/terraform/    # Azure resources
-└── docs/               # plan, architecture, ADRs, threat model, model card
+├── docs/               # plan, architecture, ADRs, threat model, model card
+└── docker-compose.yml  # keyless local stack
 ```
 
 Each folder has a short README that says what goes there and in which week of the plan.
@@ -146,8 +148,8 @@ Every LLM judge uses a different model from the one under test and is checked ag
 
 | Milestone | Target | What it proves | State |
 |---|---|---|---|
-| Repository scaffold | Nov 8 | Structure, tooling, and CI in place | 🟡 In progress |
-| **Gate 1** · Architecture ready | Nov 15 | Supporting services run without keys; Regulus returns cited provisions | ⬜ |
+| Repository scaffold | Nov 8 | Structure, tooling, and CI in place | ✅ Done |
+| **Gate 1** · Architecture ready | Nov 15 | Supporting services run without keys; Regulus returns cited provisions | 🟡 Services built; compose run pending |
 | **Gate 2** · Demo ready | Dec 20 | A stranger runs the demo in under 10 minutes with no API keys | ⬜ |
 | **Gate 3** · Published | Jan 10 | CI gates enforced; docs and results public | ⬜ |
 
@@ -160,7 +162,17 @@ uv sync
 uv run pytest
 ```
 
-**From Gate 2:** `docker compose up` will start the full stack in a demo mode that needs no API keys.
+**Supporting services (Gate 1):** with [Docker](https://docs.docker.com/get-docker/) running, set `MCP_SHARED_SECRET` in `.env`, then:
+
+```bash
+cp .env.example .env          # then set MCP_SHARED_SECRET
+docker compose up -d --build
+uv run python scripts/check_gate1.py
+```
+
+This starts Postgres, Phoenix (traces at http://localhost:6006), the OpenTelemetry Collector, and the Regulus and GKN MCP servers. Both MCP images are built from their `v0.2.0` release tags. The check script confirms each service is up, Regulus returns cited provisions, and one job's retrieval never returns another job's documents.
+
+**From Gate 2:** `docker compose up` will also start the API and worker in a demo mode that needs no API keys.
 
 ## 🗺 Roadmap
 
@@ -179,6 +191,7 @@ uv run pytest
 
 - [Development plan](docs/dev-plan.md): scope, architecture, API, gates, schedule
 - [Architecture decision records](docs/adr/README.md): decisions and trade-offs as they're made
+- [AI-assisted engineering log](docs/ai-assisted-engineering.md): what was delegated to Claude Code and what review changed
 - Threat model, model card, and control mapping: added during the build
 
 ## 🧪 Data

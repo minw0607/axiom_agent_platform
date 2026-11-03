@@ -1,0 +1,74 @@
+# Keyless local stack for the supporting services (Gate 1).
+# The API and worker join in week 3. Copy .env.example to .env and set MCP_SHARED_SECRET first.
+#
+#   docker compose up -d --build
+#   uv run python scripts/check_gate1.py
+
+name: axiom
+
+services:
+  postgres:
+    image: postgres:17.11-alpine
+    environment:
+      POSTGRES_USER: axiom
+      POSTGRES_PASSWORD: axiom # local demo only
+      POSTGRES_DB: axiom
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U axiom -d axiom"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  phoenix:
+    image: arizephoenix/phoenix:version-20.27.0
+    environment:
+      PHOENIX_WORKING_DIR: /phoenix
+    ports:
+      - "127.0.0.1:6006:6006" # trace UI
+    volumes:
+      - phoenix-data:/phoenix
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.163.2
+    command: ["--config=/etc/otelcol/config.yaml"]
+    volumes:
+      - ./config/otel-collector.yaml:/etc/otelcol/config.yaml:ro
+    ports:
+      - "127.0.0.1:4317:4317" # OTLP gRPC
+      - "127.0.0.1:4318:4318" # OTLP HTTP
+    depends_on:
+      - phoenix
+
+  regulus-mcp:
+    image: regulus-mcp:0.2.0
+    build:
+      context: https://github.com/minw0607/Regulus.git#v0.2.0
+    environment:
+      MCP_SHARED_SECRET: ${MCP_SHARED_SECRET:?Set MCP_SHARED_SECRET in .env}
+      MCP_ALLOWED_HOSTS: localhost:*,127.0.0.1:*,regulus-mcp:*
+    ports:
+      - "127.0.0.1:8001:8001"
+
+  gkn-mcp:
+    image: gkn-mcp:0.2.0
+    build:
+      context: https://github.com/minw0607/geometric_knowledge_network.git#v0.2.0
+    environment:
+      MCP_SHARED_SECRET: ${MCP_SHARED_SECRET:?Set MCP_SHARED_SECRET in .env}
+      MCP_ALLOWED_HOSTS: localhost:*,127.0.0.1:*,gkn-mcp:*
+      GKN_REFERENCE_DIR: /references
+    ports:
+      - "127.0.0.1:8002:8002"
+    volumes:
+      - gkn-data:/data
+      - ./data/synthetic/credit_policy:/references/credit_policy:ro
+      - ./data/lending_refs:/references/lending_refs:ro
+
+volumes:
+  postgres-data:
+  phoenix-data:
+  gkn-data:

@@ -1,0 +1,22 @@
+# AI-assisted engineering log
+
+What was delegated to Claude Code, what was changed after review, and what was learned. One entry per week of the [development plan](dev-plan.md).
+
+## Week 2 (Nov 3): supporting services
+
+**Delegated.** The MCP servers for GKN (`ingest_documents`, `retrieve_evidence`, `delete_job`) and Regulus (`lookup_provisions`, `recommend_mitigants`), with Dockerfiles, tests, the platform `docker-compose.yml`, an authenticated MCP client, a Gate 1 check script, and ADRs 0004–0005.
+
+**Found during the work.**
+- The MCP Python SDK is now version 2. `FastMCP` was renamed `MCPServer`, and the client takes a transport object to send auth headers. Code written from version 1 examples would not import.
+- Regulus had no committed EU AI Act snapshot, so a fresh container would have downloaded it from EUR-Lex at startup. A snapshot and an offline mode now keep the service keyless and network-free.
+- Regulus finds its data relative to its source tree, so its image uses an editable install.
+- The Regulus README said committed snapshots held only structure and titles. That was already untrue for NIST and OECD and has been corrected.
+- An unbounded per-query retrieval cache in Regulus would grow without limit in a long-running service. The service now caps it.
+- GKN isolation is structural: each collection has its own index, and a query only reads the one it asks for. There is nothing to filter after scoring.
+
+**Verified.**
+- Unit and contract tests: GKN 25, Regulus 54, platform 16.
+- Both servers were called over real HTTP. A missing secret returns 401 and a spoofed Host header returns 400.
+- `scripts/check_gate1.py` was run against both services started natively. Six of seven checks passed; Phoenix needs Docker.
+
+**Not yet verified.** The Docker builds and `docker compose up`, because Docker is not installed yet.

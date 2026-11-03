@@ -19,12 +19,13 @@ A governed multi-agent platform for commercial lending: a versioned API, a rule-
 ## Commands
 
 ```bash
-uv sync                    # install, including dev tools
-uv run pytest              # tests
-uv run ruff check .        # lint
-uv run ruff format .       # format
-uv run mypy                # type check (strict)
-docker compose up          # full stack, from week 2
+uv sync                                      # install, including dev tools
+uv run pytest                                # tests
+uv run ruff check .                          # lint
+uv run ruff format .                         # format
+uv run mypy                                  # type check (strict)
+docker compose up -d --build                 # supporting services (needs MCP_SHARED_SECRET)
+uv run python scripts/check_gate1.py         # Gate 1 acceptance check
 ```
 
 ## Conventions

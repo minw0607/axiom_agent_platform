@@ -1,4 +1,4 @@
 """Clients for the Regulus and GKN MCP servers.
 
-Built in weeks 3-4.
+The authenticated tool client was built in week 2; typed wrappers come in weeks 3-4.
 """
