@@ -192,7 +192,8 @@ This starts Postgres, Phoenix (traces at http://localhost:6006), the OpenTelemet
 - [Development plan](docs/dev-plan.md): scope, architecture, API, gates, schedule
 - [Architecture decision records](docs/adr/README.md): decisions and trade-offs as they're made
 - [AI-assisted engineering log](docs/ai-assisted-engineering.md): what was delegated to Claude Code and what review changed
-- Threat model, model card, and control mapping: added during the build
+- [Threat model](docs/threat-model.md): threats, trust boundaries, and controls, mapped to the OWASP LLM and agentic Top 10 lists
+- Model card and control mapping: added during the build
 
 ## 🧪 Data
 
