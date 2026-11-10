@@ -19,4 +19,4 @@ What was delegated to Claude Code, what was changed after review, and what was l
 - Both servers were called over real HTTP. A missing secret returns 401 and a spoofed Host header returns 400.
 - `scripts/check_gate1.py` was run against both services started natively. Six of seven checks passed; Phoenix needs Docker.
 
-**Not yet verified.** The Docker builds and `docker compose up`, because Docker is not installed yet.
+**Gate 1 (Nov 9).** With Docker installed, `docker compose up -d --build` built both MCP images from their `v0.2.0` tags and started all five services; `scripts/check_gate1.py` passed 7 of 7. The collector config used the deprecated `otlp` exporter alias and now uses `otlp_grpc`.

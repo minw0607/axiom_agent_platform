@@ -149,7 +149,7 @@ Every LLM judge uses a different model from the one under test and is checked ag
 | Milestone | Target | What it proves | State |
 |---|---|---|---|
 | Repository scaffold | Nov 8 | Structure, tooling, and CI in place | ✅ Done |
-| **Gate 1** · Architecture ready | Nov 15 | Supporting services run without keys; Regulus returns cited provisions | 🟡 Services built; compose run pending |
+| **Gate 1** · Architecture ready | Nov 15 | Supporting services run without keys; Regulus returns cited provisions | ✅ Technical checks pass (7/7); design docs in progress |
 | **Gate 2** · Demo ready | Dec 20 | A stranger runs the demo in under 10 minutes with no API keys | ⬜ |
 | **Gate 3** · Published | Jan 10 | CI gates enforced; docs and results public | ⬜ |
 
