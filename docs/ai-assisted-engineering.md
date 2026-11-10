@@ -29,3 +29,9 @@ What was delegated to Claude Code, what was changed after review, and what was l
 **Architecture and ADRs 0001–0003, 0012 (Nov 10).** Delegated: first drafts of `docs/architecture.md` and four ADRs, from plan sections 2–8 and 13.
 - The SR 26-2 position was checked against the Federal Reserve's PDF, as the week 1 plan required. The fetch tool returned the PDF unreadable, so its text was extracted locally. Two points confirmed: footnote 3 places generative and agentic AI outside the guidance's scope, and the definition of "model" excludes deterministic rule-based processes. So neither the agents nor the ratio code is a "model" under SR 26-2, which supports applying it only by analogy.
 - One ADR sentence implied that keeping tools out of MCP was what stopped the model doing arithmetic. It was reworded: the arithmetic is in tested code, and the model only receives results.
+
+**Review fixes (Nov 10).** Two problems found by the author's review, not by the AI:
+- **Outdated OWASP edition.** The threat model cited the OWASP LLM Top 10 2025, but the 2026 edition was released Aug 3, 2026. The AI had used the copy in the Regulus snapshot, which is the 2025 list. The 2026 names were confirmed from OWASP's official PDF. Eight of ten entries moved, and System Prompt Leakage became Hidden Context Exposure, so every threat was remapped. The same PDF independently confirms five of the agentic list names.
+- **Broken diagram.** The architecture sequence diagram did not render on GitHub. Two arrow labels contained semicolons, which Mermaid reads as the end of a statement. All four diagrams in the docs now parse with Mermaid 11.4.1 in a browser.
+
+Lesson: confirm that a framework version is current at the source, not just that its names are right. Render every diagram before publishing.

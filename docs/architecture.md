@@ -51,13 +51,13 @@ sequenceDiagram
     W->>M: drafter: memo with citations
     W->>W: output guardrails (groundedness, number provenance)
     W->>M: compliance: findings vs policy rules and lending refs
-    W->>DB: checkpoint; state awaiting_review
+    W->>DB: checkpoint, state awaiting_review
     RM->>API: GET /v1/memos/{job_id}
     API-->>RM: draft memo, flags, findings
     CO->>API: POST /v1/memos/{job_id}/review (approve)
     API->>DB: record decision (reviewer ≠ submitter)
     W->>REG: lookup_provisions (related AI governance guidance)
-    W->>DB: finalize memo; write evidence bundle
+    W->>DB: finalize memo, write evidence bundle
 ```
 
 Every step writes OpenTelemetry spans (traces go to Phoenix) and evidence-log events.
