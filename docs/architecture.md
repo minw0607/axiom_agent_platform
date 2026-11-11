@@ -2,7 +2,7 @@
 
 This document explains how the platform is put together: its layers, how a memo job flows through them, and where each piece lives in the code. The [development plan](dev-plan.md) holds the full specification; the [ADRs](adr/README.md) hold the reasoning behind each decision; the [threat model](threat-model.md) covers what can go wrong.
 
-**Status (Nov 10, 2026):** the supporting services (Postgres, Phoenix, OpenTelemetry Collector, regulus-mcp, gkn-mcp) run under `docker compose` and pass the Gate 1 check. The API, worker, agents, router and guardrails are designed here and built from week 3. Section 7 tracks each component.
+**Status (Nov 11, 2026):** the supporting services pass the Gate 1 check, and the first vertical slice runs under `docker compose`: the API accepts a package, the worker runs intake, analyst and drafter, and polling returns a cited draft, traced in Phoenix. Compliance, human review, the evidence log and guardrails follow from week 4. Section 7 tracks each component.
 
 ## 1. Overview
 
@@ -84,7 +84,7 @@ flowchart LR
 | Human review | Pause until a reviewer acts | None | LangGraph interrupt, resumed by the review endpoint |
 | Finalize | Stores the memo and evidence bundle | None | Evidence writer; Regulus lookup (informational) |
 
-A rule-based supervisor, written in code with no LLM, chooses each transition, so the path is repeatable and auditable ([ADR 0001](adr/0001-orchestration-framework.md); ADR 0011 in week 3). Graph state is checkpointed in Postgres by `job_id`, so a job can wait at review for days and survive restarts.
+A rule-based supervisor, written in code with no LLM, chooses each transition, so the path is repeatable and auditable ([ADR 0001](adr/0001-orchestration-framework.md), [ADR 0011](adr/0011-workflow-control.md)). Graph state is checkpointed in Postgres by `job_id`, so a job can wait at review for days and survive restarts.
 
 **Loops are bounded.** A human can send a draft back for revision at most twice; after that, only approve or reject. An output-guardrail failure sends the draft back once as an automated fix; a second failure fails the job.
 
@@ -138,8 +138,13 @@ The platform sets scope arguments such as `job_id` from graph state; a model nev
 |---|---|
 | Postgres, Phoenix, OTel Collector | Running in compose |
 | regulus-mcp, gkn-mcp | Running in compose; Gate 1 check passes 7/7 |
-| MCP client (`MCPToolClient`) | Built and tested |
-| API, job store, worker, graph skeleton, ratio tools, router v1, telemetry | Week 3 |
+| MCP client (`MCPToolClient`), GKN evidence client | Built and tested |
+| `/v1/memos` submit and poll, job store (Postgres), idempotency, problem+json, role keys | Built and tested (week 3) |
+| Worker, LangGraph workflow (intake → analyst → drafter), rule-based supervisor | Built and tested (week 3) |
+| Ratio, policy-flag and reconciliation tools | Built; exact against an independent reference on all 10 packages |
+| Router v1: recorded adapter (demo), OpenAI adapter, fallback, fail-closed sensitivity rule | Built; OpenAI adapter not yet run against a live key |
+| Telemetry: API, job, workflow, node and model-call spans to Phoenix | Built (week 3) |
+| Synthetic data v1: 10 packages, credit policy, ground truth | Built (week 3) |
 | Policy rule engine, human review, checkpointer, evidence log | Week 4 |
 | Guardrails | Week 5 |
 | Eval baseline | Week 6 |
@@ -156,6 +161,8 @@ The platform sets scope arguments such as `job_id` from graph state; a model nev
 | [0003](adr/0003-tool-integration.md) | MCP for sibling services; in-process calls for deterministic tools |
 | [0004](adr/0004-guardrail-placement.md) | Layered guardrails at four stages |
 | [0005](adr/0005-model-routing.md) | Thin in-house router with logical aliases |
+| [0007](adr/0007-deterministic-computation.md) | Code computes; models extract and write; every figure checked against its source line |
+| [0011](adr/0011-workflow-control.md) | Rule-based supervisor in code; no model decides the path |
 | [0012](adr/0012-regulatory-position.md) | NIST AI RMF primary; SR 26-2 by analogy; rule engine plus cited lending references |
 
-The remaining ADRs (0006–0011) are written in the week each decision is made.
+The remaining ADRs (0006, 0008–0010) are written in the week each decision is made.

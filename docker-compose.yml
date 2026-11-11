@@ -1,5 +1,5 @@
-# Keyless local stack for the supporting services (Gate 1).
-# The API and worker join in week 3. Copy .env.example to .env and set MCP_SHARED_SECRET first.
+# Keyless local stack: supporting services (Gate 1) plus the API and worker (week 3).
+# Copy .env.example to .env, then set MCP_SHARED_SECRET and the role API keys.
 #
 #   docker compose up -d --build
 #   uv run python scripts/check_gate1.py
@@ -67,6 +67,46 @@ services:
       - gkn-data:/data
       - ./data/synthetic/credit_policy:/references/credit_policy:ro
       - ./data/lending_refs:/references/lending_refs:ro
+
+  api:
+    image: axiom-platform:dev
+    build: .
+    command: ["python", "-m", "axiom.api"]
+    environment: &platform-env
+      AXIOM_MODE: ${AXIOM_MODE:-demo}
+      AXIOM_API_HOST: 0.0.0.0
+      DATABASE_URL: postgresql://axiom:axiom@postgres:5432/axiom
+      GKN_MCP_URL: http://gkn-mcp:8002/mcp
+      REGULUS_MCP_URL: http://regulus-mcp:8001/mcp
+      MCP_SHARED_SECRET: ${MCP_SHARED_SECRET:?Set MCP_SHARED_SECRET in .env}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      SUBMITTER_API_KEYS: ${SUBMITTER_API_KEYS:-}
+      REVIEWER_API_KEYS: ${REVIEWER_API_KEYS:-}
+      AUDITOR_API_KEYS: ${AUDITOR_API_KEYS:-}
+      MODEL_ALIAS_MAP: ${MODEL_ALIAS_MAP:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/v1/ready')"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  worker:
+    image: axiom-platform:dev
+    command: ["python", "-m", "axiom.jobs.worker"]
+    environment: *platform-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      api:
+        condition: service_started
+      gkn-mcp:
+        condition: service_started
 
 volumes:
   postgres-data:

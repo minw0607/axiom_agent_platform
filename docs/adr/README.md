@@ -10,9 +10,9 @@ Each ADR records one decision, the options considered, and the trade-offs. Files
 | [0004](0004-guardrail-placement.md) | Guardrail placement | Gateway-only, per-node, layered | Week 2 | Accepted |
 | [0005](0005-model-routing.md) | Model routing approach | Single provider, LiteLLM, in-house adapter | Week 2 | Accepted |
 | 0006 | Memory architecture | Checkpointer only, plus vector store, plus knowledge graph | Week 4 | Proposed |
-| 0007 | Deterministic vs. LLM computation | LLM math, code tools, hybrid with verification | Week 3 | Proposed |
+| [0007](0007-deterministic-computation.md) | Deterministic vs. LLM computation | LLM math, code tools, hybrid with verification | Week 3 | Accepted |
 | 0008 | Evaluation thresholds and gating policy | Fixed thresholds, relative to main, hybrid | Week 6 | Proposed |
 | 0009 | Deployment target | Container Apps, AKS, App Service | Week 9 | Proposed |
 | 0010 | Infrastructure as code | Terraform, Bicep | Week 9 | Proposed |
-| 0011 | Workflow control | Rule-based pipeline, LLM supervisor, hybrid | Week 3 | Proposed |
+| [0011](0011-workflow-control.md) | Workflow control | Rule-based pipeline, LLM supervisor, hybrid | Week 3 | Accepted |
 | [0012](0012-regulatory-position.md) | Regulatory position and compliance knowledge sources | Regulus for memo review, lending references plus rule engine, rule engine only | Week 1 | Accepted |

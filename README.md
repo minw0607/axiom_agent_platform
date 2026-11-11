@@ -6,7 +6,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/)
-[![Development: Scaffold](https://img.shields.io/badge/Development-Week%201%20scaffold-lightblue.svg)](#-status)
+[![Development: Week 3](https://img.shields.io/badge/Development-Week%203%20vertical%20slice-lightblue.svg)](#-status)
 [![Orchestration: LangGraph](https://img.shields.io/badge/orchestration-LangGraph-2C3E50.svg)](https://github.com/langchain-ai/langgraph)
 [![Data: Synthetic only](https://img.shields.io/badge/data-synthetic%20only-1baf7a.svg)](#-data)
 [![Project: Independent & Personal](https://img.shields.io/badge/Project-Independent%20%26%20Personal-lightgrey)](#-disclaimer)
@@ -15,7 +15,7 @@
 
 </div>
 
-> **Status:** Week 1 scaffold. Nothing below runs yet; this page describes the target design and tracks progress against the [development plan](docs/dev-plan.md).
+> **Status:** Week 3. A package goes from submission to a cited draft memo, in demo mode with no API keys. Compliance review, human approval and guardrails come next; this page describes the target design and tracks progress against the [development plan](docs/dev-plan.md).
 
 ---
 
@@ -149,30 +149,37 @@ Every LLM judge uses a different model from the one under test and is checked ag
 | Milestone | Target | What it proves | State |
 |---|---|---|---|
 | Repository scaffold | Nov 8 | Structure, tooling, and CI in place | ✅ Done |
-| **Gate 1** · Architecture ready | Nov 15 | Supporting services run without keys; Regulus returns cited provisions | ✅ Technical checks pass (7/7); design docs in progress |
+| **Gate 1** · Architecture ready | Nov 15 | Supporting services run without keys; Regulus returns cited provisions | ✅ Passed: checks 7/7, design docs published |
+| Week 3 · First vertical slice | Nov 22 | Submit a package, poll, get a cited draft memo traced in Phoenix | ✅ Done in demo mode |
 | **Gate 2** · Demo ready | Dec 20 | A stranger runs the demo in under 10 minutes with no API keys | ⬜ |
 | **Gate 3** · Published | Jan 10 | CI gates enforced; docs and results public | ⬜ |
 
 ## 🚀 Quick start
 
-**Today:** install [uv](https://docs.astral.sh/uv/), then:
+**Tests:** install [uv](https://docs.astral.sh/uv/), then:
 
 ```bash
 uv sync
 uv run pytest
 ```
 
-**Supporting services (Gate 1):** with [Docker](https://docs.docker.com/get-docker/) running, set `MCP_SHARED_SECRET` in `.env`, then:
+**The stack:** with [Docker](https://docs.docker.com/get-docker/) running, copy `.env.example` to `.env` and set `MCP_SHARED_SECRET` and a submitter key (`SUBMITTER_API_KEYS=rm-demo:<random key>`), then:
 
 ```bash
-cp .env.example .env          # then set MCP_SHARED_SECRET
 docker compose up -d --build
 uv run python scripts/check_gate1.py
 ```
 
-This starts Postgres, Phoenix (traces at http://localhost:6006), the OpenTelemetry Collector, and the Regulus and GKN MCP servers. Both MCP images are built from pinned release tags (Regulus `v0.2.1`, GKN `v0.2.0`). The check script confirms each service is up, Regulus returns cited provisions, and one job's retrieval never returns another job's documents.
+This starts Postgres, Phoenix (traces at http://localhost:6006), the OpenTelemetry Collector, the Regulus and GKN MCP servers, and the platform's API (http://localhost:8000/docs) and worker. Both MCP images are built from pinned release tags (Regulus `v0.2.1`, GKN `v0.2.0`). The check script confirms the supporting services are up, Regulus returns cited provisions, and one job's retrieval never returns another job's documents.
 
-**From Gate 2:** `docker compose up` will also start the API and worker in a demo mode that needs no API keys.
+**Submit a package and poll for the draft:**
+
+```bash
+curl -i -X POST http://localhost:8000/v1/memos -H "X-API-Key: <submitter key>" -H "Idempotency-Key: $(uuidgen)" -H "content-type: application/json" -d '{"package_id": "pkg-08"}'
+curl http://localhost:8000/v1/memos/<job_id> -H "X-API-Key: <submitter key>"
+```
+
+Demo mode replays recorded responses, so no model API key is needed ([what the recordings are](data/recorded/README.md)). The catalog has ten fictional packages, `pkg-01` to `pkg-10`, each built to test one scenario.
 
 ## 🗺 Roadmap
 
