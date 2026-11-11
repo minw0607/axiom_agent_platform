@@ -1,8 +1,8 @@
 """The memo workflow as a LangGraph state graph (ADR 0001).
 
-Week 3 slice: intake -> analyst -> drafter. A rule-based supervisor, plain code with no
+intake -> analyst -> drafter -> compliance. A rule-based supervisor, plain code with no
 model, picks each transition: on to the next node, or to the end when a node fails.
-Human review, compliance and finalize join in week 4.
+Human review and finalize join next.
 """
 
 from __future__ import annotations
@@ -21,6 +21,7 @@ from axiom.agents.intake import IntakeError, run_intake
 from axiom.domain import (
     BorrowerPackage,
     CheckResult,
+    ComplianceFinding,
     FinancialStatements,
     MemoDraft,
     RatioResult,
@@ -29,9 +30,10 @@ from axiom.domain import (
 from axiom.mcp_clients.evidence import EvidenceHit
 from axiom.router.types import FailClosed, ProviderError
 from axiom.telemetry.setup import tracer
+from axiom.tools.policy_rules import RuleInput, evaluate
 from axiom.tools.reconcile import reconcile
 
-NODE_ORDER = ("intake", "analyst", "drafter")
+NODE_ORDER = ("intake", "analyst", "drafter", "compliance")
 EXPECTED_ERRORS = (IntakeError, AgentOutputError, ProviderError, FailClosed)
 
 
@@ -45,6 +47,7 @@ class MemoState(TypedDict, total=False):
     risk_flags: list[RiskFlag]
     narrative: list[str]
     draft: MemoDraft
+    findings: list[ComplianceFinding]
     evidence: list[EvidenceHit]
     model_calls: Annotated[list[ModelCall], operator.add]
     completed: Annotated[list[str], operator.add]
@@ -103,6 +106,19 @@ def build_workflow(ctx: AgentContext) -> Any:
         )
         return {"draft": draft, "evidence": hits}
 
+    async def compliance(state: MemoState) -> dict[str, Any]:
+        findings = evaluate(
+            RuleInput(
+                package=state["package"],
+                financials=state["financials"],
+                checks=state["checks"],
+                flags=state["risk_flags"],
+                draft=state["draft"],
+                policy=ctx.policy,
+            )
+        )
+        return {"findings": findings}
+
     def supervisor(after: str) -> Callable[[MemoState], str]:
         """Rule-based routing: stop on error, otherwise the next node in the fixed order."""
 
@@ -115,7 +131,13 @@ def build_workflow(ctx: AgentContext) -> Any:
         return route
 
     graph = StateGraph(MemoState)
-    for name, fn in (("intake", intake), ("analyst", analyst), ("drafter", drafter)):
+    nodes = (
+        ("intake", intake),
+        ("analyst", analyst),
+        ("drafter", drafter),
+        ("compliance", compliance),
+    )
+    for name, fn in nodes:
         graph.add_node(name, _traced(name, fn))  # type: ignore[call-overload]
     graph.add_edge(START, "intake")
     for name in NODE_ORDER:

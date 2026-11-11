@@ -68,6 +68,7 @@ def serialize_state(state: MemoState, policy_version: str) -> dict[str, Any]:
         "risk_flags",
         "narrative",
         "draft",
+        "findings",
         "evidence",
         "model_calls",
         "completed",
@@ -84,6 +85,7 @@ NODE_OUTPUTS = {
     "intake": ("source_hashes", "financials", "checks"),
     "analyst": ("ratios", "risk_flags", "narrative"),
     "drafter": ("draft", "evidence"),
+    "compliance": ("findings",),
 }
 WORKER = "worker"
 
@@ -109,6 +111,15 @@ def run_events(result: dict[str, Any]) -> list[EventDraft]:
                 payload["risk_flags"] = [f["code"] for f in result.get("risk_flags", [])]
             if node == "drafter":
                 payload["draft_recommendation"] = result["draft"]["draft_recommendation"]
+            if node == "compliance":
+                payload["triggered"] = [
+                    f["rule_id"] for f in result.get("findings", []) if f["outcome"] == "triggered"
+                ]
+                payload["not_evaluated"] = [
+                    f["rule_id"]
+                    for f in result.get("findings", [])
+                    if f["outcome"] == "not_evaluated"
+                ]
             events.append(EventDraft(type="node_completed", actor=WORKER, payload=payload))
         elif node == result.get("error_node"):
             events.append(

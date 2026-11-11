@@ -12,6 +12,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from axiom.agents.base import ModelCall
+from axiom.domain import ComplianceFinding
 from axiom.evidence.log import ChainCheck, EvidenceEvent
 from axiom.jobs.store import JobRecord, JobStatus
 
@@ -66,6 +67,16 @@ class CheckOut(BaseModel):
     year: int | None = None
 
 
+class FindingOut(BaseModel):
+    """A credit policy finding. Which component produced it is for the evidence bundle."""
+
+    rule_id: str
+    policy_ref: str
+    outcome: Literal["passed", "triggered", "not_evaluated"]
+    severity: str
+    message: str
+
+
 class CitationOut(BaseModel):
     doc_id: str
     locator: str
@@ -91,6 +102,9 @@ class MemoOut(BaseModel):
     ratios: list[RatioOut]
     risk_flags: list[FlagOut]
     reconciliation: list[CheckOut]
+    findings: list[FindingOut] = Field(
+        default_factory=list, description="Credit policy findings: drafting aids, not decisions"
+    )
     source_hashes: dict[str, str]
 
 
@@ -122,6 +136,7 @@ def to_public(job: JobRecord) -> MemoJob:
             ratios=r["ratios"],
             risk_flags=r["risk_flags"],
             reconciliation=r["checks"],
+            findings=r.get("findings", []),
             source_hashes=r.get("source_hashes", {}),
         )
     return MemoJob(
@@ -162,6 +177,7 @@ class EvidenceBundle(BaseModel):
     policy_version: str | None
     source_hashes: dict[str, str]
     model_calls: list[ModelCall]
+    findings: list[ComplianceFinding]
     retrieved: list[RetrievedPassage]
     citations: list[CitationRecord]
     events: list[EvidenceEvent]
@@ -192,6 +208,7 @@ def to_evidence(job: JobRecord, events: list[EvidenceEvent], chain: ChainCheck) 
         policy_version=r.get("policy_version"),
         source_hashes=r.get("source_hashes", {}),
         model_calls=r.get("model_calls", []),
+        findings=r.get("findings", []),
         retrieved=[
             RetrievedPassage(
                 collection=h["collection"],

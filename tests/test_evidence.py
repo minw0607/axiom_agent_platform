@@ -91,6 +91,7 @@ def test_successful_job_records_every_step_in_order() -> None:
         "intake",
         "analyst",
         "drafter",
+        "compliance",
     ]
     assert events[0].actor == "rm-a" and events[0].payload["package_id"] == "pkg-01"
     assert verify_chain(events).verified

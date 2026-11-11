@@ -44,7 +44,7 @@ def test_demo_run_produces_a_cited_draft(ctx: AgentContext, package_id: str) -> 
     state = run(ctx, package_id)
     truth = load_ground_truth(SETTINGS.packages_dir, package_id)
     assert "error" not in state
-    assert state["completed"] == ["intake", "analyst", "drafter"]
+    assert state["completed"] == ["intake", "analyst", "drafter", "compliance"]
     assert state["draft"].draft_recommendation == EXPECTED_RECOMMENDATION[truth["scenario"]]
     # Every extracted figure matches ground truth, value and source line.
     fs = state["financials"]

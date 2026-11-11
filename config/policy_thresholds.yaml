@@ -3,6 +3,8 @@
 # the week 4 rule engine will read the same file. Change the policy and this file together.
 policy_version: "CP-2026.2"
 thresholds:
+  min_loan_amount: { value: "250000", policy_ref: "CP-1.1" }
+  max_loan_amount: { value: "5000000", policy_ref: "CP-1.1" }
   min_pro_forma_dscr: { value: "1.25", policy_ref: "CP-4.1" }
   max_pro_forma_leverage: { value: "3.50", policy_ref: "CP-4.2" }
   min_current_ratio: { value: "1.20", policy_ref: "CP-4.3" }

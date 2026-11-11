@@ -81,6 +81,11 @@ def test_polling_returns_a_draft_with_sourced_figures(
         "source": {"doc_id": "pkg-01-income_statement", "line": 8},
     }
     assert next(s["heading"] for s in memo["sections"]) == "Borrower and request"
+    assert {f["outcome"] for f in memo["findings"]} >= {"passed", "not_evaluated"}
+    assert all(
+        set(f) == {"rule_id", "policy_ref", "outcome", "severity", "message"}
+        for f in memo["findings"]
+    )
     assert all(c["citations"] for c in memo["sections"][1]["claims"])
 
 
@@ -90,7 +95,17 @@ def test_responses_never_name_models_agents_or_prompts(
     job_id = submit(client).json()["job_id"]
     work(store)
     text = client.get(f"/v1/memos/{job_id}", headers={"X-API-Key": KEYS["submitter"]}).text
-    for word in ("model_calls", "alias", "prompt", "intake", "drafter", "analyst", "scripted"):
+    for word in (
+        "model_calls",
+        "alias",
+        "prompt",
+        "intake",
+        "drafter",
+        "analyst",
+        "scripted",
+        "rule_engine",
+        "compliance_reviewer",
+    ):
         assert word not in text
 
 

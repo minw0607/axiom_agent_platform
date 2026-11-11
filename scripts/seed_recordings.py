@@ -142,7 +142,10 @@ def scripted_drafter(package_id: str, payload: dict[str, Any]) -> dict[str, Any]
         },
     ]
     risks = [
-        {"text": f["message"], "citations": cite(*FLAG_FIELDS.get(f["code"], ("ebitda",)))}
+        {
+            "text": f"{f['code']} ({f['policy_ref']}): {f['message']}",
+            "citations": cite(*FLAG_FIELDS.get(f["code"], ("ebitda",))),
+        }
         for f in payload["risk_flags"]
     ]
     risks += [
@@ -155,10 +158,12 @@ def scripted_drafter(package_id: str, payload: dict[str, Any]) -> dict[str, Any]
     ]
     concentrated = any("largest customer" in line for line in lines)
     if concentrated:
+        line = next(t for t in lines if "largest customer" in t)
+        sentence = line[line.index("Its largest customer") :]
         risks.append(
             {
-                "text": "One customer accounts for a large share of revenue, which policy CP-5 "
-                "requires the memo to address.",
+                "text": f"The business description states: {sentence} Policy CP-5 requires the "
+                "memo to address it.",
                 "citations": cite_text("largest customer"),
             }
         )
@@ -178,6 +183,17 @@ def scripted_drafter(package_id: str, payload: dict[str, Any]) -> dict[str, Any]
         rec = "approve_with_conditions"
     else:
         rec = "approve"
+    rec_claims: list[dict[str, Any]] = [
+        {"text": f"Draft recommendation for the credit officer: {rec}.", "citations": []}
+    ]
+    if rec == "approve_with_conditions":
+        rec_claims.append(
+            {
+                "text": "Proposed condition: each risk flag above is addressed to the credit "
+                "officer's satisfaction before closing.",
+                "citations": [],
+            }
+        )
     return {
         "sections": [
             {"heading": "Borrower and request", "claims": borrower},
@@ -185,12 +201,7 @@ def scripted_drafter(package_id: str, payload: dict[str, Any]) -> dict[str, Any]
             {"heading": "Risk factors", "claims": risks},
             {
                 "heading": "Draft recommendation",
-                "claims": [
-                    {
-                        "text": f"Draft recommendation for the credit officer: {rec}.",
-                        "citations": [],
-                    }
-                ],
+                "claims": rec_claims,
             },
         ],
         "draft_recommendation": rec,

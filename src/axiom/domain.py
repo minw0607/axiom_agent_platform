@@ -141,6 +141,17 @@ class CheckResult(Frozen):
     year: int | None = None
 
 
+class ComplianceFinding(Frozen):
+    """One credit policy rule applied to a draft. A drafting aid for the credit officer."""
+
+    rule_id: str
+    policy_ref: str
+    outcome: Literal["passed", "triggered", "not_evaluated"]
+    severity: Severity
+    message: str
+    source: Literal["rule_engine", "compliance_reviewer"] = "rule_engine"
+
+
 class Citation(Frozen):
     doc_id: str
     locator: str = Field(description="'line N' for a source document, or a GKN chunk id")
