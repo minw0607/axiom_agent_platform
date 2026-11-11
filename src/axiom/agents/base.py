@@ -18,7 +18,7 @@ from axiom.tools.policy import PolicyThresholds
 
 T = TypeVar("T", bound=BaseModel)
 
-PROMPT_VERSIONS = {"intake": "v1", "analyst": "v1", "drafter": "v1"}
+PROMPT_VERSIONS = {"intake": "v1", "analyst": "v1", "drafter": "v2"}
 
 
 class AgentOutputError(RuntimeError):
