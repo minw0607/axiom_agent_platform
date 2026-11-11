@@ -1,0 +1,62 @@
+[
+  {
+    "package_id": "pkg-01",
+    "borrower_name": "Synthetic Borrower 01 (precision machining)",
+    "industry": "precision machining",
+    "scenario": "healthy"
+  },
+  {
+    "package_id": "pkg-02",
+    "borrower_name": "Synthetic Borrower 02 (food distribution)",
+    "industry": "food distribution",
+    "scenario": "healthy"
+  },
+  {
+    "package_id": "pkg-03",
+    "borrower_name": "Synthetic Borrower 03 (commercial landscaping)",
+    "industry": "commercial landscaping",
+    "scenario": "moderate"
+  },
+  {
+    "package_id": "pkg-04",
+    "borrower_name": "Synthetic Borrower 04 (specialty printing)",
+    "industry": "specialty printing",
+    "scenario": "weak_dscr"
+  },
+  {
+    "package_id": "pkg-05",
+    "borrower_name": "Synthetic Borrower 05 (regional trucking)",
+    "industry": "regional trucking",
+    "scenario": "leverage_breach"
+  },
+  {
+    "package_id": "pkg-06",
+    "borrower_name": "Synthetic Borrower 06 (HVAC contracting)",
+    "industry": "HVAC contracting",
+    "scenario": "inconsistent_figures"
+  },
+  {
+    "package_id": "pkg-07",
+    "borrower_name": "Synthetic Borrower 07 (craft brewing)",
+    "industry": "craft brewing",
+    "scenario": "missing_year"
+  },
+  {
+    "package_id": "pkg-08",
+    "borrower_name": "Synthetic Borrower 08 (contract packaging)",
+    "industry": "contract packaging",
+    "scenario": "concentration"
+  },
+  {
+    "package_id": "pkg-09",
+    "borrower_name": "Synthetic Borrower 09 (retail furniture)",
+    "industry": "retail furniture",
+    "scenario": "revenue_decline"
+  },
+  {
+    "package_id": "pkg-10",
+    "borrower_name": "Synthetic Borrower 10 (software reselling)",
+    "industry": "software reselling",
+    "scenario": "low_liquidity"
+  }
+]

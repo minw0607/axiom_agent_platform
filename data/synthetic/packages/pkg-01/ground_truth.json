@@ -1,0 +1,436 @@
+{
+  "package_id": "pkg-01",
+  "scenario": "healthy",
+  "years": {
+    "2023": {
+      "revenue": {
+        "value": "12400000",
+        "doc_id": "pkg-01-income_statement",
+        "line": 8
+      },
+      "cost_of_goods_sold": {
+        "value": "7688000",
+        "doc_id": "pkg-01-income_statement",
+        "line": 9
+      },
+      "operating_expenses": {
+        "value": "2604000",
+        "doc_id": "pkg-01-income_statement",
+        "line": 10
+      },
+      "ebitda": {
+        "value": "2108000",
+        "doc_id": "pkg-01-income_statement",
+        "line": 11
+      },
+      "depreciation_amortization": {
+        "value": "420000",
+        "doc_id": "pkg-01-income_statement",
+        "line": 12
+      },
+      "interest_expense": {
+        "value": "208000",
+        "doc_id": "pkg-01-income_statement",
+        "line": 13
+      },
+      "income_tax": {
+        "value": "355200",
+        "doc_id": "pkg-01-income_statement",
+        "line": 14
+      },
+      "net_income": {
+        "value": "1124800",
+        "doc_id": "pkg-01-income_statement",
+        "line": 15
+      },
+      "cash": {
+        "value": "992000",
+        "doc_id": "pkg-01-balance_sheet",
+        "line": 8
+      },
+      "accounts_receivable": {
+        "value": "1612000",
+        "doc_id": "pkg-01-balance_sheet",
+        "line": 9
+      },
+      "inventory": {
+        "value": "1364000",
+        "doc_id": "pkg-01-balance_sheet",
+        "line": 10
+      },
+      "total_current_assets": {
+        "value": "4216000",
+        "doc_id": "pkg-01-balance_sheet",
+        "line": 11
+      },
+      "total_assets": {
+        "value": "8316000",
+        "doc_id": "pkg-01-balance_sheet",
+        "line": 12
+      },
+      "total_current_liabilities": {
+        "value": "2108000",
+        "doc_id": "pkg-01-balance_sheet",
+        "line": 13
+      },
+      "total_debt": {
+        "value": "3200000",
+        "doc_id": "pkg-01-balance_sheet",
+        "line": 14
+      },
+      "total_liabilities": {
+        "value": "5308000",
+        "doc_id": "pkg-01-balance_sheet",
+        "line": 15
+      },
+      "total_equity": {
+        "value": "3008000",
+        "doc_id": "pkg-01-balance_sheet",
+        "line": 16
+      },
+      "capital_expenditures": {
+        "value": "462000",
+        "doc_id": "pkg-01-cash_flow",
+        "line": 8
+      },
+      "debt_principal_repaid": {
+        "value": "600000",
+        "doc_id": "pkg-01-cash_flow",
+        "line": 9
+      }
+    },
+    "2024": {
+      "revenue": {
+        "value": "13144000",
+        "doc_id": "pkg-01-income_statement",
+        "line": 8
+      },
+      "cost_of_goods_sold": {
+        "value": "8149280",
+        "doc_id": "pkg-01-income_statement",
+        "line": 9
+      },
+      "operating_expenses": {
+        "value": "2760240",
+        "doc_id": "pkg-01-income_statement",
+        "line": 10
+      },
+      "ebitda": {
+        "value": "2234480",
+        "doc_id": "pkg-01-income_statement",
+        "line": 11
+      },
+      "depreciation_amortization": {
+        "value": "420000",
+        "doc_id": "pkg-01-income_statement",
+        "line": 12
+      },
+      "interest_expense": {
+        "value": "169000",
+        "doc_id": "pkg-01-income_statement",
+        "line": 13
+      },
+      "income_tax": {
+        "value": "394915",
+        "doc_id": "pkg-01-income_statement",
+        "line": 14
+      },
+      "net_income": {
+        "value": "1250565",
+        "doc_id": "pkg-01-income_statement",
+        "line": 15
+      },
+      "cash": {
+        "value": "1051520",
+        "doc_id": "pkg-01-balance_sheet",
+        "line": 8
+      },
+      "accounts_receivable": {
+        "value": "1708720",
+        "doc_id": "pkg-01-balance_sheet",
+        "line": 9
+      },
+      "inventory": {
+        "value": "1445840",
+        "doc_id": "pkg-01-balance_sheet",
+        "line": 10
+      },
+      "total_current_assets": {
+        "value": "4468960",
+        "doc_id": "pkg-01-balance_sheet",
+        "line": 11
+      },
+      "total_assets": {
+        "value": "8568960",
+        "doc_id": "pkg-01-balance_sheet",
+        "line": 12
+      },
+      "total_current_liabilities": {
+        "value": "2234480",
+        "doc_id": "pkg-01-balance_sheet",
+        "line": 13
+      },
+      "total_debt": {
+        "value": "2600000",
+        "doc_id": "pkg-01-balance_sheet",
+        "line": 14
+      },
+      "total_liabilities": {
+        "value": "4834480",
+        "doc_id": "pkg-01-balance_sheet",
+        "line": 15
+      },
+      "total_equity": {
+        "value": "3734480",
+        "doc_id": "pkg-01-balance_sheet",
+        "line": 16
+      },
+      "capital_expenditures": {
+        "value": "462000",
+        "doc_id": "pkg-01-cash_flow",
+        "line": 8
+      },
+      "debt_principal_repaid": {
+        "value": "600000",
+        "doc_id": "pkg-01-cash_flow",
+        "line": 9
+      }
+    },
+    "2025": {
+      "revenue": {
+        "value": "13801200",
+        "doc_id": "pkg-01-income_statement",
+        "line": 8
+      },
+      "cost_of_goods_sold": {
+        "value": "8556744",
+        "doc_id": "pkg-01-income_statement",
+        "line": 9
+      },
+      "operating_expenses": {
+        "value": "2898252",
+        "doc_id": "pkg-01-income_statement",
+        "line": 10
+      },
+      "ebitda": {
+        "value": "2346204",
+        "doc_id": "pkg-01-income_statement",
+        "line": 11
+      },
+      "depreciation_amortization": {
+        "value": "420000",
+        "doc_id": "pkg-01-income_statement",
+        "line": 12
+      },
+      "interest_expense": {
+        "value": "130000",
+        "doc_id": "pkg-01-income_statement",
+        "line": 13
+      },
+      "income_tax": {
+        "value": "431089",
+        "doc_id": "pkg-01-income_statement",
+        "line": 14
+      },
+      "net_income": {
+        "value": "1365115",
+        "doc_id": "pkg-01-income_statement",
+        "line": 15
+      },
+      "cash": {
+        "value": "1104096",
+        "doc_id": "pkg-01-balance_sheet",
+        "line": 8
+      },
+      "accounts_receivable": {
+        "value": "1794156",
+        "doc_id": "pkg-01-balance_sheet",
+        "line": 9
+      },
+      "inventory": {
+        "value": "1518132",
+        "doc_id": "pkg-01-balance_sheet",
+        "line": 10
+      },
+      "total_current_assets": {
+        "value": "4692408",
+        "doc_id": "pkg-01-balance_sheet",
+        "line": 11
+      },
+      "total_assets": {
+        "value": "8792408",
+        "doc_id": "pkg-01-balance_sheet",
+        "line": 12
+      },
+      "total_current_liabilities": {
+        "value": "2346204",
+        "doc_id": "pkg-01-balance_sheet",
+        "line": 13
+      },
+      "total_debt": {
+        "value": "2000000",
+        "doc_id": "pkg-01-balance_sheet",
+        "line": 14
+      },
+      "total_liabilities": {
+        "value": "4346204",
+        "doc_id": "pkg-01-balance_sheet",
+        "line": 15
+      },
+      "total_equity": {
+        "value": "4446204",
+        "doc_id": "pkg-01-balance_sheet",
+        "line": 16
+      },
+      "capital_expenditures": {
+        "value": "462000",
+        "doc_id": "pkg-01-cash_flow",
+        "line": 8
+      },
+      "debt_principal_repaid": {
+        "value": "600000",
+        "doc_id": "pkg-01-cash_flow",
+        "line": 9
+      }
+    }
+  },
+  "loan": {
+    "requested_amount": {
+      "value": "1500000",
+      "doc_id": "pkg-01-loan_application",
+      "line": 5
+    },
+    "interest_rate_pct": {
+      "value": "7.25",
+      "doc_id": "pkg-01-loan_application",
+      "line": 6
+    },
+    "term_years": {
+      "value": "7",
+      "doc_id": "pkg-01-loan_application",
+      "line": 7
+    },
+    "amortization_years": {
+      "value": "7",
+      "doc_id": "pkg-01-loan_application",
+      "line": 8
+    }
+  },
+  "expected_ratios": [
+    {
+      "name": "ebitda_margin",
+      "year": 2023,
+      "value": "0.17"
+    },
+    {
+      "name": "current_ratio",
+      "year": 2023,
+      "value": "2.00"
+    },
+    {
+      "name": "leverage",
+      "year": 2023,
+      "value": "1.52"
+    },
+    {
+      "name": "interest_coverage",
+      "year": 2023,
+      "value": "8.12"
+    },
+    {
+      "name": "debt_to_equity",
+      "year": 2023,
+      "value": "1.06"
+    },
+    {
+      "name": "dscr",
+      "year": 2023,
+      "value": "2.61"
+    },
+    {
+      "name": "ebitda_margin",
+      "year": 2024,
+      "value": "0.17"
+    },
+    {
+      "name": "current_ratio",
+      "year": 2024,
+      "value": "2.00"
+    },
+    {
+      "name": "leverage",
+      "year": 2024,
+      "value": "1.16"
+    },
+    {
+      "name": "interest_coverage",
+      "year": 2024,
+      "value": "10.74"
+    },
+    {
+      "name": "debt_to_equity",
+      "year": 2024,
+      "value": "0.70"
+    },
+    {
+      "name": "dscr",
+      "year": 2024,
+      "value": "2.91"
+    },
+    {
+      "name": "revenue_growth",
+      "year": 2024,
+      "value": "0.06"
+    },
+    {
+      "name": "ebitda_margin",
+      "year": 2025,
+      "value": "0.17"
+    },
+    {
+      "name": "current_ratio",
+      "year": 2025,
+      "value": "2.00"
+    },
+    {
+      "name": "leverage",
+      "year": 2025,
+      "value": "0.85"
+    },
+    {
+      "name": "interest_coverage",
+      "year": 2025,
+      "value": "14.82"
+    },
+    {
+      "name": "debt_to_equity",
+      "year": 2025,
+      "value": "0.45"
+    },
+    {
+      "name": "dscr",
+      "year": 2025,
+      "value": "3.21"
+    },
+    {
+      "name": "revenue_growth",
+      "year": 2025,
+      "value": "0.05"
+    },
+    {
+      "name": "proposed_annual_debt_service",
+      "year": 2025,
+      "value": "273873.36"
+    },
+    {
+      "name": "pro_forma_dscr",
+      "year": 2025,
+      "value": "2.34"
+    },
+    {
+      "name": "pro_forma_leverage",
+      "year": 2025,
+      "value": "1.49"
+    }
+  ]
+}

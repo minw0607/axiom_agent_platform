@@ -1,0 +1,38 @@
+{
+  "package_id": "pkg-07",
+  "borrower_name": "Synthetic Borrower 07 (craft brewing)",
+  "industry": "craft brewing",
+  "scenario": "missing_year",
+  "documents": [
+    {
+      "doc_id": "pkg-07-income_statement",
+      "kind": "income_statement",
+      "title": "Income statement",
+      "file": "income_statement.md"
+    },
+    {
+      "doc_id": "pkg-07-balance_sheet",
+      "kind": "balance_sheet",
+      "title": "Balance sheet",
+      "file": "balance_sheet.md"
+    },
+    {
+      "doc_id": "pkg-07-cash_flow",
+      "kind": "cash_flow",
+      "title": "Cash flow statement (selected lines)",
+      "file": "cash_flow.md"
+    },
+    {
+      "doc_id": "pkg-07-loan_application",
+      "kind": "loan_application",
+      "title": "Loan application",
+      "file": "loan_application.md"
+    },
+    {
+      "doc_id": "pkg-07-business_description",
+      "kind": "business_description",
+      "title": "Business description",
+      "file": "business_description.md"
+    }
+  ]
+}

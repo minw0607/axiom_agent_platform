@@ -1,0 +1,38 @@
+{
+  "package_id": "pkg-06",
+  "borrower_name": "Synthetic Borrower 06 (HVAC contracting)",
+  "industry": "HVAC contracting",
+  "scenario": "inconsistent_figures",
+  "documents": [
+    {
+      "doc_id": "pkg-06-income_statement",
+      "kind": "income_statement",
+      "title": "Income statement",
+      "file": "income_statement.md"
+    },
+    {
+      "doc_id": "pkg-06-balance_sheet",
+      "kind": "balance_sheet",
+      "title": "Balance sheet",
+      "file": "balance_sheet.md"
+    },
+    {
+      "doc_id": "pkg-06-cash_flow",
+      "kind": "cash_flow",
+      "title": "Cash flow statement (selected lines)",
+      "file": "cash_flow.md"
+    },
+    {
+      "doc_id": "pkg-06-loan_application",
+      "kind": "loan_application",
+      "title": "Loan application",
+      "file": "loan_application.md"
+    },
+    {
+      "doc_id": "pkg-06-business_description",
+      "kind": "business_description",
+      "title": "Business description",
+      "file": "business_description.md"
+    }
+  ]
+}
