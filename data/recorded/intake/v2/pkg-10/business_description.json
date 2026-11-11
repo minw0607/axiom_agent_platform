@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "extraction",
+  "prompt_id": "intake",
+  "prompt_version": "v2",
+  "prompt_sha256": "85b73a7111560d6669c8ab74c71929af8fd720d8c09b0378f2a68f98a26546fd",
+  "input_tokens": 479,
+  "output_tokens": 32,
+  "text": "{\"figures\":[{\"field\":\"largest_customer_share_pct\",\"year\":2025,\"value\":\"14\",\"line\":5}]}"
+}

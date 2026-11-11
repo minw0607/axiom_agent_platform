@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "extraction",
+  "prompt_id": "intake",
+  "prompt_version": "v2",
+  "prompt_sha256": "9b6bfac28645dbd87dfeb75f3a5573c693789125598af81848a312d3dc27be7d",
+  "input_tokens": 660,
+  "output_tokens": 374,
+  "text": "{\"figures\":[{\"field\":\"cash\",\"year\":2024,\"value\":\"301000\",\"line\":8},{\"field\":\"cash\",\"year\":2025,\"value\":\"337120\",\"line\":8},{\"field\":\"accounts_receivable\",\"year\":2024,\"value\":\"344000\",\"line\":9},{\"field\":\"accounts_receivable\",\"year\":2025,\"value\":\"385280\",\"line\":9},{\"field\":\"inventory\",\"year\":2024,\"value\":\"602000\",\"line\":10},{\"field\":\"inventory\",\"year\":2025,\"value\":\"674240\",\"line\":10},{\"field\":\"total_current_assets\",\"year\":2024,\"value\":\"1333000\",\"line\":11},{\"field\":\"total_current_assets\",\"year\":2025,\"value\":\"1492960\",\"line\":11},{\"field\":\"total_assets\",\"year\":2024,\"value\":\"3933000\",\"line\":12},{\"field\":\"total_assets\",\"year\":2025,\"value\":\"4092960\",\"line\":12},{\"field\":\"total_current_liabilities\",\"year\":2024,\"value\":\"688000\",\"line\":13},{\"field\":\"total_current_liabilities\",\"year\":2025,\"value\":\"770560\",\"line\":13},{\"field\":\"total_debt\",\"year\":2024,\"value\":\"1300000\",\"line\":14},{\"field\":\"total_debt\",\"year\":2025,\"value\":\"1060000\",\"line\":14},{\"field\":\"total_liabilities\",\"year\":2024,\"value\":\"1988000\",\"line\":15},{\"field\":\"total_liabilities\",\"year\":2025,\"value\":\"1830560\",\"line\":15},{\"field\":\"total_equity\",\"year\":2024,\"value\":\"1945000\",\"line\":16},{\"field\":\"total_equity\",\"year\":2025,\"value\":\"2262400\",\"line\":16}]}"
+}

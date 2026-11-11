@@ -1,10 +1,10 @@
 {
-  "origin": "scripted",
+  "origin": "recorded",
   "route": "narrative",
   "prompt_id": "analyst",
   "prompt_version": "v1",
-  "prompt_sha256": "cc2655d6b15e4257fdf222d5f2faeb42a62a639c04105a420c13d3d70d853826",
-  "input_tokens": 0,
-  "output_tokens": 0,
-  "text": "{\n \"paragraphs\": [\n  \"Across FY2023 to FY2025, the EBITDA margin reached 0.11 in the latest year, with latest revenue growth of -0.03.\",\n  \"Including the requested loan, pro forma DSCR is 0.93 and pro forma leverage is 2.63x. Interest coverage is 6.40x and the current ratio is 1.50.\",\n  \"Risk flags: Pro forma DSCR 0.93 is below the policy minimum of 1.25.\"\n ]\n}"
+  "prompt_sha256": "12c38d040474dfc80738d7bfbb13274a96cba79420d9cd1559d18531d2080843",
+  "input_tokens": 1263,
+  "output_tokens": 762,
+  "text": "{\"paragraphs\":[\"Synthetic Borrower 04 (specialty printing) showed stable to modestly softer operating performance from 2023 through 2025. EBITDA margin was 0.12 in 2023, 0.12 in 2024, and 0.11 in 2025. Revenue growth was 0.01 in 2024 and -0.03 in 2025.\",\"Coverage and leverage improved on the historical measures. Leverage moved from 2.48 in 2023 to 1.84 in 2024 and 1.27 in 2025, while debt to equity moved from 2.32 to 1.10 and 0.54. Interest coverage increased from 3.30 to 4.47 and 6.40, and DSCR was 1.22, 1.31, and 1.36. On a pro forma basis in 2025, proposed annual debt service is 342657.00, pro forma DSCR is 0.93, and pro forma leverage is 2.63; the pro forma DSCR note states that existing debt service continues alongside the requested loan.\",\"Liquidity was unchanged across the periods presented, with current ratio at 1.50 in 2023, 1.50 in 2024, and 1.50 in 2025.\",\"Risk flag DSCR_BELOW_MIN, severity high, states that Pro forma DSCR 0.93 is below the policy minimum of 1.25 under CP-4.1. Risk flag DSCR_BELOW_DECLINE_FLOOR, severity high, states that Pro forma DSCR 0.93 is below 1.00: cash flow does not cover debt service, so the request is not eligible for an exception and the draft recommendation is decline under CP-6.3. No failed reconciliation checks were reported.\"]}"
 }

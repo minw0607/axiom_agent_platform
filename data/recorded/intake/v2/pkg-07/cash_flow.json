@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "extraction",
+  "prompt_id": "intake",
+  "prompt_version": "v2",
+  "prompt_sha256": "9c21d91872ff86123fdaca8c02249abe97c512a1b1f0ac7beab1377b1d1585f6",
+  "input_tokens": 487,
+  "output_tokens": 100,
+  "text": "{\"figures\":[{\"field\":\"capital_expenditures\",\"year\":2024,\"value\":\"286000\",\"line\":8},{\"field\":\"capital_expenditures\",\"year\":2025,\"value\":\"286000\",\"line\":8},{\"field\":\"debt_principal_repaid\",\"year\":2024,\"value\":\"240000\",\"line\":9},{\"field\":\"debt_principal_repaid\",\"year\":2025,\"value\":\"240000\",\"line\":9}]}"
+}

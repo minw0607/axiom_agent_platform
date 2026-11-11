@@ -1,10 +1,10 @@
 {
-  "origin": "scripted",
+  "origin": "recorded",
   "route": "narrative",
   "prompt_id": "analyst",
   "prompt_version": "v1",
   "prompt_sha256": "2619258e340284957d5c96b816180c15de63840bc57d3ca667dfbc87623db98b",
-  "input_tokens": 0,
-  "output_tokens": 0,
-  "text": "{\n \"paragraphs\": [\n  \"Across FY2023 to FY2025, the EBITDA margin reached 0.13 in the latest year, with latest revenue growth of 0.04.\",\n  \"Including the requested loan, pro forma DSCR is 1.54 and pro forma leverage is 4.43x. Interest coverage is 2.58x and the current ratio is 1.31.\",\n  \"Risk flags: Pro forma leverage 4.43x exceeds the policy maximum of 3.50x.\"\n ]\n}"
+  "input_tokens": 1161,
+  "output_tokens": 500,
+  "text": "{\"paragraphs\":[\"Synthetic Borrower 05 (regional trucking) maintained an EBITDA margin of 0.13 in 2023, 0.13 in 2024, and 0.13 in 2025. Revenue growth was 0.05 in 2024 and 0.04 in 2025.\",\"Coverage strengthened over the period, with interest coverage improving from 1.93 in 2023 to 2.25 in 2024 and 2.58 in 2025, while DSCR increased from 1.87 to 2.03 and 2.19. Leverage declined from 3.85 in 2023 to 3.43 in 2024 and 3.07 in 2025, and debt to equity declined from 2.81 to 2.20 and 1.77.\",\"Liquidity was stable, with the current ratio reported at 1.31 in 2023, 1.31 in 2024, and 1.31 in 2025.\",\"The policy risk flag is LEVERAGE_ABOVE_MAX with high severity under CP-4.2: Pro forma leverage 4.43x exceeds the policy maximum of 3.50x. For 2025, proposed annual debt service is 432038.28, pro forma DSCR is 1.54, and pro forma leverage is 4.43; the pro forma DSCR note states that it assumes existing debt service continues alongside the requested loan.\"]}"
 }

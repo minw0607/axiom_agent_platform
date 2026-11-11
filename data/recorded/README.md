@@ -1,16 +1,17 @@
 # Recorded model responses
 
-Demo mode (`AXIOM_MODE=demo`) replays these files instead of calling a model, so the stack runs with no API keys. Each file holds one response, keyed by prompt, prompt version, package and document, for example `intake/v1/pkg-01/income_statement.json`.
+Demo mode (`AXIOM_MODE=demo`) replays these files instead of calling a model, so the stack runs with no API keys. Each file holds one response, keyed by prompt, prompt version, package and document, for example `intake/v2/pkg-01/income_statement.json`.
 
-Every file states its `origin`:
+These are **live recordings**: real model responses saved during local-mode runs, each marked `origin: recorded`. Each file also stores the SHA-256 of the prompt it answered. When a replayed recording was made from a different prompt, the evidence trail says so.
 
-- **`scripted`**: written by `scripts/seed_recordings.py`. Intake answers come from the ground truth, and the analyst and drafter text is a template filled from the workflow's own inputs. These show the pipeline working; they are not model output. They pass the same validation a model's output must pass.
-- **`recorded`**: a real model response saved during a local-mode run.
+The tests do not use these files. They replay scripted responses in `tests/fixtures/recorded/` (`origin: scripted`, built from ground truth by `scripts/seed_recordings.py`), so test results never depend on a model's judgment.
 
-Each file also stores the SHA-256 of the prompt it answered. When a replayed recording was made from a different prompt, the evidence trail says so.
+## What the current recordings show
 
-## Replacing scripted responses with real ones
+Recorded Nov 11, 2026 with prompts intake v2, analyst v1 and drafter v3, under policy CP-2026.2. Every package completed on first attempts, and every extracted figure matched the ground truth, value and source line. The results are summarized in `docs/ai-assisted-engineering.md` (first live run).
 
-1. In `.env`, set `AXIOM_MODE=local`, `OPENAI_API_KEY`, and `MODEL_ALIAS_MAP` (for example `small-a=openai:<deployment>,frontier-a=openai:<deployment>`).
-2. Set `AXIOM_RECORD=1` and run each catalog package through the workflow.
+## Re-recording
+
+1. In `.env`, set `OPENAI_API_KEY`, `MODEL_ALIAS_MAP` (for example `small-a=openai:<deployment>,frontier-a=openai:<deployment>`) and, for a gateway, `OPENAI_BASE_URL` and the optional settings in `.env.example`.
+2. Run each catalog package through the workflow with `AXIOM_MODE=local` and `AXIOM_RECORD=1`. Record into a separate folder first (`AXIOM_RECORDINGS_DIR`), and check every package completes before replacing these files.
 3. Review the new files before committing them. Recordings must never contain real deployment names, keys or personal data.

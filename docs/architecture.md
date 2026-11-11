@@ -142,7 +142,7 @@ The platform sets scope arguments such as `job_id` from graph state; a model nev
 | `/v1/memos` submit and poll, job store (Postgres), idempotency, problem+json, role keys | Built and tested (week 3) |
 | Worker, LangGraph workflow (intake → analyst → drafter), rule-based supervisor | Built and tested (week 3) |
 | Ratio, policy-flag and reconciliation tools | Built; exact against an independent reference on all 10 packages |
-| Router v1: recorded adapter (demo), OpenAI adapter, fallback, fail-closed sensitivity rule | Built; OpenAI adapter not yet run against a live key |
+| Router v1: recorded adapter (demo), OpenAI and Azure OpenAI adapter, fallback, fail-closed sensitivity rule | Built; run live on all ten packages, whose responses the demo replays |
 | Telemetry: API, job, workflow, node and model-call spans to Phoenix | Built (week 3) |
 | Synthetic data v1: 10 packages, credit policy, ground truth | Built (week 3) |
 | Policy rule engine, human review, checkpointer, evidence log | Week 4 |

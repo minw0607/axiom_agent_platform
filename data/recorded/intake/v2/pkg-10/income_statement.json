@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "extraction",
+  "prompt_id": "intake",
+  "prompt_version": "v2",
+  "prompt_sha256": "974113421628637408e17e1cbabd147568807563a5640dcc4531b88d356ee02e",
+  "input_tokens": 690,
+  "output_tokens": 513,
+  "text": "{\"figures\":[{\"field\":\"revenue\",\"year\":2023,\"value\":\"8800000\",\"line\":8},{\"field\":\"revenue\",\"year\":2024,\"value\":\"9240000\",\"line\":8},{\"field\":\"revenue\",\"year\":2025,\"value\":\"9609600\",\"line\":8},{\"field\":\"cost_of_goods_sold\",\"year\":2023,\"value\":\"5280000\",\"line\":9},{\"field\":\"cost_of_goods_sold\",\"year\":2024,\"value\":\"5544000\",\"line\":9},{\"field\":\"cost_of_goods_sold\",\"year\":2025,\"value\":\"5765760\",\"line\":9},{\"field\":\"operating_expenses\",\"year\":2023,\"value\":\"2200000\",\"line\":10},{\"field\":\"operating_expenses\",\"year\":2024,\"value\":\"2310000\",\"line\":10},{\"field\":\"operating_expenses\",\"year\":2025,\"value\":\"2402400\",\"line\":10},{\"field\":\"ebitda\",\"year\":2023,\"value\":\"1320000\",\"line\":11},{\"field\":\"ebitda\",\"year\":2024,\"value\":\"1386000\",\"line\":11},{\"field\":\"ebitda\",\"year\":2025,\"value\":\"1441440\",\"line\":11},{\"field\":\"depreciation_amortization\",\"year\":2023,\"value\":\"150000\",\"line\":12},{\"field\":\"depreciation_amortization\",\"year\":2024,\"value\":\"150000\",\"line\":12},{\"field\":\"depreciation_amortization\",\"year\":2025,\"value\":\"150000\",\"line\":12},{\"field\":\"interest_expense\",\"year\":2023,\"value\":\"98000\",\"line\":13},{\"field\":\"interest_expense\",\"year\":2024,\"value\":\"77000\",\"line\":13},{\"field\":\"interest_expense\",\"year\":2025,\"value\":\"56000\",\"line\":13},{\"field\":\"income_tax\",\"year\":2023,\"value\":\"268000\",\"line\":14},{\"field\":\"income_tax\",\"year\":2024,\"value\":\"289750\",\"line\":14},{\"field\":\"income_tax\",\"year\":2025,\"value\":\"308860\",\"line\":14},{\"field\":\"net_income\",\"year\":2023,\"value\":\"804000\",\"line\":15},{\"field\":\"net_income\",\"year\":2024,\"value\":\"869250\",\"line\":15},{\"field\":\"net_income\",\"year\":2025,\"value\":\"926580\",\"line\":15}]}"
+}

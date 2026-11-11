@@ -1,10 +1,10 @@
 {
-  "origin": "scripted",
+  "origin": "recorded",
   "route": "narrative",
   "prompt_id": "analyst",
   "prompt_version": "v1",
   "prompt_sha256": "87eab37ac030320bdd6597a756994f8e79aa241daeaad60fc28e9c0340ff03ff",
-  "input_tokens": 0,
-  "output_tokens": 0,
-  "text": "{\n \"paragraphs\": [\n  \"Across FY2023 to FY2025, the EBITDA margin reached 0.14 in the latest year, with latest revenue growth of 0.06.\",\n  \"Including the requested loan, pro forma DSCR is 2.12 and pro forma leverage is 1.38x. Interest coverage is 17.44x and the current ratio is 1.67.\",\n  \"No policy threshold is breached.\",\n  \"Reconciliation issues: total assets 5578000 differs from total liabilities + equity 5528000 by 50000.\"\n ]\n}"
+  "input_tokens": 1142,
+  "output_tokens": 534,
+  "text": "{\"paragraphs\":[\"Synthetic Borrower 06 (HVAC contracting) reported a stable EBITDA margin of 0.14 in 2023, 0.14 in 2024, and 0.14 in 2025. Revenue growth was 0.05 in 2024 and 0.06 in 2025.\",\"Coverage strengthened over the periods presented, with DSCR of 2.63 in 2023, 2.91 in 2024, and 3.27 in 2025, and interest coverage of 8.76 in 2023, 11.83 in 2024, and 17.44 in 2025. Leverage declined from 1.34 in 2023 to 1.00 in 2024 and 0.69 in 2025, while debt to equity declined from 1.69 in 2023 to 0.94 in 2024 and 0.52 in 2025. For 2025, proposed annual debt service is 288546.48, pro forma DSCR is 2.12, and pro forma leverage is 1.38; the pro forma DSCR note states that it assumes existing debt service continues alongside the requested loan.\",\"Liquidity was consistent, with a current ratio of 1.67 in 2023, 1.67 in 2024, and 1.67 in 2025.\",\"No policy risk flags were provided. A reconciliation issue was triggered in 2024 for balance_sheet_balances: total assets 5578000 differs from total liabilities + equity 5528000 by 50000.\"]}"
 }

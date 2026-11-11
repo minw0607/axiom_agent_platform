@@ -179,7 +179,7 @@ curl -i -X POST http://localhost:8000/v1/memos -H "X-API-Key: <submitter key>" -
 curl http://localhost:8000/v1/memos/<job_id> -H "X-API-Key: <submitter key>"
 ```
 
-Demo mode replays recorded responses, so no model API key is needed ([what the recordings are](data/recorded/README.md)). The catalog has ten fictional packages, `pkg-01` to `pkg-10`, each built to test one scenario.
+Demo mode replays real model responses recorded from live runs, so no model API key is needed ([what the recordings are](data/recorded/README.md)). The catalog has ten fictional packages, `pkg-01` to `pkg-10`, each built to test one scenario.
 
 ## 🗺 Roadmap
 
