@@ -148,3 +148,62 @@ def test_alias_map_parsing() -> None:
     assert parsed["frontier-a"] == AliasTarget("openai", "dep-2")
     with pytest.raises(ValueError):
         parse_alias_map("broken")
+
+
+# Client construction from the environment ---------------------------------------
+
+_CLIENT_VARS = (
+    "OPENAI_API_KEY",
+    "OPENAI_BASE_URL",
+    "OPENAI_API_VERSION",
+    "OPENAI_APIM_HEADER_NAME",
+    "OPENAI_APIM_SUBSCRIPTION_KEY",
+)
+
+
+@pytest.fixture
+def clean_env(monkeypatch: pytest.MonkeyPatch) -> pytest.MonkeyPatch:
+    for name in _CLIENT_VARS:
+        monkeypatch.delenv(name, raising=False)
+    return monkeypatch
+
+
+def test_client_needs_a_key(clean_env: pytest.MonkeyPatch) -> None:
+    from axiom.router.adapters import openai_client_from_env
+
+    with pytest.raises(ProviderError):
+        openai_client_from_env()
+
+
+def test_plain_openai_client(clean_env: pytest.MonkeyPatch) -> None:
+    from openai import AsyncAzureOpenAI, AsyncOpenAI
+
+    from axiom.router.adapters import openai_client_from_env
+
+    clean_env.setenv("OPENAI_API_KEY", "test-key")
+    client = openai_client_from_env()
+    assert isinstance(client, AsyncOpenAI) and not isinstance(client, AsyncAzureOpenAI)
+
+
+def test_api_version_selects_azure_with_gateway_header(clean_env: pytest.MonkeyPatch) -> None:
+    from openai import AsyncAzureOpenAI
+
+    from axiom.router.adapters import openai_client_from_env
+
+    clean_env.setenv("OPENAI_API_KEY", "test-key")
+    clean_env.setenv("OPENAI_BASE_URL", "https://gateway.example.test")
+    clean_env.setenv("OPENAI_API_VERSION", "2025-01-01")
+    clean_env.setenv("OPENAI_APIM_HEADER_NAME", "X-Test-Subscription")
+    clean_env.setenv("OPENAI_APIM_SUBSCRIPTION_KEY", "sub-key")
+    client = openai_client_from_env()
+    assert isinstance(client, AsyncAzureOpenAI)
+    assert client.default_headers["X-Test-Subscription"] == "sub-key"
+
+
+def test_azure_without_endpoint_fails_closed(clean_env: pytest.MonkeyPatch) -> None:
+    from axiom.router.adapters import openai_client_from_env
+
+    clean_env.setenv("OPENAI_API_KEY", "test-key")
+    clean_env.setenv("OPENAI_API_VERSION", "2025-01-01")
+    with pytest.raises(ProviderError):
+        openai_client_from_env()

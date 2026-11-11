@@ -68,20 +68,43 @@ def save_recording(root: Path, request: ModelRequest, response: ModelResponse, o
     return path
 
 
+def openai_client_from_env() -> Any:
+    """Build the async client from the environment.
+
+    OPENAI_API_KEY is required. OPENAI_BASE_URL points at a compatible endpoint or gateway.
+    When OPENAI_API_VERSION is set the endpoint is treated as Azure OpenAI. An API management
+    gateway can require its own header: OPENAI_APIM_HEADER_NAME and OPENAI_APIM_SUBSCRIPTION_KEY.
+    """
+    from openai import AsyncAzureOpenAI, AsyncOpenAI
+
+    key = os.environ.get("OPENAI_API_KEY")
+    if not key:
+        raise ProviderError("OPENAI_API_KEY is not set")
+    base_url = os.environ.get("OPENAI_BASE_URL") or None
+    api_version = os.environ.get("OPENAI_API_VERSION") or None
+    name = os.environ.get("OPENAI_APIM_HEADER_NAME")
+    value = os.environ.get("OPENAI_APIM_SUBSCRIPTION_KEY")
+    headers = {name: value} if name and value else None
+    if api_version:
+        if not base_url:
+            raise ProviderError("OPENAI_API_VERSION is set but OPENAI_BASE_URL is not")
+        return AsyncAzureOpenAI(
+            api_key=key,
+            api_version=api_version,
+            azure_endpoint=base_url,
+            default_headers=headers,
+            max_retries=1,
+        )
+    return AsyncOpenAI(api_key=key, base_url=base_url, default_headers=headers, max_retries=1)
+
+
 class OpenAIAdapter:
-    """OpenAI chat completions. Reads OPENAI_API_KEY (and optional OPENAI_BASE_URL)."""
+    """OpenAI or Azure OpenAI chat completions, configured from the environment."""
 
     provider = "openai"
 
     def __init__(self) -> None:
-        from openai import AsyncOpenAI
-
-        key = os.environ.get("OPENAI_API_KEY")
-        if not key:
-            raise ProviderError("OPENAI_API_KEY is not set")
-        self._client = AsyncOpenAI(
-            api_key=key, base_url=os.environ.get("OPENAI_BASE_URL") or None, max_retries=1
-        )
+        self._client = openai_client_from_env()
 
     async def complete(self, request: ModelRequest, deployment: str) -> ModelResponse:
         import openai
