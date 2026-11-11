@@ -1,0 +1,10 @@
+{
+  "origin": "scripted",
+  "route": "extraction",
+  "prompt_id": "intake",
+  "prompt_version": "v2",
+  "prompt_sha256": "a9b521650d34792391c3c7fe7ea9cc0f1c8dd39d83a5ac8ba1e14c0de585fafd",
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "text": "{\n \"figures\": [\n  {\n   \"field\": \"requested_amount\",\n   \"year\": null,\n   \"value\": \"1400000\",\n   \"line\": 5\n  },\n  {\n   \"field\": \"interest_rate_pct\",\n   \"year\": null,\n   \"value\": \"8.25\",\n   \"line\": 6\n  },\n  {\n   \"field\": \"term_years\",\n   \"year\": null,\n   \"value\": \"5\",\n   \"line\": 7\n  },\n  {\n   \"field\": \"amortization_years\",\n   \"year\": null,\n   \"value\": \"5\",\n   \"line\": 8\n  }\n ]\n}"
+}

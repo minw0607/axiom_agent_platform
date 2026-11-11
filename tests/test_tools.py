@@ -154,11 +154,11 @@ def test_ratios_match_reference_exactly(package_id: str) -> None:
 EXPECTED_FLAGS = {
     "healthy": set(),
     "moderate": set(),
-    "weak_dscr": {"DSCR_BELOW_MIN"},
+    "weak_dscr": {"DSCR_BELOW_MIN", "DSCR_BELOW_DECLINE_FLOOR"},
     "leverage_breach": {"LEVERAGE_ABOVE_MAX"},
     "inconsistent_figures": set(),
     "missing_year": {"INSUFFICIENT_HISTORY"},
-    "concentration": set(),  # concentration is a narrative finding, reviewed in week 4
+    "concentration": {"CONCENTRATION_ABOVE_MAX"},
     "revenue_decline": {"REVENUE_DECLINE"},
     "low_liquidity": {"LIQUIDITY_BELOW_MIN"},
 }
@@ -178,6 +178,37 @@ def test_negative_ebitda_is_flagged_not_passed() -> None:
     codes = {f.code for f in risk_flags(fs, compute_ratios(fs), load_policy())}
     assert "NEGATIVE_EBITDA" in codes
     assert "LEVERAGE_ABOVE_MAX" not in codes
+
+
+def _with_share(share: int | None) -> FinancialStatements:
+    year = dict(BASE)
+    if share is not None:
+        year["largest_customer_share_pct"] = share
+    return statements({2025: year})
+
+
+@pytest.mark.parametrize(
+    ("share", "code"),
+    [
+        (14, None),
+        (25, None),
+        (30, "CONCENTRATION_DISCLOSURE"),
+        (40, "CONCENTRATION_DISCLOSURE"),
+        (41, "CONCENTRATION_ABOVE_MAX"),
+        (None, "CONCENTRATION_UNDEFINED"),
+    ],
+)
+def test_concentration_thresholds(share: int | None, code: str | None) -> None:
+    fs = _with_share(share)
+    codes = {f.code for f in risk_flags(fs, compute_ratios(fs), load_policy())}
+    found = {c for c in codes if c.startswith("CONCENTRATION_")}
+    assert found == ({code} if code else set())
+
+
+def test_dscr_floor_is_separate_from_the_minimum() -> None:
+    policy = load_policy()
+    assert policy["dscr_decline_floor"].value < policy["min_pro_forma_dscr"].value
+    assert policy.version == "CP-2026.2"
 
 
 @pytest.mark.parametrize("package_id", PACKAGE_IDS)

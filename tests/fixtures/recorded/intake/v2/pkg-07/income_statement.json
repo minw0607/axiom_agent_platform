@@ -1,0 +1,10 @@
+{
+  "origin": "scripted",
+  "route": "extraction",
+  "prompt_id": "intake",
+  "prompt_version": "v2",
+  "prompt_sha256": "c29b8b568637974726ec0eddce8234c108d8f145c44488b33f1a0170cb7d49ff",
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "text": "{\n \"figures\": [\n  {\n   \"field\": \"revenue\",\n   \"year\": 2024,\n   \"value\": \"4300000\",\n   \"line\": 8\n  },\n  {\n   \"field\": \"cost_of_goods_sold\",\n   \"year\": 2024,\n   \"value\": \"2236000\",\n   \"line\": 9\n  },\n  {\n   \"field\": \"operating_expenses\",\n   \"year\": 2024,\n   \"value\": \"1333000\",\n   \"line\": 10\n  },\n  {\n   \"field\": \"ebitda\",\n   \"year\": 2024,\n   \"value\": \"731000\",\n   \"line\": 11\n  },\n  {\n   \"field\": \"depreciation_amortization\",\n   \"year\": 2024,\n   \"value\": \"260000\",\n   \"line\": 12\n  },\n  {\n   \"field\": \"interest_expense\",\n   \"year\": 2024,\n   \"value\": \"104000\",\n   \"line\": 13\n  },\n  {\n   \"field\": \"income_tax\",\n   \"year\": 2024,\n   \"value\": \"91750\",\n   \"line\": 14\n  },\n  {\n   \"field\": \"net_income\",\n   \"year\": 2024,\n   \"value\": \"275250\",\n   \"line\": 15\n  },\n  {\n   \"field\": \"revenue\",\n   \"year\": 2025,\n   \"value\": \"4816000\",\n   \"line\": 8\n  },\n  {\n   \"field\": \"cost_of_goods_sold\",\n   \"year\": 2025,\n   \"value\": \"2504320\",\n   \"line\": 9\n  },\n  {\n   \"field\": \"operating_expenses\",\n   \"year\": 2025,\n   \"value\": \"1492960\",\n   \"line\": 10\n  },\n  {\n   \"field\": \"ebitda\",\n   \"year\": 2025,\n   \"value\": \"818720\",\n   \"line\": 11\n  },\n  {\n   \"field\": \"depreciation_amortization\",\n   \"year\": 2025,\n   \"value\": \"260000\",\n   \"line\": 12\n  },\n  {\n   \"field\": \"interest_expense\",\n   \"year\": 2025,\n   \"value\": \"84800\",\n   \"line\": 13\n  },\n  {\n   \"field\": \"income_tax\",\n   \"year\": 2025,\n   \"value\": \"118480\",\n   \"line\": 14\n  },\n  {\n   \"field\": \"net_income\",\n   \"year\": 2025,\n   \"value\": \"355440\",\n   \"line\": 15\n  }\n ]\n}"
+}

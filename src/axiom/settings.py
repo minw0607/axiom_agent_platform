@@ -45,6 +45,7 @@ class Settings:
     reviewer_keys: dict[str, str] = field(default_factory=dict)
     auditor_keys: dict[str, str] = field(default_factory=dict)
     inprocess_worker: bool = False
+    recordings_override: Path | None = None
 
     @classmethod
     def from_env(cls) -> Settings:
@@ -62,6 +63,9 @@ class Settings:
             auditor_keys=_keys("AUDITOR_API_KEYS"),
             inprocess_worker=os.environ.get("AXIOM_INPROCESS_WORKER", "").lower()
             in {"1", "true", "yes"},
+            recordings_override=_path("AXIOM_RECORDINGS_DIR", REPO_ROOT / "data" / "recorded")
+            if os.environ.get("AXIOM_RECORDINGS_DIR")
+            else None,
         )
 
     @property
@@ -70,4 +74,5 @@ class Settings:
 
     @property
     def recordings_dir(self) -> Path:
-        return self.data_dir / "recorded"
+        """Responses demo mode replays: live recordings by default, or AXIOM_RECORDINGS_DIR."""
+        return self.recordings_override or self.data_dir / "recorded"

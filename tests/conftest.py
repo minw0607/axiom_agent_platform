@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from dataclasses import replace
+from pathlib import Path
 
 import pytest
 
@@ -13,7 +15,10 @@ from axiom.router.types import ModelAdapter, ModelRequest, ModelResponse
 from axiom.settings import Settings
 from axiom.tools.policy import load_policy
 
-SETTINGS = Settings.from_env()
+# Tests replay scripted recordings (built from ground truth), so their results never depend on
+# a model's judgment. The demo replays the live recordings in data/recorded/.
+SCRIPTED_RECORDINGS = Path(__file__).parent / "fixtures" / "recorded"
+SETTINGS = replace(Settings.from_env(), recordings_override=SCRIPTED_RECORDINGS)
 
 
 def demo_context() -> AgentContext:

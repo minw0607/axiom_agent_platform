@@ -18,7 +18,6 @@ from axiom.domain import (
     MemoDraft,
     RatioResult,
     RiskFlag,
-    Severity,
 )
 from axiom.mcp_clients.evidence import EvidenceHit
 
@@ -100,9 +99,12 @@ def validate_draft(
     if any(c.outcome == "triggered" for c in checks) and draft.draft_recommendation != "refer":
         errors.append("reconciliation failed, so the draft recommendation must be 'refer'")
     elif (
-        any(f.severity == Severity.HIGH for f in flags) and draft.draft_recommendation == "approve"
+        any(f.code == "DSCR_BELOW_DECLINE_FLOOR" for f in flags)
+        and draft.draft_recommendation != "decline"
     ):
-        errors.append("a policy standard is not met, so the draft cannot be 'approve'")
+        errors.append("pro forma DSCR is below the decline floor, so the draft must be 'decline'")
+    elif flags and draft.draft_recommendation == "approve":
+        errors.append("a risk flag is raised, so the draft cannot be 'approve'")
     return errors
 
 

@@ -79,6 +79,21 @@ def risk_flags(
 
     check_min("pro_forma_dscr", latest, "min_pro_forma_dscr", "DSCR_BELOW_MIN", "Pro forma DSCR")
     check_min("current_ratio", latest, "min_current_ratio", "LIQUIDITY_BELOW_MIN", "Current ratio")
+    floor_t = policy["dscr_decline_floor"]
+    dscr = _find(ratios, "pro_forma_dscr", latest)
+    if dscr is not None and dscr.value is not None and dscr.value < floor_t.value:
+        flags.append(
+            RiskFlag(
+                code="DSCR_BELOW_DECLINE_FLOOR",
+                severity=Severity.HIGH,
+                year=latest,
+                ratio="pro_forma_dscr",
+                policy_ref=floor_t.policy_ref,
+                message=f"Pro forma DSCR {dscr.value} is below {floor_t.value}: cash flow does "
+                "not cover debt service, so the request is not eligible for an exception and "
+                "the draft recommendation is decline.",
+            )
+        )
     check_min(
         "interest_coverage",
         latest,
@@ -140,6 +155,47 @@ def risk_flags(
                     f"policy trigger of {decline_t.value}.",
                 )
             )
+
+    max_conc_t = policy["max_customer_concentration_pct"]
+    disclose_t = policy["concentration_disclosure_pct"]
+    share = fs.get(latest, "largest_customer_share_pct")
+    if share is None:
+        flags.append(
+            RiskFlag(
+                code="CONCENTRATION_UNDEFINED",
+                severity=Severity.HIGH,
+                year=latest,
+                ratio="largest_customer_share_pct",
+                policy_ref=max_conc_t.policy_ref,
+                message="The largest customer's share of revenue was not found, so "
+                "concentration could not be checked.",
+            )
+        )
+    elif share > max_conc_t.value:
+        flags.append(
+            RiskFlag(
+                code="CONCENTRATION_ABOVE_MAX",
+                severity=Severity.HIGH,
+                year=latest,
+                ratio="largest_customer_share_pct",
+                policy_ref=max_conc_t.policy_ref,
+                message=f"The largest customer is {share}% of revenue, above "
+                f"{max_conc_t.value}%: a sensitivity analysis is required and approval is "
+                "normally only with conditions.",
+            )
+        )
+    elif share > disclose_t.value:
+        flags.append(
+            RiskFlag(
+                code="CONCENTRATION_DISCLOSURE",
+                severity=Severity.WARNING,
+                year=latest,
+                ratio="largest_customer_share_pct",
+                policy_ref=disclose_t.policy_ref,
+                message=f"The largest customer is {share}% of revenue, above "
+                f"{disclose_t.value}%: the memo must identify the customer's contract terms.",
+            )
+        )
 
     history_t = policy["min_history_years"]
     if Decimal(len(years)) < history_t.value:

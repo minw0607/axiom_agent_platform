@@ -291,6 +291,11 @@
         "value": "600000",
         "doc_id": "pkg-01-cash_flow",
         "line": 9
+      },
+      "largest_customer_share_pct": {
+        "value": "14",
+        "doc_id": "pkg-01-business_description",
+        "line": 5
       }
     }
   },

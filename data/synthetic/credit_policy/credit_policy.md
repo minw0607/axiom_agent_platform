@@ -1,6 +1,6 @@
 # Commercial Term Lending Credit Policy (fictional)
 
-Policy version CP-2026.1. This policy belongs to a fictional bank and exists only to test the axiom_agent_platform. It is not guidance for any real lender.
+Policy version CP-2026.2. This policy belongs to a fictional bank and exists only to test the axiom_agent_platform. It is not guidance for any real lender.
 
 ## CP-1 Purpose and scope
 
@@ -49,6 +49,8 @@ CP-5.2 Concentration above 40% requires a sensitivity analysis and is normally a
 CP-6.1 A request that fails any CP-4 standard may be approved only as an exception. The memo must name each failed standard, the mitigating factors, and any conditions.
 
 CP-6.2 Exceptions are approved by a credit officer and reported monthly to the credit committee.
+
+CP-6.3 A request whose pro forma DSCR is below 1.00x is not eligible for an exception: the borrower's cash flow does not cover its debt service. It is declined.
 
 ## CP-7 Fair lending
 

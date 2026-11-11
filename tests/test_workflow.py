@@ -10,7 +10,7 @@ import pytest
 
 from axiom.agents.base import AgentContext
 from axiom.agents.drafter import validate_draft
-from axiom.agents.intake import ExtractedFigure, verify_figure
+from axiom.agents.intake import DOC_FIELDS, ExtractedFigure, check_extraction, verify_figure
 from axiom.catalog import list_packages, load_ground_truth, load_package
 from axiom.domain import Citation, Claim, MemoDraft, MemoSection
 from axiom.graph.workflow import run_workflow
@@ -100,6 +100,62 @@ def test_loan_terms_are_checked_on_their_line() -> None:
     assert verify_figure(doc, bad, allowed) is not None
 
 
+def _truth_figures(package_id: str, kind: str) -> list[ExtractedFigure]:
+    """The complete, correct extraction for one statement, from the ground truth."""
+    truth = load_ground_truth(SETTINGS.packages_dir, package_id)
+    doc_id = f"{package_id}-{kind}"
+    return [
+        ExtractedFigure(field=name, year=int(year), value=raw["value"], line=raw["line"])
+        for year, fields in truth["years"].items()
+        for name, raw in fields.items()
+        if raw["doc_id"] == doc_id
+    ]
+
+
+@pytest.mark.parametrize("kind", ["income_statement", "balance_sheet", "cash_flow"])
+def test_complete_extraction_is_accepted(kind: str) -> None:
+    figures = _truth_figures("pkg-01", kind)
+    assert figures
+    assert check_extraction(_doc(kind), figures, DOC_FIELDS[kind]) == []
+
+
+def test_latest_year_only_is_rejected() -> None:
+    figures = [f for f in _truth_figures("pkg-01", "income_statement") if f.year == 2025]
+    errors = check_extraction(_doc(), figures, DOC_FIELDS["income_statement"])
+    assert len(errors) == len(figures)  # one per row
+    assert "line 8 ('Revenue'): not extracted for FY2023, FY2024" in errors
+
+
+def test_skipped_row_is_rejected() -> None:
+    kind = "cash_flow"
+    figures = [f for f in _truth_figures("pkg-01", kind) if f.field != "debt_principal_repaid"]
+    errors = check_extraction(_doc(kind), figures, DOC_FIELDS[kind])
+    assert len(errors) == 1
+    assert "'Repayment of long-term debt'" in errors[0] and "none was extracted" in errors[0]
+
+
+def test_missing_year_package_needs_only_the_years_it_has() -> None:
+    figures = _truth_figures("pkg-07", "income_statement")
+    doc = load_package(SETTINGS.packages_dir, "pkg-07").document("income_statement")
+    assert doc is not None
+    assert check_extraction(doc, figures, DOC_FIELDS["income_statement"]) == []
+
+
+def test_incomplete_extraction_twice_fails_the_job() -> None:
+    def latest_year_only(request: ModelRequest) -> str:
+        key = request.recording_key.removesuffix(".retry")
+        if request.prompt_id != "intake" or not key.endswith("income_statement"):
+            return ""
+        figures = [f for f in _truth_figures("pkg-01", "income_statement") if f.year == 2025]
+        return json.dumps({"figures": [f.model_dump() for f in figures]})
+
+    ctx, model = fake_context(latest_year_only)
+    state = run(ctx, "pkg-01")
+    assert state["error"].startswith("AgentOutputError")
+    assert state["error_node"] == "intake"
+    assert "not extracted for FY2023, FY2024" in model.requests[1].messages[-1].content
+
+
 def _bad_intake(request: ModelRequest) -> str:
     key = request.recording_key.removesuffix(".retry")
     if request.prompt_id != "intake" or not key.endswith("income_statement"):
@@ -171,9 +227,9 @@ def test_draft_validation_rejects_uncited_and_unknown_citations(ctx: AgentContex
 
 
 def test_recommendation_must_match_deterministic_findings(ctx: AgentContext) -> None:
-    weak = _state(ctx, "pkg-04")  # pro forma DSCR below policy
+    weak = _state(ctx, "pkg-05")  # pro forma leverage above policy
     draft = weak["draft"].model_copy(update={"draft_recommendation": "approve"})
-    package = load_package(SETTINGS.packages_dir, "pkg-04")
+    package = load_package(SETTINGS.packages_dir, "pkg-05")
     errors = validate_draft(draft, package, set(), weak["risk_flags"], weak["checks"])
     assert any("cannot be 'approve'" in e for e in errors)
 
@@ -182,6 +238,36 @@ def test_recommendation_must_match_deterministic_findings(ctx: AgentContext) -> 
     package = load_package(SETTINGS.packages_dir, "pkg-06")
     errors = validate_draft(draft, package, set(), broken["risk_flags"], broken["checks"])
     assert any("must be 'refer'" in e for e in errors)
+
+
+def test_dscr_below_the_floor_must_be_declined(ctx: AgentContext) -> None:
+    weak = _state(ctx, "pkg-04")  # pro forma DSCR 0.93
+    assert "DSCR_BELOW_DECLINE_FLOOR" in {f.code for f in weak["risk_flags"]}
+    assert weak["draft"].draft_recommendation == "decline"
+    package = load_package(SETTINGS.packages_dir, "pkg-04")
+    draft = weak["draft"].model_copy(update={"draft_recommendation": "approve_with_conditions"})
+    errors = validate_draft(draft, package, set(), weak["risk_flags"], weak["checks"])
+    assert any("must be 'decline'" in e for e in errors)
+
+
+@pytest.mark.parametrize("package_id", ["pkg-07", "pkg-09"])
+def test_warning_flags_also_block_approve(ctx: AgentContext, package_id: str) -> None:
+    state = _state(ctx, package_id)  # insufficient history; revenue decline
+    assert state["risk_flags"] and all(f.severity == "warning" for f in state["risk_flags"])
+    package = load_package(SETTINGS.packages_dir, package_id)
+    draft = state["draft"].model_copy(update={"draft_recommendation": "approve"})
+    errors = validate_draft(draft, package, set(), state["risk_flags"], state["checks"])
+    assert any("cannot be 'approve'" in e for e in errors)
+
+
+def test_high_concentration_blocks_approve(ctx: AgentContext) -> None:
+    state = _state(ctx, "pkg-08")  # largest customer 48% of revenue
+    assert state["financials"].get(2025, "largest_customer_share_pct") == Decimal("48")
+    assert "CONCENTRATION_ABOVE_MAX" in {f.code for f in state["risk_flags"]}
+    package = load_package(SETTINGS.packages_dir, "pkg-08")
+    draft = state["draft"].model_copy(update={"draft_recommendation": "approve"})
+    errors = validate_draft(draft, package, set(), state["risk_flags"], state["checks"])
+    assert any("cannot be 'approve'" in e for e in errors)
 
 
 def test_scope_arguments_come_from_state_not_the_model(ctx: AgentContext) -> None:

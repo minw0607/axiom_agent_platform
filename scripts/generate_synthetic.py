@@ -579,7 +579,14 @@ def build(p: Params) -> dict[str, object]:
         k: {"value": v, "doc_id": loan_doc, "line": loan_where[k]} for k, v in loan_values.items()
     }
 
-    (folder / "documents" / "business_description.md").write_text(business_description(p, name))
+    bd_text = business_description(p, name)
+    (folder / "documents" / "business_description.md").write_text(bd_text)
+    bd_line = next(i for i, t in enumerate(bd_text.splitlines(), 1) if "customer accounted" in t)
+    truth_years[str(p.years[-1])]["largest_customer_share_pct"] = {
+        "value": str(p.top_customer_pct),
+        "doc_id": f"{p.package_id}-business_description",
+        "line": bd_line,
+    }
     docs.append(
         {
             "doc_id": f"{p.package_id}-business_description",

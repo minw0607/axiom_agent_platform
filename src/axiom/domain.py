@@ -38,7 +38,11 @@ CASH_FLOW_FIELDS = (
     "capital_expenditures",
     "debt_principal_repaid",
 )
-YEARLY_FIELDS = INCOME_STATEMENT_FIELDS + BALANCE_SHEET_FIELDS + CASH_FLOW_FIELDS
+# Stated in the business description, for the latest fiscal year (credit policy CP-5).
+BUSINESS_DESCRIPTION_FIELDS = ("largest_customer_share_pct",)
+YEARLY_FIELDS = (
+    INCOME_STATEMENT_FIELDS + BALANCE_SHEET_FIELDS + CASH_FLOW_FIELDS + BUSINESS_DESCRIPTION_FIELDS
+)
 LOAN_FIELDS = ("requested_amount", "interest_rate_pct", "term_years", "amortization_years")
 
 DocumentKind = Literal[

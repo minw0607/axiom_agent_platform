@@ -3,11 +3,11 @@
 Runs the real workflow for every catalog package, with a scripted stand-in for the model:
 intake answers come from the ground truth, and the analyst and drafter text is filled in
 from a template using only the inputs the workflow passes. Every response passes through
-the same validation as a live model's and is saved under data/recorded/ with
+the same validation as a live model's and is saved under tests/fixtures/recorded/ with
 origin "scripted", so the evidence bundle can never mistake it for a model's output.
 
-To replace these with real model output, run the workflow in local mode with
-AXIOM_RECORD=1 (see data/recorded/README.md).
+The tests replay these, so their results never depend on a model's judgment. The demo
+replays live recordings from data/recorded/ instead (see data/recorded/README.md).
 
     uv run python scripts/seed_recordings.py
 """
@@ -172,7 +172,7 @@ def scripted_drafter(package_id: str, payload: dict[str, Any]) -> dict[str, Any]
     codes = {f["code"] for f in payload["risk_flags"] if f["severity"] == "high"}
     if any(c["outcome"] == "triggered" for c in payload["reconciliation_issues"]):
         rec = "refer"
-    elif "DSCR_BELOW_MIN" in codes:
+    elif "DSCR_BELOW_DECLINE_FLOOR" in codes:
         rec = "decline"
     elif codes or payload["risk_flags"] or concentrated:
         rec = "approve_with_conditions"
@@ -224,7 +224,7 @@ class ScriptedAdapter:
 
 
 async def main() -> None:
-    root = SETTINGS.recordings_dir
+    root = Path(__file__).resolve().parents[1] / "tests" / "fixtures" / "recorded"
     adapter = ScriptedAdapter(root)
 
     def factory(provider: str) -> ModelAdapter:
