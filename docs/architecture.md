@@ -2,7 +2,7 @@
 
 This document explains how the platform is put together: its layers, how a memo job flows through them, and where each piece lives in the code. The [development plan](dev-plan.md) holds the full specification; the [ADRs](adr/README.md) hold the reasoning behind each decision; the [threat model](threat-model.md) covers what can go wrong.
 
-**Status (Nov 11, 2026):** the supporting services pass the Gate 1 check, and the first vertical slice runs under `docker compose`: the API accepts a package, the worker runs intake, analyst and drafter, and polling returns a cited draft, traced in Phoenix. Compliance, human review, the evidence log and guardrails follow from week 4. Section 7 tracks each component.
+**Status (Nov 11, 2026):** the supporting services pass the Gate 1 check, and the first vertical slice runs under `docker compose`: the API accepts a package, the worker runs intake, analyst and drafter, and polling returns a cited draft, traced in Phoenix. Every job writes a hash-chained evidence log that auditors read through the evidence endpoint. Compliance, human review and guardrails follow. Section 7 tracks each component.
 
 ## 1. Overview
 
@@ -145,10 +145,11 @@ The platform sets scope arguments such as `job_id` from graph state; a model nev
 | Router v1: recorded adapter (demo), OpenAI and Azure OpenAI adapter, fallback, fail-closed sensitivity rule | Built; run live on all ten packages, whose responses the demo replays |
 | Telemetry: API, job, workflow, node and model-call spans to Phoenix | Built (week 3) |
 | Synthetic data v1: 10 packages, credit policy, ground truth | Built (week 3) |
-| Policy rule engine, human review, checkpointer, evidence log | Week 4 |
+| Evidence log: per-job hash chain in Postgres (append-only by trigger), every model attempt including rejected ones, auditor-only `GET /v1/memos/{id}/evidence` with chain verification | Built and tested (week 4) |
+| Policy rule engine, compliance agent, human review, checkpointer | Week 4 |
 | Guardrails | Week 5 |
 | Eval baseline | Week 6 |
-| Evidence endpoint, review page, keyless demo | Week 7 |
+| Review page, keyless demo | Week 7 |
 | CI release gates | Week 8 |
 | Cloud deployment | Week 9 |
 

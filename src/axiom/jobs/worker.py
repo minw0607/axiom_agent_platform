@@ -7,12 +7,15 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import hashlib
+import json
 import logging
 from typing import Any
 
-from axiom.agents.base import AgentContext
+from axiom.agents.base import PROMPT_VERSIONS, AgentContext
 from axiom.catalog import UnknownPackage, load_package
-from axiom.graph.workflow import MemoState, run_workflow
+from axiom.evidence.log import EventDraft
+from axiom.graph.workflow import NODE_ORDER, MemoState, run_workflow
 from axiom.jobs.store import JobRecord, JobStore, PostgresJobStore
 from axiom.mcp_clients.client import MCPToolClient
 from axiom.mcp_clients.evidence import EvidenceService, GKNEvidence, InMemoryEvidence
@@ -76,26 +79,103 @@ def serialize_state(state: MemoState, policy_version: str) -> dict[str, Any]:
     return out
 
 
+# State keys that are each node's output, hashed into its node_completed event.
+NODE_OUTPUTS = {
+    "intake": ("source_hashes", "financials", "checks"),
+    "analyst": ("ratios", "risk_flags", "narrative"),
+    "drafter": ("draft", "evidence"),
+}
+WORKER = "worker"
+
+
+def _sha256(value: Any) -> str:
+    return hashlib.sha256(json.dumps(value, sort_keys=True, default=str).encode()).hexdigest()
+
+
+def run_events(result: dict[str, Any]) -> list[EventDraft]:
+    """The evidence events for one workflow run, in order: each node's model calls
+    (every attempt, valid or not), then that node's outcome."""
+    events: list[EventDraft] = []
+    calls = result.get("model_calls", [])
+    for node in NODE_ORDER:
+        for call in (c for c in calls if c["node"] == node):
+            events.append(EventDraft(type="model_call", actor=WORKER, payload=call))
+        if node in result.get("completed", []):
+            payload: dict[str, Any] = {
+                "node": node,
+                "output_sha256": _sha256({k: result.get(k) for k in NODE_OUTPUTS[node]}),
+            }
+            if node == "analyst":
+                payload["risk_flags"] = [f["code"] for f in result.get("risk_flags", [])]
+            if node == "drafter":
+                payload["draft_recommendation"] = result["draft"]["draft_recommendation"]
+            events.append(EventDraft(type="node_completed", actor=WORKER, payload=payload))
+        elif node == result.get("error_node"):
+            events.append(
+                EventDraft(
+                    type="node_failed",
+                    actor=WORKER,
+                    payload={"node": node, "error": result.get("error", "")[:500]},
+                )
+            )
+    return events
+
+
 async def process_job(
     store: JobStore, ctx: AgentContext, settings: Settings, job: JobRecord
 ) -> None:
     with tracer().start_as_current_span("job run") as span:
         span.set_attribute("axiom.job_id", job.job_id)
+        trace = span.get_span_context().trace_id
+        trace_id = f"{trace:032x}" if trace else None
+        await store.append_events(
+            job.job_id,
+            [
+                EventDraft(
+                    type="job_started",
+                    actor=WORKER,
+                    payload={
+                        "mode": settings.mode,
+                        "policy_version": ctx.policy.version,
+                        "prompt_versions": PROMPT_VERSIONS,
+                        "trace_id": trace_id,
+                    },
+                )
+            ],
+        )
         try:
             package = load_package(settings.packages_dir, job.package_id)
         except UnknownPackage:
-            await store.finish(job.job_id, "failed", None, "invalid_package")
+            await _fail(store, job.job_id, None, "invalid_package")
             return
         state = await run_workflow(ctx, job.job_id, package)
         result = serialize_state(state, ctx.policy.version)
+        result["trace_id"] = trace_id
+        await store.append_events(job.job_id, run_events(result))
         if state.get("error"):
             error_type = state["error"].split(":", 1)[0]
-            code = ERROR_CODES.get(error_type, "internal_error")
-            await store.finish(job.job_id, "failed", result, code)
+            await _fail(store, job.job_id, result, ERROR_CODES.get(error_type, "internal_error"))
             span.set_attribute("axiom.job.status", "failed")
         else:
+            await store.append_events(
+                job.job_id,
+                [
+                    EventDraft(
+                        type="job_awaiting_review",
+                        actor=WORKER,
+                        payload={"result_sha256": _sha256(result)},
+                    )
+                ],
+            )
             await store.finish(job.job_id, "awaiting_review", result, None)
             span.set_attribute("axiom.job.status", "awaiting_review")
+
+
+async def _fail(store: JobStore, job_id: str, result: dict[str, Any] | None, code: str) -> None:
+    await store.append_events(
+        job_id, [EventDraft(type="job_failed", actor=WORKER, payload={"error_code": code})]
+    )
+    await store.finish(job_id, "failed", result, code)
 
 
 async def run_once(store: JobStore, ctx: AgentContext, settings: Settings) -> bool:
@@ -106,7 +186,7 @@ async def run_once(store: JobStore, ctx: AgentContext, settings: Settings) -> bo
         await process_job(store, ctx, settings, job)
     except Exception:
         log.exception("job %s failed unexpectedly", job.job_id)
-        await store.finish(job.job_id, "failed", None, "internal_error")
+        await _fail(store, job.job_id, None, "internal_error")
     return True
 
 

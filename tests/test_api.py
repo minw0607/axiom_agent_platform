@@ -216,3 +216,48 @@ def test_openapi_documents_the_contract(client: TestClient) -> None:
     spec = client.get("/openapi.json").json()
     assert "/v1/memos" in spec["paths"]
     assert "202" in spec["paths"]["/v1/memos"]["post"]["responses"]
+
+
+# Evidence bundle -------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("who", ["submitter", "reviewer"])
+def test_evidence_is_for_auditors_only(client: TestClient, who: str) -> None:
+    job_id = submit(client).json()["job_id"]
+    r = client.get(f"/v1/memos/{job_id}/evidence", headers={"X-API-Key": KEYS[who]})
+    assert r.status_code == 403
+    assert r.json()["type"].endswith("#forbidden")
+
+
+def test_evidence_bundle_reconstructs_the_run(client: TestClient, store: InMemoryJobStore) -> None:
+    job_id = submit(client).json()["job_id"]
+    work(store)
+    r = client.get(f"/v1/memos/{job_id}/evidence", headers={"X-API-Key": KEYS["auditor"]})
+    assert r.status_code == 200
+    bundle = r.json()
+    assert bundle["submitter"] == "rm-alex" and bundle["policy_version"] == "CP-2026.2"
+    assert bundle["chain"] == {
+        "verified": True,
+        "events": len(bundle["events"]),
+        "first_broken_seq": None,
+    }
+    assert {c["node"] for c in bundle["model_calls"]} == {"intake", "analyst", "drafter"}
+    assert all(c["alias"] and c["prompt_sha256"] for c in bundle["model_calls"])
+    assert bundle["citations"] and bundle["source_hashes"]
+    assert bundle["events"][0]["type"] == "job_submitted"
+
+
+def test_evidence_shows_a_tampered_chain(client: TestClient, store: InMemoryJobStore) -> None:
+    job_id = submit(client).json()["job_id"]
+    work(store)
+    events = store.evidence[job_id]
+    events[2] = events[2].model_copy(update={"payload": {"edited": True}})
+    bundle = client.get(
+        f"/v1/memos/{job_id}/evidence", headers={"X-API-Key": KEYS["auditor"]}
+    ).json()
+    assert bundle["chain"]["verified"] is False and bundle["chain"]["first_broken_seq"] == 3
+
+
+def test_evidence_for_unknown_job_is_not_found(client: TestClient) -> None:
+    r = client.get("/v1/memos/job_nope/evidence", headers={"X-API-Key": KEYS["auditor"]})
+    assert r.status_code == 404

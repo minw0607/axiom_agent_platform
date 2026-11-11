@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import json
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
+from contextvars import ContextVar
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, TypeVar
@@ -55,6 +57,23 @@ class ModelCall(BaseModel):
     valid: bool
 
 
+_CALL_SINK: ContextVar[list[ModelCall] | None] = ContextVar("axiom_model_calls", default=None)
+
+
+@contextmanager
+def collect_calls() -> Iterator[list[ModelCall]]:
+    """Collect every model call made inside the block, including attempts of a node that fails.
+
+    The workflow wraps each node in this, so the evidence log sees rejected attempts too.
+    """
+    sink: list[ModelCall] = []
+    token = _CALL_SINK.set(sink)
+    try:
+        yield sink
+    finally:
+        _CALL_SINK.reset(token)
+
+
 async def call_structured(
     ctx: AgentContext,
     *,
@@ -90,24 +109,25 @@ async def call_structured(
             errors = [f"{'.'.join(map(str, e['loc']))}: {e['msg']}" for e in exc.errors()][:20]
         if parsed is not None and validate is not None:
             errors = validate(parsed)
-        calls.append(
-            ModelCall(
-                node=node,
-                route=route,
-                alias=decision.alias,
-                provider=decision.provider,
-                prompt_id=prompt.prompt_id,
-                prompt_version=prompt.version,
-                prompt_sha256=prompt.sha256,
-                origin=response.origin,
-                attempt=attempt,
-                fallback_used=decision.fallback_used,
-                input_tokens=response.input_tokens,
-                output_tokens=response.output_tokens,
-                latency_ms=response.latency_ms,
-                valid=not errors,
-            )
+        call = ModelCall(
+            node=node,
+            route=route,
+            alias=decision.alias,
+            provider=decision.provider,
+            prompt_id=prompt.prompt_id,
+            prompt_version=prompt.version,
+            prompt_sha256=prompt.sha256,
+            origin=response.origin,
+            attempt=attempt,
+            fallback_used=decision.fallback_used,
+            input_tokens=response.input_tokens,
+            output_tokens=response.output_tokens,
+            latency_ms=response.latency_ms,
+            valid=not errors,
         )
+        calls.append(call)
+        if (sink := _CALL_SINK.get()) is not None:
+            sink.append(call)
         if parsed is not None and not errors:
             return parsed, calls
         messages += [

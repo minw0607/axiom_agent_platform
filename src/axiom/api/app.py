@@ -18,8 +18,17 @@ from fastapi.responses import JSONResponse
 from axiom import __version__
 from axiom.api.auth import Principal, require
 from axiom.api.errors import Problem, install_error_handlers, problem_response
-from axiom.api.schemas import JobAccepted, Links, MemoJob, MemoRequest, to_public
+from axiom.api.schemas import (
+    EvidenceBundle,
+    JobAccepted,
+    Links,
+    MemoJob,
+    MemoRequest,
+    to_evidence,
+    to_public,
+)
 from axiom.catalog import UnknownPackage, load_package
+from axiom.evidence.log import verify_chain
 from axiom.jobs.store import InMemoryJobStore, JobStore, PostgresJobStore
 from axiom.jobs.worker import run_worker
 from axiom.settings import Settings
@@ -141,6 +150,22 @@ def create_app(settings: Settings | None = None, store: JobStore | None = None) 
         if job is None or (principal.role == "submitter" and job.submitter != principal.name):
             raise Problem(404, "not-found", "No such memo job")
         return to_public(job)
+
+    @app.get(
+        "/v1/memos/{job_id}/evidence",
+        response_model=EvidenceBundle,
+        tags=["audit"],
+        summary="Evidence bundle for audit (auditor role only)",
+    )
+    async def get_evidence(
+        job_id: str,
+        principal: Annotated[Principal, Depends(require("auditor"))],
+    ) -> EvidenceBundle:
+        job = await store.get(job_id) if len(job_id) <= 64 else None
+        if job is None:
+            raise Problem(404, "not-found", "No such memo job")
+        events = await store.events(job_id)
+        return to_evidence(job, events, verify_chain(events))
 
     return app
 

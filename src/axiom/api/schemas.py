@@ -1,4 +1,8 @@
-"""Public API schemas. The API is the contract: no model, agent or prompt names here."""
+"""API schemas. The API is the contract: no model, agent or prompt names in public responses.
+
+The evidence bundle is the one exception. It is for auditors only and names the model alias,
+provider, prompt and version behind every call, never a real deployment name.
+"""
 
 from __future__ import annotations
 
@@ -7,6 +11,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from axiom.agents.base import ModelCall
+from axiom.evidence.log import ChainCheck, EvidenceEvent
 from axiom.jobs.store import JobRecord, JobStatus
 
 DISCLAIMER = "Draft for credit officer review. This is not a credit decision."
@@ -126,4 +132,76 @@ def to_public(job: JobRecord) -> MemoJob:
         updated_at=job.updated_at,
         memo=memo,
         error=JobError(code=job.error_code) if job.error_code else None,
+    )
+
+
+class CitationRecord(BaseModel):
+    section: str
+    claim: str
+    doc_id: str
+    locator: str
+
+
+class RetrievedPassage(BaseModel):
+    collection: str
+    doc_id: str
+    chunk_id: str
+    text_sha256: str
+
+
+class EvidenceBundle(BaseModel):
+    """Everything an auditor needs to reconstruct how a memo was produced."""
+
+    job_id: str
+    package_id: str
+    submitter: str
+    status: JobStatus
+    created_at: datetime
+    error_code: str | None
+    trace_id: str | None
+    policy_version: str | None
+    source_hashes: dict[str, str]
+    model_calls: list[ModelCall]
+    retrieved: list[RetrievedPassage]
+    citations: list[CitationRecord]
+    events: list[EvidenceEvent]
+    chain: ChainCheck
+
+
+def to_evidence(job: JobRecord, events: list[EvidenceEvent], chain: ChainCheck) -> EvidenceBundle:
+    r: dict[str, Any] = job.result or {}
+    citations = [
+        CitationRecord(
+            section=section["heading"],
+            claim=claim["text"],
+            doc_id=c["doc_id"],
+            locator=c["locator"],
+        )
+        for section in (r.get("draft") or {}).get("sections", [])
+        for claim in section["claims"]
+        for c in claim["citations"]
+    ]
+    return EvidenceBundle(
+        job_id=job.job_id,
+        package_id=job.package_id,
+        submitter=job.submitter,
+        status=job.status,
+        created_at=job.created_at,
+        error_code=job.error_code,
+        trace_id=r.get("trace_id"),
+        policy_version=r.get("policy_version"),
+        source_hashes=r.get("source_hashes", {}),
+        model_calls=r.get("model_calls", []),
+        retrieved=[
+            RetrievedPassage(
+                collection=h["collection"],
+                doc_id=h["doc_id"],
+                chunk_id=h["chunk_id"],
+                text_sha256=h["text_hash"],
+            )
+            for h in r.get("evidence", [])
+        ],
+        citations=citations,
+        events=events,
+        chain=chain,
     )

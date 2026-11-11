@@ -150,7 +150,8 @@ Every LLM judge uses a different model from the one under test and is checked ag
 |---|---|---|---|
 | Repository scaffold | Nov 8 | Structure, tooling, and CI in place | ✅ Done |
 | **Gate 1** · Architecture ready | Nov 15 | Supporting services run without keys; Regulus returns cited provisions | ✅ Passed: checks 7/7, design docs published |
-| Week 3 · First vertical slice | Nov 22 | Submit a package, poll, get a cited draft memo traced in Phoenix | ✅ Done in demo mode |
+| Week 3 · First vertical slice | Nov 22 | Submit a package, poll, get a cited draft memo traced in Phoenix | ✅ Done; run live on all ten packages |
+| Week 4 · Compliance and human review | Nov 29 | A job pauses for review, survives a restart, and finalizes only on approval by someone other than the submitter | 🔶 In progress: evidence log done |
 | **Gate 2** · Demo ready | Dec 20 | A stranger runs the demo in under 10 minutes with no API keys | ⬜ |
 | **Gate 3** · Published | Jan 10 | CI gates enforced; docs and results public | ⬜ |
 
@@ -177,6 +178,12 @@ This starts Postgres, Phoenix (traces at http://localhost:6006), the OpenTelemet
 ```bash
 curl -i -X POST http://localhost:8000/v1/memos -H "X-API-Key: <submitter key>" -H "Idempotency-Key: $(uuidgen)" -H "content-type: application/json" -d '{"package_id": "pkg-08"}'
 curl http://localhost:8000/v1/memos/<job_id> -H "X-API-Key: <submitter key>"
+```
+
+**Read the evidence bundle** (auditor key, `AUDITOR_API_KEYS=audit-demo:<random key>`). It lists every model call, including rejected attempts, and every job event with its hash, and reports whether the chain verifies:
+
+```bash
+curl http://localhost:8000/v1/memos/<job_id>/evidence -H "X-API-Key: <auditor key>"
 ```
 
 Demo mode replays real model responses recorded from live runs, so no model API key is needed ([what the recordings are](data/recorded/README.md)). The catalog has ten fictional packages, `pkg-01` to `pkg-10`, each built to test one scenario.

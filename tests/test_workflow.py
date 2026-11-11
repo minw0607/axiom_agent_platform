@@ -171,6 +171,8 @@ def test_invalid_extraction_twice_fails_the_job() -> None:
     assert state["error"].startswith("AgentOutputError")
     assert state["error_node"] == "intake"
     assert len(model.requests) == 2  # one retry, with the validation errors
+    rejected = [c for c in state["model_calls"] if c.node == "intake" and not c.valid]
+    assert [c.attempt for c in rejected] == [1, 2]  # failed attempts stay in the record
     assert "line 8 shows" in model.requests[1].messages[-1].content
     assert state["completed"] == []  # the supervisor stopped the run
 

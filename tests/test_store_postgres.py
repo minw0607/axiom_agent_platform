@@ -12,6 +12,7 @@ from collections.abc import Iterator
 
 import pytest
 
+from axiom.evidence.log import EventDraft, verify_chain
 from axiom.jobs.store import PostgresJobStore
 
 BASE_URL = os.environ.get(
@@ -84,3 +85,56 @@ def test_claim_is_exclusive_and_finish_stores_result(store: PostgresJobStore) ->
     job = asyncio.run(store.get(ids[0]))
     assert job is not None and job.status == "awaiting_review" and job.result == {"draft": {"x": 1}}
     assert asyncio.run(store.ping())
+
+
+def test_evidence_chain_survives_the_database_round_trip(store: PostgresJobStore) -> None:
+    job = asyncio.run(store.submit("rm-a", "ev", "h", "pkg-01")).job
+    assert job is not None
+    drafts = [
+        EventDraft(type="model_call", actor="worker", payload={"tokens": 12, "valid": True}),
+        EventDraft(type="node_failed", actor="worker", payload={"node": "intake", "error": "x"}),
+    ]
+    asyncio.run(store.append_events(job.job_id, drafts))
+    events = asyncio.run(store.events(job.job_id))
+    assert [e.type for e in events] == ["job_submitted", "model_call", "node_failed"]
+    assert verify_chain(events).verified
+
+
+def test_concurrent_appends_keep_one_unbroken_chain(store: PostgresJobStore) -> None:
+    job = asyncio.run(store.submit("rm-a", "cc", "h", "pkg-01")).job
+    assert job is not None
+
+    async def race() -> None:
+        await asyncio.gather(
+            *(
+                store.append_events(
+                    job.job_id, [EventDraft(type="model_call", actor="w", payload={"i": i})]
+                )
+                for i in range(8)
+            )
+        )
+
+    asyncio.run(race())
+    events = asyncio.run(store.events(job.job_id))
+    assert len(events) == 9 and verify_chain(events).verified
+
+
+@pytest.mark.parametrize(
+    "statement",
+    [
+        "UPDATE evidence_events SET actor = 'someone'",
+        "DELETE FROM evidence_events",
+        "TRUNCATE evidence_events CASCADE",
+    ],
+)
+def test_the_database_refuses_to_change_evidence(store: PostgresJobStore, statement: str) -> None:
+    import psycopg
+
+    asyncio.run(store.submit("rm-a", "ro", "h", "pkg-01"))
+
+    async def attempt() -> None:
+        async with await store._connect() as conn:
+            await conn.execute(statement)
+
+    with pytest.raises(psycopg.errors.RaiseException, match="append-only"):
+        asyncio.run(attempt())

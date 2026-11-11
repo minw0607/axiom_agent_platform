@@ -1,7 +1,9 @@
 """Job records and idempotency keys: Postgres in the stack, in memory for tests.
 
-Submitting stores the job and its idempotency key in one transaction, so a retried
-request can never create a second job.
+Submitting stores the job, its idempotency key and its first evidence event in one
+transaction, so a retried request can never create a second job and no job exists without
+a submission record. Evidence events are append-only: Postgres rejects UPDATE, DELETE and
+TRUNCATE on that table.
 """
 
 from __future__ import annotations
@@ -13,6 +15,8 @@ from datetime import UTC, datetime, timedelta
 from typing import Any, Literal, Protocol
 
 from pydantic import BaseModel
+
+from axiom.evidence.log import EventDraft, EvidenceEvent, chain
 
 JobStatus = Literal["queued", "running", "awaiting_review", "failed"]
 IDEMPOTENCY_TTL = timedelta(hours=24)
@@ -46,6 +50,16 @@ class JobStore(Protocol):
     async def finish(
         self, job_id: str, status: JobStatus, result: dict[str, Any] | None, error_code: str | None
     ) -> None: ...
+    async def append_events(self, job_id: str, drafts: list[EventDraft]) -> list[EvidenceEvent]: ...
+    async def events(self, job_id: str) -> list[EvidenceEvent]: ...
+
+
+def submitted_event(submitter: str, package_id: str, request_hash: str) -> EventDraft:
+    return EventDraft(
+        type="job_submitted",
+        actor=submitter,
+        payload={"package_id": package_id, "request_sha256": request_hash},
+    )
 
 
 def new_job_id() -> str:
@@ -60,6 +74,7 @@ class InMemoryJobStore:
     def __init__(self) -> None:
         self.jobs: dict[str, JobRecord] = {}
         self.keys: dict[tuple[str, str], tuple[str, str, datetime]] = {}
+        self.evidence: dict[str, list[EvidenceEvent]] = {}
         self._lock = asyncio.Lock()
 
     async def init(self) -> None:
@@ -89,6 +104,9 @@ class InMemoryJobStore:
             )
             self.jobs[job.job_id] = job
             self.keys[(submitter, idem_key)] = (request_hash, job.job_id, now)
+            self.evidence[job.job_id] = chain(
+                job.job_id, [submitted_event(submitter, package_id, request_hash)], None, now
+            )
             return SubmitResult(job=job)
 
     async def get(self, job_id: str) -> JobRecord | None:
@@ -118,6 +136,16 @@ class InMemoryJobStore:
                 }
             )
 
+    async def append_events(self, job_id: str, drafts: list[EventDraft]) -> list[EvidenceEvent]:
+        async with self._lock:
+            existing = self.evidence.setdefault(job_id, [])
+            new = chain(job_id, drafts, existing[-1] if existing else None, _now())
+            existing.extend(new)
+            return new
+
+    async def events(self, job_id: str) -> list[EvidenceEvent]:
+        return list(self.evidence.get(job_id, []))
+
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS jobs (
@@ -139,7 +167,54 @@ CREATE TABLE IF NOT EXISTS idempotency_keys (
     created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
     PRIMARY KEY (submitter, key)
 );
+CREATE TABLE IF NOT EXISTS evidence_events (
+    job_id     TEXT NOT NULL REFERENCES jobs (job_id),
+    seq        INTEGER NOT NULL,
+    type       TEXT NOT NULL,
+    actor      TEXT NOT NULL,
+    at         TIMESTAMPTZ NOT NULL,
+    payload    JSONB NOT NULL,
+    prev_hash  TEXT NOT NULL,
+    hash       TEXT NOT NULL,
+    PRIMARY KEY (job_id, seq)
+);
+CREATE OR REPLACE FUNCTION evidence_events_append_only() RETURNS trigger AS $$
+BEGIN
+    RAISE EXCEPTION 'evidence_events is append-only';
+END
+$$ LANGUAGE plpgsql;
+DROP TRIGGER IF EXISTS evidence_events_no_change ON evidence_events;
+CREATE TRIGGER evidence_events_no_change BEFORE UPDATE OR DELETE ON evidence_events
+    FOR EACH ROW EXECUTE FUNCTION evidence_events_append_only();
+DROP TRIGGER IF EXISTS evidence_events_no_truncate ON evidence_events;
+CREATE TRIGGER evidence_events_no_truncate BEFORE TRUNCATE ON evidence_events
+    FOR EACH STATEMENT EXECUTE FUNCTION evidence_events_append_only();
 """
+
+_EVENT_COLUMNS = "job_id, seq, type, actor, at, payload, prev_hash, hash"
+
+
+def _event(row: tuple[Any, ...]) -> EvidenceEvent:
+    return EvidenceEvent(**dict(zip(_EVENT_COLUMNS.split(", "), row, strict=True)))
+
+
+async def _append(conn: Any, job_id: str, drafts: list[EventDraft]) -> list[EvidenceEvent]:
+    """Append within the caller's transaction, serialized per job by an advisory lock."""
+    await conn.execute("SELECT pg_advisory_xact_lock(hashtext(%s))", (f"evidence:{job_id}",))
+    cur = await conn.execute(
+        f"SELECT {_EVENT_COLUMNS} FROM evidence_events WHERE job_id = %s ORDER BY seq DESC LIMIT 1",
+        (job_id,),
+    )
+    row = await cur.fetchone()
+    new = chain(job_id, drafts, None if row is None else _event(row), _now())
+    for e in new:
+        await conn.execute(
+            f"INSERT INTO evidence_events ({_EVENT_COLUMNS}) "
+            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+            (e.job_id, e.seq, e.type, e.actor, e.at, json.dumps(e.payload), e.prev_hash, e.hash),
+        )
+    return new
+
 
 _COLUMNS = "job_id, status, package_id, submitter, created_at, updated_at, result, error_code"
 
@@ -206,6 +281,7 @@ class PostgresJobStore:
                 "created_at = now()",
                 (submitter, idem_key, request_hash, job_id),
             )
+            await _append(conn, job_id, [submitted_event(submitter, package_id, request_hash)])
             return SubmitResult(job=_record(job_row))
 
     async def get(self, job_id: str) -> JobRecord | None:
@@ -234,3 +310,16 @@ class PostgresJobStore:
                 (status, None if result is None else json.dumps(result), error_code, job_id),
             )
             await conn.commit()
+
+    async def append_events(self, job_id: str, drafts: list[EventDraft]) -> list[EvidenceEvent]:
+        async with await self._connect() as conn, conn.transaction():
+            return await _append(conn, job_id, drafts)
+
+    async def events(self, job_id: str) -> list[EvidenceEvent]:
+        async with await self._connect() as conn:
+            cur = await conn.execute(
+                f"SELECT {_EVENT_COLUMNS} FROM evidence_events WHERE job_id = %s ORDER BY seq",
+                (job_id,),
+            )
+            rows = await cur.fetchall()
+        return [_event(r) for r in rows]

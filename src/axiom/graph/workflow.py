@@ -15,7 +15,7 @@ from langgraph.graph import END, START, StateGraph
 from opentelemetry.trace import Status, StatusCode
 
 from axiom.agents.analyst import run_analyst
-from axiom.agents.base import AgentContext, AgentOutputError, ModelCall
+from axiom.agents.base import AgentContext, AgentOutputError, ModelCall, collect_calls
 from axiom.agents.drafter import run_drafter
 from axiom.agents.intake import IntakeError, run_intake
 from axiom.domain import (
@@ -60,13 +60,19 @@ def _traced(name: str, fn: Node) -> Node:
         with tracer().start_as_current_span(f"node {name}") as span:
             span.set_attribute("axiom.job_id", state["job_id"])
             span.set_attribute("axiom.node", name)
-            try:
-                update = await fn(state)
-            except EXPECTED_ERRORS as exc:
-                span.set_status(Status(StatusCode.ERROR, type(exc).__name__))
-                return {"error": f"{type(exc).__name__}: {exc}", "error_node": name}
-            span.set_attribute("axiom.node.model_calls", len(update.get("model_calls", [])))
-            return {**update, "completed": [name]}
+            with collect_calls() as calls:
+                try:
+                    update = await fn(state)
+                except EXPECTED_ERRORS as exc:
+                    span.set_status(Status(StatusCode.ERROR, type(exc).__name__))
+                    # Keep the attempts that failed: the evidence log records every call.
+                    return {
+                        "error": f"{type(exc).__name__}: {exc}",
+                        "error_node": name,
+                        "model_calls": list(calls),
+                    }
+            span.set_attribute("axiom.node.model_calls", len(calls))
+            return {**update, "model_calls": list(calls), "completed": [name]}
 
     return run
 
@@ -75,22 +81,17 @@ def build_workflow(ctx: AgentContext) -> Any:
     async def intake(state: MemoState) -> dict[str, Any]:
         package = state["package"]
         hashes = await ctx.evidence.ingest(state["job_id"], package.documents)
-        fs, calls = await run_intake(ctx, package)
-        return {
-            "source_hashes": hashes,
-            "financials": fs,
-            "checks": reconcile(fs),
-            "model_calls": calls,
-        }
+        fs, _ = await run_intake(ctx, package)
+        return {"source_hashes": hashes, "financials": fs, "checks": reconcile(fs)}
 
     async def analyst(state: MemoState) -> dict[str, Any]:
-        ratios, flags, narrative, calls = await run_analyst(
+        ratios, flags, narrative, _ = await run_analyst(
             ctx, state["package"], state["financials"], state["checks"]
         )
-        return {"ratios": ratios, "risk_flags": flags, "narrative": narrative, "model_calls": calls}
+        return {"ratios": ratios, "risk_flags": flags, "narrative": narrative}
 
     async def drafter(state: MemoState) -> dict[str, Any]:
-        draft, hits, calls = await run_drafter(
+        draft, hits, _ = await run_drafter(
             ctx,
             state["job_id"],
             state["package"],
@@ -100,7 +101,7 @@ def build_workflow(ctx: AgentContext) -> Any:
             state["checks"],
             state["narrative"],
         )
-        return {"draft": draft, "evidence": hits, "model_calls": calls}
+        return {"draft": draft, "evidence": hits}
 
     def supervisor(after: str) -> Callable[[MemoState], str]:
         """Rule-based routing: stop on error, otherwise the next node in the fixed order."""
