@@ -86,7 +86,7 @@ def test_successful_job_records_every_step_in_order() -> None:
     types = [e.type for e in events]
     assert types[:2] == ["job_submitted", "job_started"]
     assert types[-1] == "job_awaiting_review"
-    assert types.count("model_call") == 7  # five documents, analyst, drafter
+    assert types.count("model_call") == 8  # five documents, analyst, drafter, compliance
     assert [e.payload["node"] for e in events if e.type == "node_completed"] == [
         "intake",
         "analyst",

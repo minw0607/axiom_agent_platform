@@ -69,6 +69,14 @@ class Settings:
         )
 
     @property
+    def reference_dirs(self) -> dict[str, Path]:
+        """Read-only reference collections, as GKN mounts them in docker-compose.yml."""
+        return {
+            "credit_policy": self.data_dir / "synthetic" / "credit_policy",
+            "lending_refs": self.data_dir / "lending_refs",
+        }
+
+    @property
     def packages_dir(self) -> Path:
         return self.data_dir / "synthetic" / "packages"
 

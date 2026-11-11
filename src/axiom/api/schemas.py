@@ -67,19 +67,21 @@ class CheckOut(BaseModel):
     year: int | None = None
 
 
+class CitationOut(BaseModel):
+    doc_id: str
+    locator: str
+
+
 class FindingOut(BaseModel):
-    """A credit policy finding. Which component produced it is for the evidence bundle."""
+    """A credit policy or lending-reference finding. Which component produced it is for the
+    evidence bundle. Reference-based findings cite the reference passages they rest on."""
 
     rule_id: str
     policy_ref: str
     outcome: Literal["passed", "triggered", "not_evaluated"]
     severity: str
     message: str
-
-
-class CitationOut(BaseModel):
-    doc_id: str
-    locator: str
+    citations: list[CitationOut] = []
 
 
 class ClaimOut(BaseModel):
@@ -103,7 +105,8 @@ class MemoOut(BaseModel):
     risk_flags: list[FlagOut]
     reconciliation: list[CheckOut]
     findings: list[FindingOut] = Field(
-        default_factory=list, description="Credit policy findings: drafting aids, not decisions"
+        default_factory=list,
+        description="Credit policy and lending-reference findings: drafting aids, not decisions",
     )
     source_hashes: dict[str, str]
 
@@ -216,7 +219,7 @@ def to_evidence(job: JobRecord, events: list[EvidenceEvent], chain: ChainCheck) 
                 chunk_id=h["chunk_id"],
                 text_sha256=h["text_hash"],
             )
-            for h in r.get("evidence", [])
+            for h in [*r.get("evidence", []), *r.get("reference_evidence", [])]
         ],
         citations=citations,
         events=events,

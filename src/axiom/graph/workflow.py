@@ -16,6 +16,7 @@ from opentelemetry.trace import Status, StatusCode
 
 from axiom.agents.analyst import run_analyst
 from axiom.agents.base import AgentContext, AgentOutputError, ModelCall, collect_calls
+from axiom.agents.compliance import run_compliance_review
 from axiom.agents.drafter import run_drafter
 from axiom.agents.intake import IntakeError, run_intake
 from axiom.domain import (
@@ -49,6 +50,7 @@ class MemoState(TypedDict, total=False):
     draft: MemoDraft
     findings: list[ComplianceFinding]
     evidence: list[EvidenceHit]
+    reference_evidence: list[EvidenceHit]
     model_calls: Annotated[list[ModelCall], operator.add]
     completed: Annotated[list[str], operator.add]
     error: str
@@ -107,7 +109,7 @@ def build_workflow(ctx: AgentContext) -> Any:
         return {"draft": draft, "evidence": hits}
 
     async def compliance(state: MemoState) -> dict[str, Any]:
-        findings = evaluate(
+        rule_findings = evaluate(
             RuleInput(
                 package=state["package"],
                 financials=state["financials"],
@@ -117,7 +119,10 @@ def build_workflow(ctx: AgentContext) -> Any:
                 policy=ctx.policy,
             )
         )
-        return {"findings": findings}
+        review, hits, _ = await run_compliance_review(
+            ctx, state["job_id"], state["package"], state["draft"]
+        )
+        return {"findings": rule_findings + review, "reference_evidence": hits}
 
     def supervisor(after: str) -> Callable[[MemoState], str]:
         """Rule-based routing: stop on error, otherwise the next node in the fixed order."""

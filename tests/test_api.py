@@ -83,7 +83,7 @@ def test_polling_returns_a_draft_with_sourced_figures(
     assert next(s["heading"] for s in memo["sections"]) == "Borrower and request"
     assert {f["outcome"] for f in memo["findings"]} >= {"passed", "not_evaluated"}
     assert all(
-        set(f) == {"rule_id", "policy_ref", "outcome", "severity", "message"}
+        set(f) == {"rule_id", "policy_ref", "outcome", "severity", "message", "citations"}
         for f in memo["findings"]
     )
     assert all(c["citations"] for c in memo["sections"][1]["claims"])
@@ -256,7 +256,13 @@ def test_evidence_bundle_reconstructs_the_run(client: TestClient, store: InMemor
         "events": len(bundle["events"]),
         "first_broken_seq": None,
     }
-    assert {c["node"] for c in bundle["model_calls"]} == {"intake", "analyst", "drafter"}
+    assert {c["node"] for c in bundle["model_calls"]} == {
+        "intake",
+        "analyst",
+        "drafter",
+        "compliance",
+    }
+    assert {p["collection"] for p in bundle["retrieved"]} == {"job", "lending_refs"}
     assert all(c["alias"] and c["prompt_sha256"] for c in bundle["model_calls"])
     assert bundle["citations"] and bundle["source_hashes"]
     assert bundle["events"][0]["type"] == "job_submitted"

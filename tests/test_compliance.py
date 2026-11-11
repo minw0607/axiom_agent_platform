@@ -31,7 +31,7 @@ EXPECTED_TRIGGERED = {
 @pytest.mark.parametrize("package_id", PACKAGE_IDS)
 def test_scenario_findings(ctx: AgentContext, package_id: str) -> None:
     state = run(ctx, package_id)
-    findings = {f.rule_id: f for f in state["findings"]}
+    findings = {f.rule_id: f for f in state["findings"] if f.source == "rule_engine"}
     assert len(findings) == len(policy_rules.RULES)
     triggered = {r for r, f in findings.items() if f.outcome == "triggered"}
     scenario = load_ground_truth(SETTINGS.packages_dir, package_id)["scenario"]

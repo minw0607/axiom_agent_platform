@@ -23,7 +23,9 @@ SETTINGS = replace(Settings.from_env(), recordings_override=SCRIPTED_RECORDINGS)
 
 def demo_context() -> AgentContext:
     router = ModelRouter.from_settings(SETTINGS.config_dir, "demo", SETTINGS.recordings_dir)
-    return AgentContext(router, InMemoryEvidence(), load_policy(), SETTINGS.prompts_dir)
+    return AgentContext(
+        router, InMemoryEvidence(SETTINGS.reference_dirs), load_policy(), SETTINGS.prompts_dir
+    )
 
 
 @pytest.fixture
@@ -78,8 +80,12 @@ def fake_context(responder: Responder) -> tuple[AgentContext, FakeModel]:
     def factory(provider: str) -> ModelAdapter:
         return Combined()
 
-    policy = RoutingPolicy(routes={r: {"primary": "fake"} for r in ("extraction", "narrative")})
+    policy = RoutingPolicy(
+        routes={r: {"primary": "fake"} for r in ("extraction", "narrative", "compliance")}
+    )
     router = ModelRouter(
         policy, {"fake": AliasTarget("fake", "-")}, SETTINGS.recordings_dir, adapter_factory=factory
     )
-    return AgentContext(router, InMemoryEvidence(), load_policy(), SETTINGS.prompts_dir), model
+    return AgentContext(
+        router, InMemoryEvidence(SETTINGS.reference_dirs), load_policy(), SETTINGS.prompts_dir
+    ), model

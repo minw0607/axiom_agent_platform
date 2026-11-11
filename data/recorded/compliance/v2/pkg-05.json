@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "compliance",
+  "prompt_id": "compliance",
+  "prompt_version": "v2",
+  "prompt_sha256": "4c1844755a774fcc61a55f5352c86094251ae66a6a9de16bb81958728e8bc7fd",
+  "input_tokens": 2107,
+  "output_tokens": 723,
+  "text": "{\"assessments\":[{\"rule_id\":\"REF_PROHIBITED_BASIS\",\"outcome\":\"passed\",\"message\":\"No claim mentions or relies on a prohibited basis of the applicant's owners, principals, or guarantors. The cited facts are about the business itself, such as operating history, industry, employees, customers, and region.\",\"claim_ids\":[\"s1.c1\",\"s1.c3\",\"s3.c3\"],\"reference_chunk_ids\":[\"regulation_b_chunk_2\",\"regulation_b_chunk_5\"]},{\"rule_id\":\"REF_REPAYMENT_CAPACITY\",\"outcome\":\"passed\",\"message\":\"The draft addresses repayment capacity through revenue, EBITDA, interest expense, DSCR, and pro forma DSCR, and addresses the balance sheet through current ratio, leverage, debt-to-equity, assets, liabilities, and liquidity-related data.\",\"claim_ids\":[\"s2.c1\",\"s2.c2\",\"s2.c3\",\"s2.c4\",\"s3.c1\",\"s4.c1\",\"s4.c2\"],\"reference_chunk_ids\":[\"occ_rating_credit_risk_chunk_3\",\"occ_rating_credit_risk_chunk_4\",\"occ_rating_credit_risk_chunk_6\"]}]}"
+}

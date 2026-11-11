@@ -1,0 +1,43 @@
+# Provenance for the lending reference set. One entry per file in this folder.
+# Status is checked at the primary source; re-check before relying on a reference.
+# sha256 is the file's hash; tests/test_lending_refs.py fails if a file changes without
+# this manifest changing too.
+version: LR-2026.1
+references:
+  - file: regulation_b.md
+    doc_id: regulation_b
+    title: "Regulation B (Equal Credit Opportunity Act), 12 CFR part 1002"
+    publisher: Consumer Financial Protection Bureau, via the eCFR
+    source_url: https://www.ecfr.gov/current/title-12/chapter-X/part-1002
+    retrieved: 2026-11-11
+    edition: "eCFR current as of 2026-11-09; part 1002 last amended 2026-07-21"
+    status: current
+    status_checked_at: https://www.ecfr.gov/api/versioner/v1/versions/title-12.json?part=1002
+    notes: >-
+      Sections 1002.4 and 1002.6 were amended at 91 FR 21668 (Apr. 22, 2026), and the eCFR shows a further version dated 2026-07-21.
+      The excerpts quote the text in force on 2026-11-09. Subpart B (small business lending
+      data collection, 1002.101 onward) is out of scope.
+    sections: ["1002.2(c)", "1002.2(z)", "1002.4(a)-(b)", "1002.6(a)-(b)", "1002.9(a)(3)(ii)", "1002.9(b)(2)"]
+    license: U.S. government work, public domain
+    sha256: 80fd3814e7aad092d4a4cb529399187461f3ff80b13894e34b473c80b8dce769
+  - file: occ_rating_credit_risk.md
+    doc_id: occ_rating_credit_risk
+    title: "Comptroller's Handbook: Rating Credit Risk"
+    publisher: Office of the Comptroller of the Currency
+    source_url: https://www.occ.gov/publications-and-resources/publications/comptrollers-handbook/files/rating-credit-risk/index-rating-credit-risk.html
+    retrieved: 2026-11-11
+    edition: "April 2001; updated 2017-06-26; reputation-risk references removed 2025-03-20 (OCC Bulletin 2025-4)"
+    status: current
+    status_checked_at: https://www.occ.gov/publications-and-resources/publications/comptrollers-handbook/index-comptrollers-handbook.html
+    notes: >-
+      Pages 21 to 25 (credit risk evaluation, financial statement analysis, cash flow,
+      projections, repayment sources, qualitative considerations). Examiner guidance,
+      used by analogy only.
+    sections: ["The Credit Risk Evaluation Process", "Financial Statement Analysis", "Other Repayment Sources", "Qualitative Considerations"]
+    license: U.S. government work, public domain
+    sha256: 7f8c7f05c549333f859de6ded791e349d372f778310abe5f2866e80d3b77d842
+considered_not_included:
+  - title: "Comptroller's Handbook: Concentrations of Credit (Version 3.0, September 2026)"
+    reason: Covers a bank's portfolio concentrations, not a borrower's customer concentration.
+  - title: "Comptroller's Handbook: Commercial Loans (narrative March 1990)"
+    reason: Older narrative; the Rating Credit Risk booklet covers borrower analysis more directly.

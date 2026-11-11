@@ -141,8 +141,17 @@ class CheckResult(Frozen):
     year: int | None = None
 
 
+class Citation(Frozen):
+    doc_id: str
+    locator: str = Field(description="'line N' for a source document, or a GKN chunk id")
+
+
 class ComplianceFinding(Frozen):
-    """One credit policy rule applied to a draft. A drafting aid for the credit officer."""
+    """One credit policy rule or lending-reference check applied to a draft.
+
+    A drafting aid for the credit officer, not a legal conclusion. Reference-based findings
+    cite the lending-reference chunks they rest on.
+    """
 
     rule_id: str
     policy_ref: str
@@ -150,11 +159,7 @@ class ComplianceFinding(Frozen):
     severity: Severity
     message: str
     source: Literal["rule_engine", "compliance_reviewer"] = "rule_engine"
-
-
-class Citation(Frozen):
-    doc_id: str
-    locator: str = Field(description="'line N' for a source document, or a GKN chunk id")
+    citations: tuple[Citation, ...] = ()
 
 
 class Claim(Frozen):

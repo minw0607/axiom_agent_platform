@@ -1,0 +1,10 @@
+{
+  "origin": "scripted",
+  "route": "compliance",
+  "prompt_id": "compliance",
+  "prompt_version": "v2",
+  "prompt_sha256": "e7c877a918030a5b7ec8b98aba9f83e76724fac83512e78c21ece9071fa07c6b",
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "text": "{\n \"assessments\": [\n  {\n   \"rule_id\": \"REF_PROHIBITED_BASIS\",\n   \"outcome\": \"passed\",\n   \"message\": \"No claim refers to a prohibited-basis characteristic.\",\n   \"claim_ids\": [],\n   \"reference_chunk_ids\": [\n    \"regulation_b#5\"\n   ]\n  },\n  {\n   \"rule_id\": \"REF_REPAYMENT_CAPACITY\",\n   \"outcome\": \"passed\",\n   \"message\": \"The draft covers debt service coverage, leverage and liquidity.\",\n   \"claim_ids\": [\n    \"s2.c3\"\n   ],\n   \"reference_chunk_ids\": [\n    \"occ_rating_credit_risk#4\"\n   ]\n  }\n ]\n}"
+}

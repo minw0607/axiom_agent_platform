@@ -1,8 +1,9 @@
 """Seed the keyless demo with scripted model responses.
 
 Runs the real workflow for every catalog package, with a scripted stand-in for the model:
-intake answers come from the ground truth, and the analyst and drafter text is filled in
-from a template using only the inputs the workflow passes. Every response passes through
+intake answers come from the ground truth, the analyst and drafter text is filled in from a
+template using only the inputs the workflow passes, and the compliance review applies simple
+keyword tests to the draft's claims. Every response passes through
 the same validation as a live model's and is saved under tests/fixtures/recorded/ with
 origin "scripted", so the evidence bundle can never mistake it for a model's output.
 
@@ -28,6 +29,7 @@ from axiom.router.router import AliasTarget, ModelRouter, RoutingPolicy
 from axiom.router.types import ModelAdapter, ModelRequest, ModelResponse
 from axiom.settings import Settings
 from axiom.tools.policy import load_policy
+from axiom.tools.policy_rules import PROTECTED
 
 SETTINGS = Settings.from_env()
 
@@ -140,6 +142,11 @@ def scripted_drafter(package_id: str, payload: dict[str, Any]) -> dict[str, Any]
             "ratio tools.",
             "citations": cite("ebitda", "total_debt", "requested_amount"),
         },
+        {
+            "text": f"The current ratio is {_ratio(payload, 'current_ratio')}, as computed by the "
+            "platform's ratio tools.",
+            "citations": cite("total_current_assets", "total_current_liabilities"),
+        },
     ]
     risks = [
         {
@@ -208,6 +215,67 @@ def scripted_drafter(package_id: str, payload: dict[str, Any]) -> dict[str, Any]
     }
 
 
+# The reference passage each scripted assessment cites, by the locator that starts it.
+REVIEW_PASSAGES = {
+    "REF_PROHIBITED_BASIS": "[12 CFR 1002.2(z)]",
+    "REF_REPAYMENT_CAPACITY": "[OCC RCR, Financial Statement Analysis]",
+    "REF_ADVERSE_ACTION_REASONS": "[12 CFR 1002.9(b)(2)]",
+}
+
+
+def scripted_compliance(payload: dict[str, Any]) -> dict[str, Any]:
+    claims = {c["claim_id"]: c["text"] for c in payload["claims"]}
+    refs = payload["references"]
+    assessments = []
+    for topic in payload["topics"]:
+        rule_id = topic["rule_id"]
+        cited = [r["chunk_id"] for r in refs if r["text"].startswith(REVIEW_PASSAGES[rule_id])]
+        chunk_ids = cited[:1] or [refs[0]["chunk_id"]]
+        if rule_id == "REF_PROHIBITED_BASIS":
+            hits = [k for k, v in claims.items() if PROTECTED.search(v)]
+            outcome = "triggered" if hits else "passed"
+            message = (
+                "A claim refers to a prohibited-basis category."
+                if hits
+                else "No claim refers to a prohibited-basis characteristic."
+            )
+            about = hits
+        elif rule_id == "REF_REPAYMENT_CAPACITY":
+            text = " ".join(claims.values()).lower()
+            needs = {
+                "debt service coverage": "dscr",
+                "leverage": "leverage",
+                "liquidity": "current",
+            }
+            missing = [n for n, word in needs.items() if word not in text]
+            outcome = "triggered" if missing else "passed"
+            message = (
+                f"The draft does not address {', '.join(missing)}."
+                if missing
+                else "The draft covers debt service coverage, leverage and liquidity."
+            )
+            about = [k for k, v in claims.items() if "dscr" in v.lower()][:1]
+        else:
+            reasons = [k for k, v in claims.items() if "(" in v and "CP-" in v]
+            outcome = "passed" if reasons else "triggered"
+            message = (
+                "The draft decline names the specific policy findings behind it."
+                if reasons
+                else "The draft decline gives no specific reasons."
+            )
+            about = reasons
+        assessments.append(
+            {
+                "rule_id": rule_id,
+                "outcome": outcome,
+                "message": message,
+                "claim_ids": about,
+                "reference_chunk_ids": chunk_ids,
+            }
+        )
+    return {"assessments": assessments}
+
+
 class ScriptedAdapter:
     provider = "scripted"
 
@@ -221,6 +289,8 @@ class ScriptedAdapter:
             body = scripted_intake(package_id, payload)
         elif request.prompt_id == "analyst":
             body = scripted_analyst(payload)
+        elif request.prompt_id == "compliance":
+            body = scripted_compliance(payload)
         else:
             body = scripted_drafter(package_id, payload)
         response = ModelResponse(
@@ -247,12 +317,18 @@ async def main() -> None:
     router = ModelRouter(
         policy, {"scripted": AliasTarget("scripted", "-")}, root, adapter_factory=factory
     )
-    ctx = AgentContext(router, InMemoryEvidence(), load_policy(), SETTINGS.prompts_dir)
+    evidence = InMemoryEvidence(SETTINGS.reference_dirs)
+    ctx = AgentContext(router, evidence, load_policy(), SETTINGS.prompts_dir)
     for entry in list_packages(SETTINGS.packages_dir):
         package = load_package(SETTINGS.packages_dir, entry["package_id"])
         state = await run_workflow(ctx, f"seed-{package.package_id}", package)
         status = state.get("error") or state["draft"].draft_recommendation
-        print(f"{package.package_id} {entry['scenario']:<22} {status}")
+        review = [
+            f"{f.rule_id}={f.outcome}"
+            for f in state.get("findings", [])
+            if f.source == "compliance_reviewer"
+        ]
+        print(f"{package.package_id} {entry['scenario']:<22} {status:<24} {' '.join(review)}")
 
 
 if __name__ == "__main__":

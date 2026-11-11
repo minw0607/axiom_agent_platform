@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "compliance",
+  "prompt_id": "compliance",
+  "prompt_version": "v2",
+  "prompt_sha256": "9a7051671cca5a4f96102c966e4362f740b260a43589988eb5a76001ad164192",
+  "input_tokens": 2009,
+  "output_tokens": 703,
+  "text": "{\"assessments\":[{\"rule_id\":\"REF_PROHIBITED_BASIS\",\"outcome\":\"passed\",\"message\":\"No claim mentions or relies on a prohibited-basis characteristic of the applicant's owners, principals, or guarantors. The cited industry, region, and financial facts are business facts.\",\"claim_ids\":[\"s1.c1\",\"s1.c2\",\"s2.c1\",\"s2.c2\",\"s2.c3\",\"s2.c4\",\"s2.c5\",\"s3.c1\",\"s3.c2\",\"s4.c1\"],\"reference_chunk_ids\":[\"regulation_b_chunk_2\",\"regulation_b_chunk_5\"]},{\"rule_id\":\"REF_REPAYMENT_CAPACITY\",\"outcome\":\"passed\",\"message\":\"The draft includes repayment-capacity information from business cash flow, including EBITDA, interest coverage, DSCR, and pro forma DSCR. It also includes balance-sheet liquidity and leverage information through current assets/current liabilities, debt/equity, and pro forma leverage.\",\"claim_ids\":[\"s2.c1\",\"s2.c2\",\"s2.c4\",\"s2.c5\"],\"reference_chunk_ids\":[\"occ_rating_credit_risk_chunk_3\",\"occ_rating_credit_risk_chunk_4\"]}]}"
+}

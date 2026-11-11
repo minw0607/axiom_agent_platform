@@ -41,7 +41,7 @@ def build_context(settings: Settings) -> AgentContext:
         evidence = GKNEvidence(MCPToolClient(settings.gkn_mcp_url, settings.mcp_shared_secret))
     else:
         log.warning("GKN not configured; using in-memory evidence retrieval")
-        evidence = InMemoryEvidence()
+        evidence = InMemoryEvidence(settings.reference_dirs)
     return AgentContext(
         router=ModelRouter.from_settings(
             settings.config_dir, settings.mode, settings.recordings_dir
@@ -70,6 +70,7 @@ def serialize_state(state: MemoState, policy_version: str) -> dict[str, Any]:
         "draft",
         "findings",
         "evidence",
+        "reference_evidence",
         "model_calls",
         "completed",
         "error",
@@ -85,7 +86,7 @@ NODE_OUTPUTS = {
     "intake": ("source_hashes", "financials", "checks"),
     "analyst": ("ratios", "risk_flags", "narrative"),
     "drafter": ("draft", "evidence"),
-    "compliance": ("findings",),
+    "compliance": ("findings", "reference_evidence"),
 }
 WORKER = "worker"
 

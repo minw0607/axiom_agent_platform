@@ -151,7 +151,7 @@ Every LLM judge uses a different model from the one under test and is checked ag
 | Repository scaffold | Nov 8 | Structure, tooling, and CI in place | ✅ Done |
 | **Gate 1** · Architecture ready | Nov 15 | Supporting services run without keys; Regulus returns cited provisions | ✅ Passed: checks 7/7, design docs published |
 | Week 3 · First vertical slice | Nov 22 | Submit a package, poll, get a cited draft memo traced in Phoenix | ✅ Done; run live on all ten packages |
-| Week 4 · Compliance and human review | Nov 29 | A job pauses for review, survives a restart, and finalizes only on approval by someone other than the submitter | 🔶 In progress: evidence log and policy rule engine done |
+| Week 4 · Compliance and human review | Nov 29 | A job pauses for review, survives a restart, and finalizes only on approval by someone other than the submitter | 🔶 In progress: evidence log, policy rule engine and compliance reviewer done |
 | **Gate 2** · Demo ready | Dec 20 | A stranger runs the demo in under 10 minutes with no API keys | ⬜ |
 | **Gate 3** · Published | Jan 10 | CI gates enforced; docs and results public | ⬜ |
 

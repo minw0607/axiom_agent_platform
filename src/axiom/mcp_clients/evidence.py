@@ -7,7 +7,8 @@ from __future__ import annotations
 
 import hashlib
 import re
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
+from pathlib import Path
 from typing import Literal, Protocol
 
 from pydantic import BaseModel
@@ -77,38 +78,60 @@ def _sha(text: str) -> str:
     return hashlib.sha256(text.encode()).hexdigest()
 
 
-class InMemoryEvidence:
-    """Paragraph chunks scored by word overlap. Job-scoped, like GKN."""
+def _chunks(collection: str, doc_id: str, title: str, text: str) -> list[EvidenceHit]:
+    paras = [p.strip() for p in text.split("\n\n") if p.strip()]
+    return [
+        EvidenceHit(
+            collection=collection,
+            doc_id=doc_id,
+            chunk_id=f"{doc_id}#{i}",
+            title=title,
+            text=para,
+            text_hash=_sha(para),
+            score=0.0,
+        )
+        for i, para in enumerate(paras)
+    ]
 
-    def __init__(self) -> None:
+
+class InMemoryEvidence:
+    """Paragraph chunks scored by word overlap. Job-scoped, like GKN.
+
+    Reference collections are read-only and seeded from folders the way GKN seeds them:
+    every .md and .txt file except a README, with the file stem as the doc_id.
+    """
+
+    def __init__(self, references: Mapping[str, Path] | None = None) -> None:
         self._jobs: dict[str, list[EvidenceHit]] = {}
+        self._refs: dict[str, list[EvidenceHit]] = {}
+        for collection, folder in (references or {}).items():
+            files = sorted([*folder.glob("*.md"), *folder.glob("*.txt")])
+            self._refs[collection] = [
+                chunk
+                for path in files
+                if path.stem.lower() != "readme"
+                for chunk in _chunks(
+                    collection,
+                    path.stem,
+                    path.stem.replace("_", " ").title(),
+                    path.read_text(encoding="utf-8"),
+                )
+            ]
 
     async def ingest(self, job_id: str, documents: Sequence[Document]) -> dict[str, str]:
         chunks = self._jobs.setdefault(job_id, [])
         for doc in documents:
             chunks[:] = [c for c in chunks if c.doc_id != doc.doc_id]
-            for i, para in enumerate(p for p in doc.text.split("\n\n") if p.strip()):
-                chunks.append(
-                    EvidenceHit(
-                        collection="job",
-                        doc_id=doc.doc_id,
-                        chunk_id=f"{doc.doc_id}#{i}",
-                        title=doc.title,
-                        text=para.strip(),
-                        text_hash=_sha(para.strip()),
-                        score=0.0,
-                    )
-                )
+            chunks.extend(_chunks("job", doc.doc_id, doc.title, doc.text))
         return {d.doc_id: _sha(d.text) for d in documents}
 
     async def retrieve(
         self, job_id: str, query: str, k: int = 5, collection: Collection = "job"
     ) -> list[EvidenceHit]:
-        if collection != "job":
-            return []
+        pool = self._jobs.get(job_id, []) if collection == "job" else self._refs.get(collection, [])
         words = set(_WORD.findall(query.lower()))
         scored = []
-        for chunk in self._jobs.get(job_id, []):
+        for chunk in pool:
             overlap = len(words & set(_WORD.findall(chunk.text.lower())))
             if overlap:
                 scored.append(chunk.model_copy(update={"score": overlap / max(len(words), 1)}))

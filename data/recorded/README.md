@@ -8,7 +8,7 @@ The tests do not use these files. They replay scripted responses in `tests/fixtu
 
 ## What the current recordings show
 
-Recorded Nov 11, 2026 with prompts intake v2, analyst v1 and drafter v3, under policy CP-2026.2, with passages retrieved through the GKN MCP server as in the `docker compose` stack. Every recommendation matched the expected result and every extracted figure matched the ground truth, value and source line. One drafter call (pkg-07) was rejected once and corrected on retry; both attempts are recorded, so the demo replays the retry too. The results are summarized in `docs/ai-assisted-engineering.md` (first live run).
+Recorded Nov 11, 2026 with prompts intake v2, analyst v1, drafter v3 and compliance v2, under policy CP-2026.2, with passages retrieved through the GKN MCP server as in the `docker compose` stack. Every recommendation matched the expected result and every extracted figure matched the ground truth, value and source line. One drafter call (pkg-07) was rejected once and corrected on retry; both attempts are recorded, so the demo replays the retry too. The results are summarized in `docs/ai-assisted-engineering.md` (first live run). The compliance reviews were recorded afterwards, with the other nodes replaying these files, so each review is of the draft the demo shows.
 
 ## Re-recording
 
