@@ -17,6 +17,7 @@ from axiom.domain import (
     FinancialStatements,
     MemoDraft,
     RatioResult,
+    ReviewDecision,
     RiskFlag,
 )
 from axiom.mcp_clients.evidence import EvidenceHit
@@ -117,28 +118,37 @@ async def run_drafter(
     flags: list[RiskFlag],
     checks: list[CheckResult],
     narrative: list[str],
+    revision: tuple[MemoDraft, list[ReviewDecision]] | None = None,
 ) -> tuple[MemoDraft, list[EvidenceHit], list[ModelCall]]:
+    """Draft the memo, or with `revision` (the previous draft and the reviews so far)
+    revise it for the credit officer's comments under the same validation."""
     hits = await ctx.evidence.retrieve(job_id, EVIDENCE_QUERY, k=4, collection="job")
-    prompt = ctx.prompt("drafter")
     chunk_ids = {h.chunk_id for h in hits}
+    payload: dict[str, Any] = {
+        "borrower": {"name": package.borrower_name, "industry": package.industry},
+        "figure_sources": figure_sources(fs),
+        "ratios": ratio_payload(ratios),
+        "risk_flags": flag_payload(flags),
+        "reconciliation_issues": check_payload(checks),
+        "analyst_narrative": narrative,
+        "evidence": [{"doc_id": h.doc_id, "chunk_id": h.chunk_id, "text": h.text} for h in hits],
+    }
+    prompt_id, key_suffix = "drafter", ""
+    if revision is not None:
+        previous, reviews = revision
+        rounds = [r for r in reviews if r.decision == "revise"]
+        payload["previous_draft"] = previous.model_dump(mode="json")
+        payload["reviewer_comments"] = [r.comments for r in rounds]
+        prompt_id, key_suffix = "drafter_revision", f".r{len(rounds)}"
+    prompt = ctx.prompt(prompt_id)
     draft, calls = await call_structured(
         ctx,
         node="drafter",
         route="narrative",
         prompt=prompt,
-        payload={
-            "borrower": {"name": package.borrower_name, "industry": package.industry},
-            "figure_sources": figure_sources(fs),
-            "ratios": ratio_payload(ratios),
-            "risk_flags": flag_payload(flags),
-            "reconciliation_issues": check_payload(checks),
-            "analyst_narrative": narrative,
-            "evidence": [
-                {"doc_id": h.doc_id, "chunk_id": h.chunk_id, "text": h.text} for h in hits
-            ],
-        },
+        payload=payload,
         schema=MemoDraft,
-        recording_key=f"drafter/{prompt.version}/{package.package_id}",
+        recording_key=f"{prompt_id}/{prompt.version}/{package.package_id}{key_suffix}",
         validate=lambda d: validate_draft(d, package, chunk_ids, flags, checks),
     )
     return draft, hits, calls

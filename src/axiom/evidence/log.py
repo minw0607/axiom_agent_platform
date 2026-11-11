@@ -23,6 +23,10 @@ EventType = Literal[
     "node_completed",
     "node_failed",
     "job_awaiting_review",
+    "review_submitted",
+    "job_resumed",
+    "job_approved",
+    "job_rejected",
     "job_failed",
 ]
 

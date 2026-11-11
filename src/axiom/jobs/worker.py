@@ -1,4 +1,8 @@
-"""The worker loop: claim a queued job, run the workflow, store the result.
+"""The worker loop: claim a job, run or resume the workflow, store the result.
+
+A new job runs until it pauses for review. A reviewed job resumes from its checkpoint with
+the credit officer's decision: approve finalizes it, revise redrafts and pauses again, and
+reject closes it. Each segment of work appends its own evidence events.
 
 uv run python -m axiom.jobs.worker
 """
@@ -15,8 +19,14 @@ from typing import Any
 from axiom.agents.base import PROMPT_VERSIONS, AgentContext
 from axiom.catalog import UnknownPackage, load_package
 from axiom.evidence.log import EventDraft
-from axiom.graph.workflow import NODE_ORDER, MemoState, run_workflow
-from axiom.jobs.store import JobRecord, JobStore, PostgresJobStore
+from axiom.graph.workflow import (
+    MemoState,
+    ReviewError,
+    paused_for_review,
+    resume_workflow,
+    run_workflow,
+)
+from axiom.jobs.store import JobRecord, JobStatus, JobStore, PostgresJobStore
 from axiom.mcp_clients.client import MCPToolClient
 from axiom.mcp_clients.evidence import EvidenceService, GKNEvidence, InMemoryEvidence
 from axiom.router.router import ModelRouter
@@ -32,6 +42,7 @@ ERROR_CODES = {
     "AgentOutputError": "output_validation_failed",
     "ProviderError": "model_unavailable",
     "FailClosed": "no_permitted_model",
+    "ReviewError": "review_not_applied",
 }
 
 
@@ -71,6 +82,10 @@ def serialize_state(state: MemoState, policy_version: str) -> dict[str, Any]:
         "findings",
         "evidence",
         "reference_evidence",
+        "reviews",
+        "human_revisions",
+        "automated_fixes",
+        "outcome",
         "model_calls",
         "completed",
         "error",
@@ -95,34 +110,21 @@ def _sha256(value: Any) -> str:
     return hashlib.sha256(json.dumps(value, sort_keys=True, default=str).encode()).hexdigest()
 
 
-def run_events(result: dict[str, Any]) -> list[EventDraft]:
-    """The evidence events for one workflow run, in order: each node's model calls
-    (every attempt, valid or not), then that node's outcome."""
+def run_events(
+    result: dict[str, Any], calls_before: int = 0, completed_before: int = 0
+) -> list[EventDraft]:
+    """The evidence events for one segment of a run, in order: each node's model calls
+    (every attempt, valid or not), then that node's outcome. A resumed run passes how many
+    calls and completed nodes the earlier segments already logged."""
     events: list[EventDraft] = []
-    calls = result.get("model_calls", [])
-    for node in NODE_ORDER:
+    calls = result.get("model_calls", [])[calls_before:]
+    nodes = list(result.get("completed", [])[completed_before:])
+    if result.get("error_node"):
+        nodes.append(result["error_node"])
+    for node in nodes:
         for call in (c for c in calls if c["node"] == node):
             events.append(EventDraft(type="model_call", actor=WORKER, payload=call))
-        if node in result.get("completed", []):
-            payload: dict[str, Any] = {
-                "node": node,
-                "output_sha256": _sha256({k: result.get(k) for k in NODE_OUTPUTS[node]}),
-            }
-            if node == "analyst":
-                payload["risk_flags"] = [f["code"] for f in result.get("risk_flags", [])]
-            if node == "drafter":
-                payload["draft_recommendation"] = result["draft"]["draft_recommendation"]
-            if node == "compliance":
-                payload["triggered"] = [
-                    f["rule_id"] for f in result.get("findings", []) if f["outcome"] == "triggered"
-                ]
-                payload["not_evaluated"] = [
-                    f["rule_id"]
-                    for f in result.get("findings", [])
-                    if f["outcome"] == "not_evaluated"
-                ]
-            events.append(EventDraft(type="node_completed", actor=WORKER, payload=payload))
-        elif node == result.get("error_node"):
+        if node == result.get("error_node") and node not in result["completed"][completed_before:]:
             events.append(
                 EventDraft(
                     type="node_failed",
@@ -130,6 +132,23 @@ def run_events(result: dict[str, Any]) -> list[EventDraft]:
                     payload={"node": node, "error": result.get("error", "")[:500]},
                 )
             )
+            continue
+        payload: dict[str, Any] = {
+            "node": node,
+            "output_sha256": _sha256({k: result.get(k) for k in NODE_OUTPUTS.get(node, ())}),
+        }
+        if node == "analyst":
+            payload["risk_flags"] = [f["code"] for f in result.get("risk_flags", [])]
+        if node == "drafter":
+            payload["draft_recommendation"] = result["draft"]["draft_recommendation"]
+        if node == "compliance":
+            payload["triggered"] = [
+                f["rule_id"] for f in result.get("findings", []) if f["outcome"] == "triggered"
+            ]
+            payload["not_evaluated"] = [
+                f["rule_id"] for f in result.get("findings", []) if f["outcome"] == "not_evaluated"
+            ]
+        events.append(EventDraft(type="node_completed", actor=WORKER, payload=payload))
     return events
 
 
@@ -160,27 +179,80 @@ async def process_job(
         except UnknownPackage:
             await _fail(store, job.job_id, None, "invalid_package")
             return
-        state = await run_workflow(ctx, job.job_id, package)
+        async with store.checkpointer() as saver:
+            state = await run_workflow(ctx, job.job_id, package, saver)
         result = serialize_state(state, ctx.policy.version)
         result["trace_id"] = trace_id
         await store.append_events(job.job_id, run_events(result))
-        if state.get("error"):
-            error_type = state["error"].split(":", 1)[0]
-            await _fail(store, job.job_id, result, ERROR_CODES.get(error_type, "internal_error"))
-            span.set_attribute("axiom.job.status", "failed")
-        else:
-            await store.append_events(
-                job.job_id,
-                [
-                    EventDraft(
-                        type="job_awaiting_review",
-                        actor=WORKER,
-                        payload={"result_sha256": _sha256(result)},
-                    )
-                ],
-            )
-            await store.finish(job.job_id, "awaiting_review", result, None)
-            span.set_attribute("axiom.job.status", "awaiting_review")
+        status = await _settle(store, job.job_id, state, result)
+        span.set_attribute("axiom.job.status", status)
+
+
+async def resume_job(
+    store: JobStore, ctx: AgentContext, settings: Settings, job: JobRecord
+) -> None:
+    """Resume a reviewed job from its checkpoint with the credit officer's decision."""
+    review = job.pending_review
+    if review is None:
+        await _fail(store, job.job_id, job.result, "internal_error")
+        return
+    before = job.result or {}
+    with tracer().start_as_current_span("job resume") as span:
+        span.set_attribute("axiom.job_id", job.job_id)
+        span.set_attribute("axiom.review.decision", review.decision)
+        await store.append_events(
+            job.job_id,
+            [
+                EventDraft(
+                    type="job_resumed",
+                    actor=WORKER,
+                    payload={"round": review.round, "decision": review.decision},
+                )
+            ],
+        )
+        try:
+            async with store.checkpointer() as saver:
+                state = await resume_workflow(ctx, job.job_id, review, saver)
+        except ReviewError:
+            await _fail(store, job.job_id, before, "review_not_applied")
+            return
+        result = serialize_state(state, ctx.policy.version)
+        result["trace_id"] = before.get("trace_id")
+        await store.append_events(
+            job.job_id,
+            run_events(
+                result, len(before.get("model_calls", [])), len(before.get("completed", []))
+            ),
+        )
+        status = await _settle(store, job.job_id, state, result)
+        span.set_attribute("axiom.job.status", status)
+
+
+async def _settle(
+    store: JobStore, job_id: str, state: MemoState, result: dict[str, Any]
+) -> JobStatus:
+    """Record how a segment ended: paused for review, approved, rejected or failed."""
+    if state.get("error"):
+        error_type = state["error"].split(":", 1)[0]
+        await _fail(store, job_id, result, ERROR_CODES.get(error_type, "internal_error"))
+        return "failed"
+    status: JobStatus
+    if paused_for_review(state):
+        status, event = "awaiting_review", "job_awaiting_review"
+    elif state.get("outcome") == "approved":
+        status, event = "approved", "job_approved"
+    elif state.get("outcome") == "rejected":
+        status, event = "rejected", "job_rejected"
+    else:
+        await _fail(store, job_id, result, "internal_error")
+        return "failed"
+    payload: dict[str, Any] = {"result_sha256": _sha256(result)}
+    if status != "awaiting_review":
+        last = result["reviews"][-1]
+        payload |= {"reviewer": last["reviewer"], "round": last["round"]}
+    await store.append_events(job_id, [EventDraft(type=event, actor=WORKER, payload=payload)])  # type: ignore[arg-type]
+    await store.finish(job_id, status, result, None)
+    return status
 
 
 async def _fail(store: JobStore, job_id: str, result: dict[str, Any] | None, code: str) -> None:
@@ -195,7 +267,10 @@ async def run_once(store: JobStore, ctx: AgentContext, settings: Settings) -> bo
     if job is None:
         return False
     try:
-        await process_job(store, ctx, settings, job)
+        if job.pending_review is not None:
+            await resume_job(store, ctx, settings, job)
+        else:
+            await process_job(store, ctx, settings, job)
     except Exception:
         log.exception("job %s failed unexpectedly", job.job_id)
         await _fail(store, job.job_id, None, "internal_error")

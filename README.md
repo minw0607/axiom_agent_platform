@@ -15,7 +15,7 @@
 
 </div>
 
-> **Status:** Week 3. A package goes from submission to a cited draft memo, in demo mode with no API keys. Compliance review, human approval and guardrails come next; this page describes the target design and tracks progress against the [development plan](docs/dev-plan.md).
+> **Status:** Week 4. A package goes from submission to a cited draft memo with credit policy and lending-reference findings, then waits for a credit officer to approve, reject or request a revision, in demo mode with no API keys. Guardrails come next; this page describes the target design and tracks progress against the [development plan](docs/dev-plan.md).
 
 ---
 
@@ -151,7 +151,7 @@ Every LLM judge uses a different model from the one under test and is checked ag
 | Repository scaffold | Nov 8 | Structure, tooling, and CI in place | ✅ Done |
 | **Gate 1** · Architecture ready | Nov 15 | Supporting services run without keys; Regulus returns cited provisions | ✅ Passed: checks 7/7, design docs published |
 | Week 3 · First vertical slice | Nov 22 | Submit a package, poll, get a cited draft memo traced in Phoenix | ✅ Done; run live on all ten packages |
-| Week 4 · Compliance and human review | Nov 29 | A job pauses for review, survives a restart, and finalizes only on approval by someone other than the submitter | 🔶 In progress: evidence log, policy rule engine and compliance reviewer done |
+| Week 4 · Compliance and human review | Nov 29 | A job pauses for review, survives a restart, and finalizes only on approval by someone other than the submitter | 🔶 In progress: evidence log, policy rule engine, compliance reviewer and human review done |
 | **Gate 2** · Demo ready | Dec 20 | A stranger runs the demo in under 10 minutes with no API keys | ⬜ |
 | **Gate 3** · Published | Jan 10 | CI gates enforced; docs and results public | ⬜ |
 
@@ -178,6 +178,12 @@ This starts Postgres, Phoenix (traces at http://localhost:6006), the OpenTelemet
 ```bash
 curl -i -X POST http://localhost:8000/v1/memos -H "X-API-Key: <submitter key>" -H "Idempotency-Key: $(uuidgen)" -H "content-type: application/json" -d '{"package_id": "pkg-08"}'
 curl http://localhost:8000/v1/memos/<job_id> -H "X-API-Key: <submitter key>"
+```
+
+**Review the draft** (reviewer key, `REVIEWER_API_KEYS=co-demo:<random key>`). `decision` is `approve`, `reject` or `revise`; a revision needs comments, and after two revisions the draft can only be approved or rejected. The submitter can never review their own job:
+
+```bash
+curl -i -X POST http://localhost:8000/v1/memos/<job_id>/review -H "X-API-Key: <reviewer key>" -H "Idempotency-Key: $(uuidgen)" -H "content-type: application/json" -d '{"decision": "revise", "comments": "Add a sentence on liquidity that cites the current ratio."}'
 ```
 
 **Read the evidence bundle** (auditor key, `AUDITOR_API_KEYS=audit-demo:<random key>`). It lists every model call, including rejected attempts, and every job event with its hash, and reports whether the chain verifies:

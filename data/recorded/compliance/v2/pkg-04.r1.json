@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "compliance",
+  "prompt_id": "compliance",
+  "prompt_version": "v2",
+  "prompt_sha256": "9ec87852e18f9c7d0ab211582229790606db43511fa7d4748493ca73a601b33d",
+  "input_tokens": 2495,
+  "output_tokens": 839,
+  "text": "{\"assessments\":[{\"rule_id\":\"REF_PROHIBITED_BASIS\",\"outcome\":\"passed\",\"message\":\"The claims do not mention a prohibited-basis characteristic of the applicant\u2019s owners, principals, or guarantors. The business founding date and employee count are business facts, not prohibited-basis characteristics of a person.\",\"claim_ids\":[\"s1.c1\"],\"reference_chunk_ids\":[\"regulation_b_chunk_2\",\"regulation_b_chunk_5\"]},{\"rule_id\":\"REF_REPAYMENT_CAPACITY\",\"outcome\":\"passed\",\"message\":\"The draft includes business cash-flow measures and debt service coverage, including pro forma DSCR, and also includes balance-sheet measures for leverage and liquidity. These claims address repayment capacity and balance-sheet condition.\",\"claim_ids\":[\"s2.c1\",\"s2.c2\",\"s2.c3\",\"s2.c4\",\"s3.c1\",\"s3.c2\"],\"reference_chunk_ids\":[\"occ_rating_credit_risk_chunk_3\",\"occ_rating_credit_risk_chunk_4\",\"occ_rating_credit_risk_chunk_6\"]},{\"rule_id\":\"REF_ADVERSE_ACTION_REASONS\",\"outcome\":\"passed\",\"message\":\"The decline rationale cites a specific credit reason: pro forma DSCR of 0.93 below 1.00, rather than only stating that the request failed internal standards. The claims also identify the requested loan terms tied to that coverage issue.\",\"claim_ids\":[\"s2.c4\",\"s3.c2\",\"s4.c1\"],\"reference_chunk_ids\":[\"regulation_b_chunk_9\"]}]}"
+}

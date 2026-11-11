@@ -154,7 +154,7 @@ async def _retrieve(ctx: AgentContext, job_id: str, topics: tuple[Topic, ...]) -
 
 
 async def run_compliance_review(
-    ctx: AgentContext, job_id: str, package: BorrowerPackage, draft: MemoDraft
+    ctx: AgentContext, job_id: str, package: BorrowerPackage, draft: MemoDraft, revision: int = 0
 ) -> tuple[list[ComplianceFinding], list[EvidenceHit], list[ModelCall]]:
     topics = topics_for(draft)
     hits = await _retrieve(ctx, job_id, topics)
@@ -178,7 +178,8 @@ async def run_compliance_review(
                 ],
             },
             schema=ComplianceReview,
-            recording_key=f"compliance/{prompt.version}/{package.package_id}",
+            recording_key=f"compliance/{prompt.version}/{package.package_id}"
+            + (f".r{revision}" if revision else ""),
             validate=lambda r: validate_review(r, topics, set(claims), set(chunks)),
         )
     except (AgentOutputError, ProviderError, FailClosed) as exc:

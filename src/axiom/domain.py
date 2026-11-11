@@ -175,3 +175,15 @@ class MemoSection(Frozen):
 class MemoDraft(Frozen):
     sections: tuple[MemoSection, ...]
     draft_recommendation: Literal["approve", "approve_with_conditions", "decline", "refer"]
+
+
+MAX_HUMAN_REVISIONS = 2
+
+
+class ReviewDecision(Frozen):
+    """A credit officer's decision on a draft. The reviewer comes from the authenticated key."""
+
+    decision: Literal["approve", "reject", "revise"]
+    comments: str = Field(default="", max_length=2000)
+    reviewer: str
+    round: int = Field(ge=1)

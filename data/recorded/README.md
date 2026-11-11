@@ -10,6 +10,8 @@ The tests do not use these files. They replay scripted responses in `tests/fixtu
 
 Recorded Nov 11, 2026 with prompts intake v2, analyst v1, drafter v3 and compliance v2, under policy CP-2026.2, with passages retrieved through the GKN MCP server as in the `docker compose` stack. Every recommendation matched the expected result and every extracted figure matched the ground truth, value and source line. One drafter call (pkg-07) was rejected once and corrected on retry; both attempts are recorded, so the demo replays the retry too. The results are summarized in `docs/ai-assisted-engineering.md` (first live run). The compliance reviews were recorded afterwards, with the other nodes replaying these files, so each review is of the draft the demo shows.
 
+**Revisions.** `drafter_revision/v1/<package>.r1` and `.r2`, with the matching `compliance/v2/<package>.r1` and `.r2`, are two revision rounds recorded live for every package with these comments: "Add a sentence on liquidity that cites the current ratio." and "State the main condition you would propose, or say that none is needed." All forty calls were valid on first attempts. In demo mode a revision replays the recording for its round, **whatever comments the reviewer typed**, so a demo revision shows the mechanism, not a response to the comment. Local mode sends the actual comments to the model.
+
 ## Re-recording
 
 1. In `.env`, set `OPENAI_API_KEY`, `MODEL_ALIAS_MAP` (for example `small-a=openai:<deployment>,frontier-a=openai:<deployment>`) and, for a gateway, `OPENAI_BASE_URL` and the optional settings in `.env.example`.

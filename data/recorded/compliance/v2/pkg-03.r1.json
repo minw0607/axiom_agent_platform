@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "compliance",
+  "prompt_id": "compliance",
+  "prompt_version": "v2",
+  "prompt_sha256": "002edc7196cb501abf4fba3eb25a6ccefffbe6f9eb12eb6779df3b43291cfac6",
+  "input_tokens": 1993,
+  "output_tokens": 702,
+  "text": "{\"assessments\":[{\"rule_id\":\"REF_PROHIBITED_BASIS\",\"outcome\":\"passed\",\"message\":\"The identified claims do not mention or rely on a prohibited-basis characteristic of the applicant, owners, principals, or guarantors.\",\"claim_ids\":[\"s1.c1\",\"s3.c2\"],\"reference_chunk_ids\":[\"regulation_b_chunk_2\",\"regulation_b_chunk_5\"]},{\"rule_id\":\"REF_REPAYMENT_CAPACITY\",\"outcome\":\"passed\",\"message\":\"The draft includes cash-flow repayment measures, including DSCR and pro forma DSCR, and balance-sheet measures, including leverage and liquidity.\",\"claim_ids\":[\"s2.c1\",\"s2.c2\",\"s2.c3\",\"s2.c4\",\"s2.c5\"],\"reference_chunk_ids\":[\"occ_rating_credit_risk_chunk_3\",\"occ_rating_credit_risk_chunk_4\",\"occ_rating_credit_risk_chunk_6\"]}]}"
+}

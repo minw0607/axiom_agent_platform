@@ -20,10 +20,14 @@ import json
 from pathlib import Path
 from typing import Any
 
+from langgraph.checkpoint.memory import InMemorySaver
+
 from axiom.agents.base import AgentContext
 from axiom.catalog import list_packages, load_ground_truth, load_package
-from axiom.graph.workflow import run_workflow
+from axiom.domain import ReviewDecision
+from axiom.graph.workflow import resume_workflow, run_workflow
 from axiom.mcp_clients.evidence import InMemoryEvidence
+from axiom.memory.checkpoint import serializer
 from axiom.router.adapters import save_recording
 from axiom.router.router import AliasTarget, ModelRouter, RoutingPolicy
 from axiom.router.types import ModelAdapter, ModelRequest, ModelResponse
@@ -32,6 +36,12 @@ from axiom.tools.policy import load_policy
 from axiom.tools.policy_rules import PROTECTED
 
 SETTINGS = Settings.from_env()
+# The comments behind the recorded revisions. In demo mode a revision replays the recording
+# made for these, whatever the reviewer typed; data/recorded/README.md says so.
+DEMO_REVISION_COMMENTS = (
+    "Add a sentence on liquidity that cites the current ratio.",
+    "State the main condition you would propose, or say that none is needed.",
+)
 
 
 def _ratio(payload: dict[str, Any], name: str) -> str:
@@ -284,11 +294,20 @@ class ScriptedAdapter:
 
     async def complete(self, request: ModelRequest, deployment: str) -> ModelResponse:
         payload = json.loads(request.messages[1].content)
-        package_id = request.recording_key.split("/")[2]
+        package_id = request.recording_key.split("/")[2].split(".")[0]
         if request.prompt_id == "intake":
             body = scripted_intake(package_id, payload)
         elif request.prompt_id == "analyst":
             body = scripted_analyst(payload)
+        elif request.prompt_id == "drafter_revision":
+            body = scripted_drafter(package_id, payload)
+            for comment in payload["reviewer_comments"]:
+                body["sections"][-1]["claims"].append(
+                    {
+                        "text": f"Revised for the credit officer's comment: {comment}",
+                        "citations": [],
+                    }
+                )
         elif request.prompt_id == "compliance":
             body = scripted_compliance(payload)
         else:
@@ -319,9 +338,17 @@ async def main() -> None:
     )
     evidence = InMemoryEvidence(SETTINGS.reference_dirs)
     ctx = AgentContext(router, evidence, load_policy(), SETTINGS.prompts_dir)
+    saver = InMemorySaver(serde=serializer())
     for entry in list_packages(SETTINGS.packages_dir):
         package = load_package(SETTINGS.packages_dir, entry["package_id"])
-        state = await run_workflow(ctx, f"seed-{package.package_id}", package)
+        job_id = f"seed-{package.package_id}"
+        state = await run_workflow(ctx, job_id, package, saver)
+        # Two revision rounds with the demo comments, so revisions replay too.
+        for n, comment in enumerate(DEMO_REVISION_COMMENTS, 1):
+            if state.get("error"):
+                break
+            review = ReviewDecision(decision="revise", comments=comment, reviewer="seed", round=n)
+            state = await resume_workflow(ctx, job_id, review, saver)
         status = state.get("error") or state["draft"].draft_recommendation
         review = [
             f"{f.rule_id}={f.outcome}"

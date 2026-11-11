@@ -138,3 +138,53 @@ def test_the_database_refuses_to_change_evidence(store: PostgresJobStore, statem
 
     with pytest.raises(psycopg.errors.RaiseException, match="append-only"):
         asyncio.run(attempt())
+
+
+# Human review against Postgres ------------------------------------------------------------
+
+
+def test_review_round_trip_and_rules(store: PostgresJobStore) -> None:
+    job = asyncio.run(store.submit("rm-a", "k1", "h", "pkg-01")).job
+    assert job is not None
+    early = asyncio.run(store.submit_review(job.job_id, "co-b", "r1", "h1", "approve", ""))
+    assert early.conflict == "not-awaiting-review"
+    asyncio.run(store.finish(job.job_id, "awaiting_review", {"draft": {}}, None))
+    own = asyncio.run(store.submit_review(job.job_id, "rm-a", "r1", "h1", "approve", ""))
+    assert own.conflict == "separation-of-duties"
+    ok = asyncio.run(store.submit_review(job.job_id, "co-b", "r1", "h1", "revise", "more"))
+    assert ok.conflict is None and ok.review is not None and ok.job is not None
+    assert ok.job.status == "revising" and ok.job.human_revisions == 1
+    assert ok.job.pending_review == ok.review
+    again = asyncio.run(store.submit_review(job.job_id, "co-b", "r1", "h1", "revise", "more"))
+    assert again.replayed and again.review == ok.review
+    clash = asyncio.run(store.submit_review(job.job_id, "co-b", "r1", "h2", "reject", ""))
+    assert clash.conflict == "key-reused"
+    claimed = asyncio.run(store.claim_next())
+    assert claimed is not None and claimed.pending_review == ok.review
+    events = asyncio.run(store.events(job.job_id))
+    assert [e.type for e in events] == ["job_submitted", "review_submitted"]
+    assert events[-1].actor == "co-b" and verify_chain(events).verified
+
+
+def test_a_paused_job_resumes_through_a_new_store(store: PostgresJobStore) -> None:
+    """The worker that drafted the memo and the one that finalizes it share only Postgres."""
+    from dataclasses import replace
+
+    from axiom.jobs.worker import build_context, run_once
+    from conftest import SETTINGS
+
+    settings = replace(SETTINGS, mode="demo", gkn_mcp_url=None)
+    job = asyncio.run(store.submit("rm-a", "k1", "h", "pkg-01")).job
+    assert job is not None
+    assert asyncio.run(run_once(store, build_context(settings), settings))
+    paused = asyncio.run(store.get(job.job_id))
+    assert paused is not None and paused.status == "awaiting_review"
+
+    restarted = PostgresJobStore(store.url)  # nothing carried over but the database
+    review = asyncio.run(restarted.submit_review(job.job_id, "co-b", "r1", "h1", "approve", "ok"))
+    assert review.conflict is None
+    assert asyncio.run(run_once(restarted, build_context(settings), settings))
+    done = asyncio.run(restarted.get(job.job_id))
+    assert done is not None and done.status == "approved", done.error_code
+    events = asyncio.run(restarted.events(job.job_id))
+    assert events[-1].type == "job_approved" and verify_chain(events).verified

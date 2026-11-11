@@ -24,6 +24,8 @@ from axiom.api.schemas import (
     Links,
     MemoJob,
     MemoRequest,
+    ReviewAccepted,
+    ReviewRequest,
     to_evidence,
     to_public,
 )
@@ -36,6 +38,34 @@ from axiom.telemetry.setup import setup_telemetry
 
 MAX_BODY_BYTES = 64 * 1024
 MAX_IDEMPOTENCY_KEY = 128
+# Status, slug, title and detail for each reason a review is refused.
+REVIEW_PROBLEMS: dict[str, tuple[int, str, str, str]] = {
+    "not-found": (404, "not-found", "No such memo job", ""),
+    "not-awaiting-review": (
+        409,
+        "not-awaiting-review",
+        "The memo is not awaiting review",
+        "Only a draft in awaiting_review can be reviewed. Poll the memo for its status.",
+    ),
+    "separation-of-duties": (
+        403,
+        "separation-of-duties",
+        "The submitter cannot review their own job",
+        "A different authorized reviewer must make this decision.",
+    ),
+    "revision-limit": (
+        409,
+        "revision-limit",
+        "The revision limit is reached",
+        "After two revisions the memo can only be approved or rejected.",
+    ),
+    "key-reused": (
+        422,
+        "idempotency-key-reused",
+        "The Idempotency-Key was used with a different body",
+        "Use a new key for a different request.",
+    ),
+}
 
 
 def create_app(settings: Settings | None = None, store: JobStore | None = None) -> FastAPI:
@@ -150,6 +180,57 @@ def create_app(settings: Settings | None = None, store: JobStore | None = None) 
         if job is None or (principal.role == "submitter" and job.submitter != principal.name):
             raise Problem(404, "not-found", "No such memo job")
         return to_public(job)
+
+    @app.post(
+        "/v1/memos/{job_id}/review",
+        status_code=202,
+        response_model=ReviewAccepted,
+        tags=["memos"],
+        summary="Approve, reject, or request revision (reviewer role only)",
+        responses={202: {"description": "Decision accepted; the job resumes"}},
+    )
+    async def review_memo(
+        job_id: str,
+        body: ReviewRequest,
+        response: Response,
+        principal: Annotated[Principal, Depends(require("reviewer"))],
+        idempotency_key: Annotated[str | None, Header(alias="Idempotency-Key")] = None,
+    ) -> ReviewAccepted:
+        if not idempotency_key or len(idempotency_key) > MAX_IDEMPOTENCY_KEY:
+            raise Problem(
+                400,
+                "idempotency-key-required",
+                "An Idempotency-Key header is required",
+                f"Send a unique key of at most {MAX_IDEMPOTENCY_KEY} characters per request.",
+            )
+        if body.decision == "revise" and not body.comments.strip():
+            raise Problem(
+                422,
+                "comments-required",
+                "A revision needs comments",
+                "Say what should change in the draft.",
+            )
+        if len(job_id) > 64:
+            raise Problem(404, "not-found", "No such memo job")
+        request_hash = hashlib.sha256(
+            json.dumps(body.model_dump(), sort_keys=True).encode()
+        ).hexdigest()
+        result = await store.submit_review(
+            job_id, principal.name, idempotency_key, request_hash, body.decision, body.comments
+        )
+        if result.conflict is not None:
+            raise Problem(*REVIEW_PROBLEMS[result.conflict])
+        assert result.job is not None and result.review is not None
+        location = f"/v1/memos/{job_id}"
+        response.headers["Location"] = location
+        if result.replayed:
+            response.headers["Idempotent-Replayed"] = "true"
+        return ReviewAccepted(
+            job_id=job_id,
+            status=result.job.status,
+            round=result.review.round,
+            links=Links(self=location),
+        )
 
     @app.get(
         "/v1/memos/{job_id}/evidence",

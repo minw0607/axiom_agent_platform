@@ -17,11 +17,28 @@ from axiom.evidence.log import ChainCheck, EvidenceEvent
 from axiom.jobs.store import JobRecord, JobStatus
 
 DISCLAIMER = "Draft for credit officer review. This is not a credit decision."
+DISCLAIMERS = {
+    "awaiting_review": DISCLAIMER,
+    "approved": "Approved by a credit officer, who is accountable for the decision. "
+    "The memo was drafted with platform assistance.",
+    "rejected": "Rejected by a credit officer. The memo was drafted with platform assistance.",
+}
+MEMO_STATUSES = tuple(DISCLAIMERS)
 
 
 class MemoRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     package_id: str = Field(pattern=r"^pkg-\d{2}$", description="An ID from the synthetic catalog")
+
+
+class ReviewRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    decision: Literal["approve", "reject", "revise"]
+    comments: str = Field(
+        default="",
+        max_length=2000,
+        description="Required for revise: what the credit officer wants changed",
+    )
 
 
 class Links(BaseModel):
@@ -115,6 +132,26 @@ class JobError(BaseModel):
     code: str
 
 
+class ReviewOut(BaseModel):
+    """One credit officer decision. Who made it is in the evidence bundle."""
+
+    round: int
+    decision: str
+    comments: str
+
+
+class Revisions(BaseModel):
+    human: int = Field(description="Revisions a credit officer asked for (at most 2)")
+    automated: int = Field(description="Automated fixes by guardrails, counted separately")
+
+
+class ReviewAccepted(BaseModel):
+    job_id: str
+    status: JobStatus
+    round: int
+    links: Links
+
+
 class MemoJob(BaseModel):
     job_id: str
     status: JobStatus
@@ -122,15 +159,18 @@ class MemoJob(BaseModel):
     created_at: datetime
     updated_at: datetime
     memo: MemoOut | None = None
+    reviews: list[ReviewOut] = Field(default_factory=list)
+    revisions: Revisions
     error: JobError | None = None
 
 
 def to_public(job: JobRecord) -> MemoJob:
     memo = None
-    r: dict[str, Any] | None = job.result
-    if job.status == "awaiting_review" and r and r.get("draft"):
+    r: dict[str, Any] = job.result or {}
+    if job.status in MEMO_STATUSES and r.get("draft"):
         fs = r["financials"]
         memo = MemoOut(
+            disclaimer=DISCLAIMERS[job.status],
             policy_version=r["policy_version"],
             draft_recommendation=r["draft"]["draft_recommendation"],
             sections=r["draft"]["sections"],
@@ -149,6 +189,11 @@ def to_public(job: JobRecord) -> MemoJob:
         created_at=job.created_at,
         updated_at=job.updated_at,
         memo=memo,
+        reviews=[
+            ReviewOut(round=v["round"], decision=v["decision"], comments=v["comments"])
+            for v in r.get("reviews", [])
+        ],
+        revisions=Revisions(human=job.human_revisions, automated=int(r.get("automated_fixes", 0))),
         error=JobError(code=job.error_code) if job.error_code else None,
     )
 

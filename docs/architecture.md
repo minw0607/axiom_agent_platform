@@ -2,7 +2,7 @@
 
 This document explains how the platform is put together: its layers, how a memo job flows through them, and where each piece lives in the code. The [development plan](dev-plan.md) holds the full specification; the [ADRs](adr/README.md) hold the reasoning behind each decision; the [threat model](threat-model.md) covers what can go wrong.
 
-**Status (Nov 11, 2026):** the supporting services pass the Gate 1 check, and the first vertical slice runs under `docker compose`: the API accepts a package, the worker runs intake, analyst and drafter, and polling returns a cited draft, traced in Phoenix. Every draft is checked against the credit policy by a deterministic rule engine and reviewed by a compliance agent against cited lending references (Regulation B and OCC guidance), and every job writes a hash-chained evidence log that auditors read through the evidence endpoint. Human review and guardrails follow. Section 7 tracks each component.
+**Status (Nov 11, 2026):** the supporting services pass the Gate 1 check, and the first vertical slice runs under `docker compose`: the API accepts a package, the worker runs intake, analyst and drafter, and polling returns a cited draft, traced in Phoenix. Every draft is checked against the credit policy by a deterministic rule engine and reviewed by a compliance agent against cited lending references (Regulation B and OCC guidance), and every job writes a hash-chained evidence log that auditors read through the evidence endpoint. A credit officer then approves, rejects or requests a revision through the review endpoint; the job pauses at a LangGraph interrupt and its state is kept by the Postgres checkpointer, so it survives a worker restart. Guardrails follow. Section 7 tracks each component.
 
 ## 1. Overview
 
@@ -149,7 +149,9 @@ The platform sets scope arguments such as `job_id` from graph state; a model nev
 | Credit policy rule engine: 14 deterministic checks of the draft against CP-2026.2, each `passed`, `triggered` or `not_evaluated`, shown with the memo and in the evidence bundle | Built and tested (week 4) |
 | Compliance reviewer: answers fixed topics (prohibited basis, repayment capacity, adverse-action reasons for a draft decline) against lending references retrieved through GKN, citing the passages; fails closed to `not_evaluated` | Built and tested (week 4) |
 | Lending references: Regulation B excerpts and OCC Rating Credit Risk passages, quoted exactly, with a provenance manifest checked by test | Built (week 4) |
-| Human review, checkpointer | Week 4 |
+| Human review: LangGraph interrupt after compliance; `POST /v1/memos/{id}/review` (reviewer role, idempotent); the submitter cannot review their own job; at most two human revisions, counted apart from automated fixes; reject ends the job, and only an approval reaches finalize | Built and tested (week 4) |
+| Postgres checkpointer keyed by job_id, with deserialization limited to an allowlist of the platform's state types; a paused job resumes in a new worker process | Built and tested (week 4) |
+| Finalize: Regulus related provisions, restart acceptance test, ADR 0006 | Week 4 |
 | Guardrails | Week 5 |
 | Eval baseline | Week 6 |
 | Review page, keyless demo | Week 7 |
