@@ -1,5 +1,5 @@
 # Prompts
 
-Versioned prompt files, one per agent and version (for example `drafter/v1.md`). Each version is registered in the MLflow prompt registry and referenced by version in `config/`. Prompts never ask the model to do arithmetic.
+Versioned prompt files, one per agent and version (for example `drafter/v1.md`). Each model call records the prompt's ID, version and SHA-256 for the evidence trail. Prompts never ask the model to do arithmetic.
 
-**Planned:** Week 3 of the [development plan](/docs/dev-plan.md).
+**Built (week 3):** `intake/v1.md`, `analyst/v1.md`, `drafter/v1.md`. **Planned:** registration in the MLflow prompt registry.

@@ -8,4 +8,4 @@ Settings that change behavior without code changes:
 
 Real model deployment names live in environment settings, never here.
 
-**Planned:** Weeks 3-6 of the [development plan](/docs/dev-plan.md).
+**Built (week 3):** `routing.demo.yaml`, `routing.local.yaml`, `policy_thresholds.yaml`, `otel-collector.yaml`. **Planned:** `routing.cloud.yaml`, `guardrails.yaml`, `thresholds.yaml` (weeks 5-9).

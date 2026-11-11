@@ -1,0 +1,10 @@
+{
+  "origin": "scripted",
+  "route": "narrative",
+  "prompt_id": "analyst",
+  "prompt_version": "v1",
+  "prompt_sha256": "df48a8d68d499851cdcfecfce294cdac1b8cd40efd62de4932de9352ee67b684",
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "text": "{\n \"paragraphs\": [\n  \"Across FY2023 to FY2025, the EBITDA margin reached 0.12 in the latest year, with latest revenue growth of -0.14.\",\n  \"Including the requested loan, pro forma DSCR is 2.03 and pro forma leverage is 1.38x. Interest coverage is 12.89x and the current ratio is 1.84.\",\n  \"Risk flags: Revenue changed by -0.14 in 2025, beyond the policy trigger of -0.10.\"\n ]\n}"
+}

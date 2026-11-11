@@ -1,0 +1,10 @@
+# Local mode: real providers. Aliases resolve through MODEL_ALIAS_MAP in .env, for example
+#   MODEL_ALIAS_MAP=small-a=openai:<deployment>,frontier-a=openai:<deployment>
+# Routes are provisional (week 3), pending the capability benchmark in phase 4.
+routes:
+  extraction: { primary: small-a, fallback: frontier-a }
+  narrative: { primary: frontier-a, fallback: small-a }
+  compliance: { primary: frontier-a, fallback: small-a }
+sensitivity:
+  # Unredacted PII may only reach a local model. With none configured, the job fails closed.
+  pii_unredacted: { allow: [local-small], on_unavailable: fail_closed }
