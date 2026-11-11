@@ -35,3 +35,5 @@ What was delegated to Claude Code, what was changed after review, and what was l
 - **Broken diagram.** The architecture sequence diagram did not render on GitHub. Two arrow labels contained semicolons, which Mermaid reads as the end of a statement. All four diagrams in the docs now parse with Mermaid 11.4.1 in a browser.
 
 Lesson: confirm that a framework version is current at the source, not just that its names are right. Render every diagram before publishing.
+
+**Regulus v0.2.1 (Nov 11).** Delegated to a separate session: updating Regulus's OWASP LLM snapshot from the 2025 edition to the 2026 edition, using the official v1.0 PDF. Regulus's 55 tests pass and its retrieval metrics match the 2025 baseline. The platform now builds regulus-mcp from `v0.2.1`, and `scripts/check_gate1.py` was re-run against the rebuilt image.

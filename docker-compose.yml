@@ -44,9 +44,9 @@ services:
       - phoenix
 
   regulus-mcp:
-    image: regulus-mcp:0.2.0
+    image: regulus-mcp:0.2.1
     build:
-      context: https://github.com/minw0607/Regulus.git#v0.2.0
+      context: https://github.com/minw0607/Regulus.git#v0.2.1
     environment:
       MCP_SHARED_SECRET: ${MCP_SHARED_SECRET:?Set MCP_SHARED_SECRET in .env}
       MCP_ALLOWED_HOSTS: localhost:*,127.0.0.1:*,regulus-mcp:*

@@ -55,9 +55,11 @@ def server_url() -> Iterator[str]:
     )
     thread = threading.Thread(target=server.run, daemon=True)
     thread.start()
-    deadline = time.time() + 10
+    deadline = time.time() + 30
     while not server.started and time.time() < deadline:
         time.sleep(0.05)
+    if not server.started:
+        pytest.fail("test MCP server did not start within 30 seconds")
     yield f"http://127.0.0.1:{port}/mcp"
     server.should_exit = True
     thread.join(timeout=5)

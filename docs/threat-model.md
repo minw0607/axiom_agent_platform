@@ -124,7 +124,7 @@ A tampered or impersonated MCP service returns results that contain instructions
 | Both services require a shared bearer secret (constant-time comparison); they refuse to start without one | **Built** |
 | Host-header checking against an allow-list (DNS-rebinding protection) | **Built** |
 | Ports bound to 127.0.0.1 only | **Built** |
-| Images built from pinned release tags (`v0.2.0`), not branches | **Built** |
+| Images built from pinned release tags (Regulus `v0.2.1`, GKN `v0.2.0`), not branches | **Built** |
 | Regulus runs offline from committed snapshots; no network fetch at startup | **Built** |
 | Reference collections are read-only through MCP; only job collections accept writes | **Built** |
 | Tool results are treated as untrusted data and pass through the same input guardrails as documents | Planned W5 |

@@ -112,7 +112,7 @@ Each check returns `passed`, `triggered` or `not_evaluated`, emits a span and an
 | Service | Tools | Role |
 |---|---|---|
 | gkn-mcp (geometric_knowledge_network v0.2.0) | `ingest_documents`, `retrieve_evidence`, `delete_job` | Job-scoped evidence; read-only `credit_policy` and `lending_refs` collections. Each job has its own index, so isolation is structural |
-| regulus-mcp (Regulus v0.2.0) | `lookup_provisions`, `recommend_mitigants` | Related AI governance provisions for the evidence bundle. Runs offline from committed snapshots |
+| regulus-mcp (Regulus v0.2.1) | `lookup_provisions`, `recommend_mitigants` | Related AI governance provisions for the evidence bundle. Runs offline from committed snapshots |
 
 The platform sets scope arguments such as `job_id` from graph state; a model never chooses them. Regulus covers AI governance, not lending regulation, so it never reviews memo content ([ADR 0012](adr/0012-regulatory-position.md)).
 

@@ -170,7 +170,7 @@ docker compose up -d --build
 uv run python scripts/check_gate1.py
 ```
 
-This starts Postgres, Phoenix (traces at http://localhost:6006), the OpenTelemetry Collector, and the Regulus and GKN MCP servers. Both MCP images are built from their `v0.2.0` release tags. The check script confirms each service is up, Regulus returns cited provisions, and one job's retrieval never returns another job's documents.
+This starts Postgres, Phoenix (traces at http://localhost:6006), the OpenTelemetry Collector, and the Regulus and GKN MCP servers. Both MCP images are built from pinned release tags (Regulus `v0.2.1`, GKN `v0.2.0`). The check script confirms each service is up, Regulus returns cited provisions, and one job's retrieval never returns another job's documents.
 
 **From Gate 2:** `docker compose up` will also start the API and worker in a demo mode that needs no API keys.
 
