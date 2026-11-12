@@ -35,7 +35,7 @@ from axiom.api.schemas import (
     to_public,
     to_summary,
 )
-from axiom.catalog import UnknownPackage, list_packages, load_package
+from axiom.catalog import UnknownPackage, has_recordings, list_packages, load_package
 from axiom.evidence.log import verify_chain
 from axiom.jobs.store import InMemoryJobStore, JobStatus, JobStore, PostgresJobStore
 from axiom.jobs.worker import run_worker
@@ -158,7 +158,15 @@ def create_app(settings: Settings | None = None, store: JobStore | None = None) 
     async def packages(
         principal: Annotated[Principal, Depends(require("submitter", "reviewer", "auditor"))],
     ) -> list[PackageOut]:
-        return [PackageOut.model_validate(p) for p in list_packages(settings.packages_dir)]
+        return [
+            PackageOut.model_validate(p)
+            for p in list_packages(settings.packages_dir)
+            if demo_ready(p["package_id"])
+        ]
+
+    def demo_ready(package_id: str) -> bool:
+        """Demo mode replays recordings, so it offers only packages that have them."""
+        return settings.mode != "demo" or has_recordings(settings.recordings_dir, package_id)
 
     @app.get("/v1/health", tags=["operations"])
     async def health() -> dict[str, str]:
@@ -200,6 +208,14 @@ def create_app(settings: Settings | None = None, store: JobStore | None = None) 
                 "The package is not in the catalog",
                 f"No package with id {body.package_id}.",
             ) from None
+        if not demo_ready(body.package_id):
+            raise Problem(
+                422,
+                "package-not-recorded",
+                "The package has no recorded run for demo mode",
+                f"Demo mode replays recorded model responses, and {body.package_id} has none. "
+                "Run in local mode with model keys, or choose a package from /v1/packages.",
+            )
         request_hash = hashlib.sha256(
             json.dumps(body.model_dump(), sort_keys=True).encode()
         ).hexdigest()

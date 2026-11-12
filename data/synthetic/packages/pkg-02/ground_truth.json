@@ -437,5 +437,22 @@
       "year": 2025,
       "value": "1.83"
     }
-  ]
+  ],
+  "golden": {
+    "status": "draft, awaiting review",
+    "expected_flags": [],
+    "acceptable_recommendations": [
+      "approve"
+    ],
+    "key_findings": [
+      {
+        "id": "KF1",
+        "text": "Pro forma DSCR of 1.89 meets the 1.25 minimum and pro forma leverage of 1.83x is within 3.50x; no policy threshold is breached.",
+        "terms": [
+          "DSCR",
+          "1.89"
+        ]
+      }
+    ]
+  }
 }

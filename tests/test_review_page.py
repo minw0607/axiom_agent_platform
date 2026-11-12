@@ -110,7 +110,7 @@ def test_packages_list_the_catalog_without_the_scenario(client: TestClient) -> N
     r = client.get("/v1/packages", headers=headers("submitter"))
     assert r.status_code == 200
     items = r.json()
-    assert len(items) == 10 and items[0]["package_id"] == "pkg-01"
+    assert len(items) == 25 and items[0]["package_id"] == "pkg-01"  # all have test recordings
     # The scenario label (healthy, stressed, ...) would prime the reviewer; it stays out.
     assert all(set(p) == {"package_id", "borrower_name", "industry"} for p in items)
 

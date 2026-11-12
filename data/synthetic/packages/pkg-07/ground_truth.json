@@ -305,5 +305,27 @@
       "year": 2025,
       "value": "2.15"
     }
-  ]
+  ],
+  "golden": {
+    "status": "draft, awaiting review",
+    "expected_flags": [
+      {
+        "code": "INSUFFICIENT_HISTORY",
+        "severity": "warning",
+        "year": null
+      }
+    ],
+    "acceptable_recommendations": [
+      "approve_with_conditions"
+    ],
+    "key_findings": [
+      {
+        "id": "KF1",
+        "text": "2 fiscal years are provided; the policy requires 3 (CP-3.1).",
+        "terms": [
+          "fiscal years"
+        ]
+      }
+    ]
+  }
 }

@@ -1,0 +1,10 @@
+{
+  "origin": "scripted",
+  "route": "narrative",
+  "prompt_id": "analyst",
+  "prompt_version": "v1",
+  "prompt_sha256": "d58dba9726ea8f6d1327948edcacc216b3a3486fce28e86c8de9b2fdd2afb55f",
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "text": "{\n \"paragraphs\": [\n  \"Across FY2023 to FY2025, the EBITDA margin reached 0.17 in the latest year, with latest revenue growth of 0.05.\",\n  \"Including the requested loan, pro forma DSCR is 1.32 and pro forma leverage is 2.27x. Interest coverage is 5.94x and the current ratio is 2.00.\",\n  \"No policy threshold is breached.\",\n  \"Reconciliation issues: total assets 6484049 differs from total liabilities + equity 6484046 by 3.\"\n ]\n}"
+}

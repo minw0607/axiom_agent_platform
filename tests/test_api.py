@@ -291,3 +291,21 @@ def test_docs_page_offers_api_key_authorization(client: TestClient) -> None:
     review = spec["paths"]["/v1/memos/{job_id}/review"]["post"]
     assert review["security"] == [{"APIKeyHeader": []}]
     assert "security" not in spec["paths"]["/v1/health"]["get"]
+
+
+def test_demo_mode_offers_only_packages_it_can_replay(store: InMemoryJobStore) -> None:
+    """The live recordings cover pkg-01 to pkg-10; the golden-set additions have none yet."""
+    live = replace(SETTINGS_WITH_KEYS, recordings_override=SETTINGS.data_dir / "recorded")
+    with TestClient(create_app(live, store)) as c:
+        h = {"X-API-Key": KEYS["submitter"]}
+        listed = [p["package_id"] for p in c.get("/v1/packages", headers=h).json()]
+        assert listed == [f"pkg-{i:02d}" for i in range(1, 11)]
+        r = c.post(
+            "/v1/memos", json={"package_id": "pkg-11"}, headers={**h, "Idempotency-Key": "k-11"}
+        )
+        assert r.status_code == 422 and r.headers["content-type"].startswith(PROBLEM)
+        assert r.json()["type"].endswith("package-not-recorded")
+        ok = c.post(
+            "/v1/memos", json={"package_id": "pkg-10"}, headers={**h, "Idempotency-Key": "k-10"}
+        )
+        assert ok.status_code == 202

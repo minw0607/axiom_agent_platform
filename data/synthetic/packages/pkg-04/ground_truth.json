@@ -437,5 +437,41 @@
       "year": 2025,
       "value": "2.63"
     }
-  ]
+  ],
+  "golden": {
+    "status": "draft, awaiting review",
+    "expected_flags": [
+      {
+        "code": "DSCR_BELOW_MIN",
+        "severity": "high",
+        "year": 2025
+      },
+      {
+        "code": "DSCR_BELOW_DECLINE_FLOOR",
+        "severity": "high",
+        "year": 2025
+      }
+    ],
+    "acceptable_recommendations": [
+      "decline"
+    ],
+    "key_findings": [
+      {
+        "id": "KF1",
+        "text": "Pro forma DSCR of 0.93 is below the policy minimum of 1.25 (CP-4.1).",
+        "terms": [
+          "DSCR",
+          "0.93"
+        ]
+      },
+      {
+        "id": "KF2",
+        "text": "Pro forma DSCR of 0.93 is below the 1.00 decline floor (CP-6.3), so the request is not eligible for an exception.",
+        "terms": [
+          "DSCR",
+          "0.93"
+        ]
+      }
+    ]
+  }
 }

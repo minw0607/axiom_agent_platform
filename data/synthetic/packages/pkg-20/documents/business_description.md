@@ -1,0 +1,9 @@
+# Business description
+
+Synthetic Borrower 20 (specialty foods) is a fictional specialty foods business founded in 2004, with about 100 employees.
+
+The company serves commercial customers in its region. Its largest customer accounted for approximately 29% of FY2025 revenue under a contract that renews annually.
+
+Management has operated the business for more than five years. The owners guarantee existing bank debt personally.
+
+This document is synthetic and describes no real business.

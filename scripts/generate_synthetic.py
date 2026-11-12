@@ -15,11 +15,15 @@ data/synthetic/packages/catalog.json. Re-running produces identical files.
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
 
-OUT = Path(__file__).resolve().parents[1] / "data" / "synthetic" / "packages"
+ROOT = Path(__file__).resolve().parents[1]
+OUT = ROOT / "data" / "synthetic" / "packages"
+GOLDEN_REVIEW = ROOT / "evals" / "golden" / "v1" / "answers.md"
+# Golden answers are a draft until a person has reviewed them (dev plan section 11).
+GOLDEN_STATUS = "draft, awaiting review"
 YEARS = (2023, 2024, 2025)
 D = Decimal
 
@@ -53,6 +57,7 @@ class Params:
     founded: int = 2004
     employees: int = 60
     imbalance: dict[int, int] = field(default_factory=dict)  # year -> assets overstated by
+    omit: tuple[str, ...] = ()  # documents left out of the package
 
 
 PACKAGES = [
@@ -309,6 +314,244 @@ PACKAGES = [
     ),
 ]
 
+# Golden set additions (week 6): edge cases near each threshold. Loan amounts on the
+# boundary cases were tuned so the rounded ratio lands exactly where the case says.
+BASE = PACKAGES[0]  # pkg-01, a healthy machining business
+PACKAGES += [
+    replace(
+        BASE,
+        package_id="pkg-11",
+        industry="dental laboratory",
+        scenario="dscr_at_minimum",
+        revenue0=7_200_000,
+        loan=1_480_000,
+        loan_rate="8.00",
+        term=5,
+        amort=5,
+        employees=45,
+    ),
+    replace(
+        BASE,
+        package_id="pkg-12",
+        industry="sign manufacturing",
+        scenario="dscr_just_below_minimum",
+        revenue0=7_200_000,
+        loan=1_520_000,
+        loan_rate="8.00",
+        term=5,
+        amort=5,
+        employees=45,
+    ),
+    replace(
+        BASE,
+        package_id="pkg-13",
+        industry="industrial cleaning",
+        scenario="leverage_at_maximum",
+        revenue0=9_000_000,
+        cogs_pct=0.55,
+        opex_pct=0.27,
+        loan=3_910_000,
+        loan_rate="7.00",
+        term=10,
+        amort=10,
+        debt=3_000_000,
+        principal_repaid=300_000,
+        employees=90,
+    ),
+    replace(
+        BASE,
+        package_id="pkg-14",
+        industry="metal fabrication",
+        scenario="multiple_breaches",
+        revenue0=10_500_000,
+        growth=(0.02, 0.01),
+        cogs_pct=0.66,
+        opex_pct=0.24,
+        debt=4_200_000,
+        debt_rate=0.09,
+        principal_repaid=350_000,
+        cash_pct=0.02,
+        ar_pct=0.07,
+        inv_pct=0.04,
+        other_ca_pct=0.01,
+        cl_pct=0.16,
+        loan=1_800_000,
+        loan_rate="9.00",
+        term=7,
+        amort=7,
+        employees=70,
+    ),
+    replace(
+        BASE,
+        package_id="pkg-15",
+        industry="event staffing",
+        scenario="negative_ebitda",
+        revenue0=5_400_000,
+        growth=(-0.04, -0.06),
+        cogs_pct=0.71,
+        opex_pct=0.32,
+        debt=900_000,
+        principal_repaid=150_000,
+        fixed_assets=900_000,
+        loan=500_000,
+        loan_rate="9.50",
+        term=5,
+        amort=5,
+        employees=150,
+    ),
+    replace(
+        BASE,
+        package_id="pkg-16",
+        industry="solar installation",
+        scenario="growth_with_oversized_loan",
+        revenue0=6_000_000,
+        growth=(0.22, 0.25),
+        cogs_pct=0.64,
+        opex_pct=0.25,
+        debt=1_000_000,
+        principal_repaid=200_000,
+        loan=4_000_000,
+        loan_rate="8.75",
+        term=5,
+        amort=5,
+        founded=2017,
+        employees=55,
+    ),
+    replace(
+        BASE,
+        package_id="pkg-17",
+        industry="medical billing",
+        scenario="concentration_disclosure",
+        revenue0=8_400_000,
+        cogs_pct=0.48,
+        opex_pct=0.36,
+        loan=1_000_000,
+        loan_rate="7.50",
+        term=5,
+        amort=5,
+        top_customer_pct=32,
+        employees=95,
+    ),
+    replace(
+        BASE,
+        package_id="pkg-18",
+        industry="aerospace machining",
+        scenario="concentration_at_maximum",
+        revenue0=16_000_000,
+        loan=2_000_000,
+        top_customer_pct=40,
+        employees=130,
+    ),
+    replace(
+        BASE,
+        package_id="pkg-19",
+        industry="office furniture",
+        scenario="revenue_decline_at_trigger",
+        revenue0=12_000_000,
+        growth=(0.03, -0.10),
+        cogs_pct=0.60,
+        opex_pct=0.24,
+        loan=900_000,
+        loan_rate="7.75",
+        term=5,
+        amort=5,
+        employees=80,
+    ),
+    replace(
+        BASE,
+        package_id="pkg-20",
+        industry="specialty foods",
+        scenario="two_warnings",
+        revenue0=14_000_000,
+        growth=(0.01, -0.12),
+        cogs_pct=0.60,
+        opex_pct=0.22,
+        loan=800_000,
+        loan_rate="7.75",
+        term=5,
+        amort=5,
+        top_customer_pct=29,
+        employees=100,
+    ),
+    replace(
+        BASE,
+        package_id="pkg-21",
+        industry="plumbing supply",
+        scenario="missing_cash_flow",
+        revenue0=11_000_000,
+        loan=1_200_000,
+        omit=("cash_flow",),
+        employees=65,
+    ),
+    replace(
+        BASE,
+        package_id="pkg-22",
+        industry="auto body repair",
+        scenario="small_imbalance",
+        revenue0=6_300_000,
+        loan=700_000,
+        loan_rate="8.00",
+        term=5,
+        amort=5,
+        imbalance={2025: 3},
+        employees=38,
+    ),
+    replace(
+        BASE,
+        package_id="pkg-23",
+        industry="tutoring services",
+        scenario="loan_below_minimum",
+        revenue0=3_100_000,
+        cogs_pct=0.45,
+        opex_pct=0.38,
+        debt=400_000,
+        principal_repaid=80_000,
+        fixed_assets=600_000,
+        loan=200_000,
+        loan_rate="8.50",
+        term=3,
+        amort=3,
+        employees=30,
+    ),
+    replace(
+        BASE,
+        package_id="pkg-24",
+        industry="hotel operation",
+        scenario="low_interest_coverage",
+        revenue0=9_800_000,
+        cogs_pct=0.50,
+        opex_pct=0.34,
+        da=1_100_000,
+        debt=6_000_000,
+        debt_rate=0.095,
+        principal_repaid=150_000,
+        fixed_assets=12_000_000,
+        loan=600_000,
+        loan_rate="9.00",
+        term=10,
+        amort=20,
+        employees=120,
+    ),
+    replace(
+        BASE,
+        package_id="pkg-25",
+        industry="engineering consulting",
+        scenario="healthy_large_loan",
+        revenue0=42_000_000,
+        growth=(0.06, 0.07),
+        cogs_pct=0.55,
+        opex_pct=0.30,
+        debt=6_000_000,
+        principal_repaid=1_000_000,
+        fixed_assets=6_000_000,
+        loan=5_000_000,
+        loan_rate="7.00",
+        term=7,
+        amort=7,
+        employees=260,
+    ),
+]
+
 LABELS = {
     "revenue": "Revenue",
     "cost_of_goods_sold": "Cost of goods sold",
@@ -411,6 +654,7 @@ def ratio(n: D, d: D) -> str | None:
 def expected_ratios(p: Params, fig: dict[int, dict[str, int]]) -> list[dict[str, object]]:
     """Independent reference implementation of the ratio definitions in docs."""
     out: list[dict[str, object]] = []
+    no_principal = "cash_flow" in p.omit  # debt service cannot be computed without it
     for i, y in enumerate(p.years):
         f = {k: D(v) for k, v in fig[y].items()}
         rows = {
@@ -421,7 +665,9 @@ def expected_ratios(p: Params, fig: dict[int, dict[str, int]]) -> list[dict[str,
                 f["ebitda"] - f["depreciation_amortization"], f["interest_expense"]
             ),
             "debt_to_equity": ratio(f["total_debt"], f["total_equity"]),
-            "dscr": ratio(f["ebitda"], f["interest_expense"] + f["debt_principal_repaid"]),
+            "dscr": None
+            if no_principal
+            else ratio(f["ebitda"], f["interest_expense"] + f["debt_principal_repaid"]),
         }
         if i > 0:
             prev = D(fig[p.years[i - 1]]["revenue"])
@@ -438,7 +684,9 @@ def expected_ratios(p: Params, fig: dict[int, dict[str, int]]) -> list[dict[str,
         {
             "name": "pro_forma_dscr",
             "year": y,
-            "value": ratio(f["ebitda"], f["interest_expense"] + f["debt_principal_repaid"] + ads),
+            "value": None
+            if no_principal
+            else ratio(f["ebitda"], f["interest_expense"] + f["debt_principal_repaid"] + ads),
         },
         {
             "name": "pro_forma_leverage",
@@ -447,6 +695,222 @@ def expected_ratios(p: Params, fig: dict[int, dict[str, int]]) -> list[dict[str,
         },
     ]
     return out
+
+
+def thresholds() -> dict[str, D]:
+    """Threshold values from the policy file; the flag logic below is written separately."""
+    import yaml
+
+    raw = yaml.safe_load((ROOT / "config" / "policy_thresholds.yaml").read_text())
+    return {k: D(str(v["value"])) for k, v in raw["thresholds"].items()}
+
+
+def golden(
+    p: Params, fig: dict[int, dict[str, int]], ratios: list[dict[str, object]]
+) -> dict[str, object]:
+    """Expected risk flags, acceptable draft recommendations and key findings, from the
+    credit policy text (data/synthetic/credit_policy/credit_policy.md)."""
+    t = thresholds()
+    last = p.years[-1]
+    val = {(str(x["name"]), int(x["year"])): x["value"] for x in ratios}  # type: ignore[call-overload]
+
+    def num(name: str, year: int = last) -> D | None:
+        v = val.get((name, year))
+        return None if v is None else D(str(v))
+
+    flags: list[dict[str, object]] = []
+    findings: list[dict[str, object]] = []
+
+    def flag(
+        code: str, severity: str, text: str, terms: list[str], year: int | None = last
+    ) -> None:
+        flags.append({"code": code, "severity": severity, "year": year})
+        findings.append({"id": f"KF{len(findings) + 1}", "text": text, "terms": terms})
+
+    pf_dscr = num("pro_forma_dscr")
+    if pf_dscr is None:
+        flag(
+            "DSCR_BELOW_MIN_UNDEFINED",
+            "high",
+            "Pro forma DSCR cannot be computed because debt repayment is not reported.",
+            ["DSCR"],
+        )
+    else:
+        if pf_dscr < t["min_pro_forma_dscr"]:
+            flag(
+                "DSCR_BELOW_MIN",
+                "high",
+                f"Pro forma DSCR of {pf_dscr} is below the policy minimum of 1.25 (CP-4.1).",
+                ["DSCR", str(pf_dscr)],
+            )
+        if pf_dscr < t["dscr_decline_floor"]:
+            flag(
+                "DSCR_BELOW_DECLINE_FLOOR",
+                "high",
+                f"Pro forma DSCR of {pf_dscr} is below the 1.00 decline floor (CP-6.3), so the "
+                "request is not eligible for an exception.",
+                ["DSCR", str(pf_dscr)],
+            )
+    cr = num("current_ratio")
+    if cr is not None and cr < t["min_current_ratio"]:
+        flag(
+            "LIQUIDITY_BELOW_MIN",
+            "high",
+            f"Current ratio of {cr} is below the policy minimum of 1.20 (CP-4.3).",
+            ["current ratio", str(cr)],
+        )
+    ic = num("interest_coverage")
+    if ic is not None and ic < t["min_interest_coverage"]:
+        flag(
+            "COVERAGE_BELOW_MIN",
+            "high",
+            f"Interest coverage of {ic} is below the policy minimum of 2.00 (CP-4.4).",
+            ["coverage", str(ic)],
+        )
+    lev = num("pro_forma_leverage")
+    if fig[last]["ebitda"] <= 0:
+        flag(
+            "NEGATIVE_EBITDA",
+            "high",
+            f"FY{last} EBITDA is negative ({fig[last]['ebitda']}), so leverage is not "
+            "meaningful and cash flow does not cover debt service.",
+            ["EBITDA", str(fig[last]["ebitda"])],
+        )
+    elif lev is not None and lev > t["max_pro_forma_leverage"]:
+        flag(
+            "LEVERAGE_ABOVE_MAX",
+            "high",
+            f"Pro forma leverage of {lev}x exceeds the policy maximum of 3.50x (CP-4.2).",
+            ["leverage", str(lev)],
+        )
+    for y in p.years[1:]:
+        g = num("revenue_growth", y)
+        if g is not None and g < t["max_revenue_decline"]:
+            flag(
+                "REVENUE_DECLINE",
+                "warning",
+                f"Revenue changed by {g} in FY{y}, beyond the policy trigger of -0.10 (CP-4.5).",
+                ["revenue", str(g)],
+                y,
+            )
+    share = D(p.top_customer_pct)
+    if share > t["max_customer_concentration_pct"]:
+        flag(
+            "CONCENTRATION_ABOVE_MAX",
+            "high",
+            f"The largest customer is {share}% of revenue, above the 40% maximum (CP-5.2); a "
+            "sensitivity analysis is required.",
+            ["customer", f"{share}%"],
+        )
+    elif share > t["concentration_disclosure_pct"]:
+        flag(
+            "CONCENTRATION_DISCLOSURE",
+            "warning",
+            f"The largest customer is {share}% of revenue, above 25% (CP-5.1); the memo must "
+            "identify the contract terms.",
+            ["customer", f"{share}%"],
+        )
+    if D(len(p.years)) < t["min_history_years"]:
+        flag(
+            "INSUFFICIENT_HISTORY",
+            "warning",
+            f"{len(p.years)} fiscal years are provided; the policy requires 3 (CP-3.1).",
+            ["fiscal years"],
+            None,
+        )
+
+    # A value exactly on a limit meets it; a good memo says so rather than calling it a breach.
+    at_limit = [
+        ("Pro forma DSCR", pf_dscr, t["min_pro_forma_dscr"], "minimum", "CP-4.1", "DSCR"),
+        ("Pro forma leverage", lev, t["max_pro_forma_leverage"], "maximum", "CP-4.2", "leverage"),
+        ("Current ratio", cr, t["min_current_ratio"], "minimum", "CP-4.3", "current ratio"),
+        ("Interest coverage", ic, t["min_interest_coverage"], "minimum", "CP-4.4", "coverage"),
+        (
+            "FY" + str(last) + " revenue growth",
+            num("revenue_growth"),
+            t["max_revenue_decline"],
+            "trigger",
+            "CP-4.5",
+            "revenue",
+        ),
+        (
+            "The largest customer's share of revenue, in percent,",
+            share,
+            t["max_customer_concentration_pct"],
+            "maximum",
+            "CP-5.2",
+            "customer",
+        ),
+    ]
+    for label, value, limit, kind, ref, term in at_limit:
+        if value is not None and value == limit:
+            findings.append(
+                {
+                    "id": f"KF{len(findings) + 1}",
+                    "text": f"{label} of {value} is exactly at the policy {kind} ({ref}); "
+                    "it meets the standard and is not a breach.",
+                    "terms": [term, str(value)],
+                }
+            )
+
+    refer_reasons = []
+    if p.imbalance:
+        y, gap = next(iter(p.imbalance.items()))
+        refer_reasons.append(
+            (
+                f"FY{y} total assets exceed total liabilities plus equity by {gap}, so the "
+                "balance sheet does not balance.",
+                ["balance"],
+            )
+        )
+    if p.omit:
+        refer_reasons.append(
+            (
+                f"Required document missing: {', '.join(k.replace('_', ' ') for k in p.omit)} "
+                "statement (CP-3.1); the policy does not say what follows, so refer is a "
+                "reading to confirm.",
+                ["cash flow"],
+            )
+        )
+    if not t["min_loan_amount"] <= D(p.loan) <= t["max_loan_amount"]:
+        refer_reasons.append(
+            (
+                f"The requested {p.loan} is outside the policy's scope of 250,000 to 5,000,000 "
+                "(CP-1.1).",
+                [str(p.loan)],
+            )
+        )
+    for reason, terms in refer_reasons:
+        findings.append({"id": f"KF{len(findings) + 1}", "text": reason, "terms": terms})
+
+    high = [f for f in flags if f["severity"] == "high"]
+    if refer_reasons:
+        acceptable = ["refer"]
+    elif any(f["code"] == "DSCR_BELOW_DECLINE_FLOOR" for f in flags) or any(
+        f["code"] == "NEGATIVE_EBITDA" for f in flags
+    ):
+        acceptable = ["decline"]
+    elif high:
+        acceptable = ["approve_with_conditions", "decline"]
+    elif flags:
+        acceptable = ["approve_with_conditions"]
+    else:
+        acceptable = ["approve"]
+    if not findings:
+        findings.append(
+            {
+                "id": "KF1",
+                "text": f"Pro forma DSCR of {pf_dscr} meets the 1.25 minimum and pro forma "
+                f"leverage of {lev}x is within 3.50x; no policy threshold is breached.",
+                "terms": ["DSCR", str(pf_dscr)],
+            }
+        )
+    return {
+        "status": GOLDEN_STATUS,
+        "expected_flags": flags,
+        "acceptable_recommendations": acceptable,
+        "key_findings": findings,
+    }
 
 
 def business_description(p: Params, name: str) -> str:
@@ -546,6 +1010,8 @@ def build(p: Params) -> dict[str, object]:
         ),
     ]
     for kind, title, fields in statements:
+        if kind in p.omit:
+            continue
         doc_id = f"{p.package_id}-{kind}"
         text, where = render_table(title, name, fields, fig, p.years)
         (folder / "documents" / f"{kind}.md").write_text(text)
@@ -610,6 +1076,7 @@ def build(p: Params) -> dict[str, object]:
         "years": truth_years,
         "loan": truth_loan,
         "expected_ratios": expected_ratios(p, fig),
+        "golden": golden(p, fig, expected_ratios(p, fig)),
     }
     (folder / "ground_truth.json").write_text(json.dumps(truth, indent=2) + "\n")
     return {
@@ -617,13 +1084,47 @@ def build(p: Params) -> dict[str, object]:
         "borrower_name": name,
         "industry": p.industry,
         "scenario": p.scenario,
+        "golden": truth["golden"],
     }
+
+
+def review_page(built: list[dict[str, object]]) -> str:
+    """The golden answers in one readable page, for the person who reviews them."""
+    lines = [
+        "# Golden set v1: expected answers for review",
+        "",
+        f"Status: **{GOLDEN_STATUS}**. Generated by `scripts/generate_synthetic.py`; edit the",
+        "generator, not this page. Figures and ratios are computed by script. The flags, the",
+        "acceptable draft recommendations and the key findings below are read from the credit",
+        "policy and need a person's review: is each finding right, and is anything missing?",
+        'The policy does not define "refer"; using it for a missing document, an out-of-scope',
+        "loan or a balance sheet that does not balance is a reading for the reviewer to confirm.",
+        "",
+    ]
+    for b in built:
+        g = b["golden"]
+        assert isinstance(g, dict)
+        flags = ", ".join(f"{f['code']} ({f['severity']})" for f in g["expected_flags"]) or "none"
+        lines += [
+            f"## {b['package_id']}: {b['industry']} ({b['scenario'].replace('_', ' ')})",  # type: ignore[union-attr]
+            "",
+            f"- **Expected risk flags:** {flags}",
+            "- **Acceptable draft recommendation:** "
+            + " or ".join(r.replace("_", " ") for r in g["acceptable_recommendations"]),
+            "- **Key findings a good memo states:**",
+            *[f"  - {k['id']}: {k['text']}" for k in g["key_findings"]],
+            "",
+        ]
+    return "\n".join(lines)
 
 
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
-    catalog = [build(p) for p in PACKAGES]
+    built = [build(p) for p in PACKAGES]
+    catalog = [{k: v for k, v in b.items() if k != "golden"} for b in built]
     (OUT / "catalog.json").write_text(json.dumps(catalog, indent=2) + "\n")
+    GOLDEN_REVIEW.parent.mkdir(parents=True, exist_ok=True)
+    GOLDEN_REVIEW.write_text(review_page(built))
     print(f"Wrote {len(catalog)} packages to {OUT}")
 
 

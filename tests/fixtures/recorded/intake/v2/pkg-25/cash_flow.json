@@ -1,0 +1,10 @@
+{
+  "origin": "scripted",
+  "route": "extraction",
+  "prompt_id": "intake",
+  "prompt_version": "v2",
+  "prompt_sha256": "73e8075013230e36eb967c3564fdbcf8a4ecb8f9698cccb89a80aeaa65dd87fa",
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "text": "{\n \"figures\": [\n  {\n   \"field\": \"capital_expenditures\",\n   \"year\": 2023,\n   \"value\": \"462000\",\n   \"line\": 8\n  },\n  {\n   \"field\": \"debt_principal_repaid\",\n   \"year\": 2023,\n   \"value\": \"1000000\",\n   \"line\": 9\n  },\n  {\n   \"field\": \"capital_expenditures\",\n   \"year\": 2024,\n   \"value\": \"462000\",\n   \"line\": 8\n  },\n  {\n   \"field\": \"debt_principal_repaid\",\n   \"year\": 2024,\n   \"value\": \"1000000\",\n   \"line\": 9\n  },\n  {\n   \"field\": \"capital_expenditures\",\n   \"year\": 2025,\n   \"value\": \"462000\",\n   \"line\": 8\n  },\n  {\n   \"field\": \"debt_principal_repaid\",\n   \"year\": 2025,\n   \"value\": \"1000000\",\n   \"line\": 9\n  }\n ]\n}"
+}

@@ -1,0 +1,10 @@
+{
+  "origin": "scripted",
+  "route": "narrative",
+  "prompt_id": "analyst",
+  "prompt_version": "v1",
+  "prompt_sha256": "c94c1861afb4df8723ba5a8a95264be350bfc4e626ee16f2c53c7a7c5637f322",
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "text": "{\n \"paragraphs\": [\n  \"Across FY2023 to FY2025, the EBITDA margin reached 0.17 in the latest year, with latest revenue growth of 0.05.\",\n  \"Including the requested loan, pro forma DSCR is not computable and pro forma leverage is 1.54x. Interest coverage is 12.78x and the current ratio is 2.00.\",\n  \"Risk flags: Pro forma DSCR could not be computed (undefined: missing debt_principal_repaid).\"\n ]\n}"
+}

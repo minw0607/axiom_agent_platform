@@ -1,0 +1,38 @@
+{
+  "package_id": "pkg-19",
+  "borrower_name": "Synthetic Borrower 19 (office furniture)",
+  "industry": "office furniture",
+  "scenario": "revenue_decline_at_trigger",
+  "documents": [
+    {
+      "doc_id": "pkg-19-income_statement",
+      "kind": "income_statement",
+      "title": "Income statement",
+      "file": "income_statement.md"
+    },
+    {
+      "doc_id": "pkg-19-balance_sheet",
+      "kind": "balance_sheet",
+      "title": "Balance sheet",
+      "file": "balance_sheet.md"
+    },
+    {
+      "doc_id": "pkg-19-cash_flow",
+      "kind": "cash_flow",
+      "title": "Cash flow statement (selected lines)",
+      "file": "cash_flow.md"
+    },
+    {
+      "doc_id": "pkg-19-loan_application",
+      "kind": "loan_application",
+      "title": "Loan application",
+      "file": "loan_application.md"
+    },
+    {
+      "doc_id": "pkg-19-business_description",
+      "kind": "business_description",
+      "title": "Business description",
+      "file": "business_description.md"
+    }
+  ]
+}

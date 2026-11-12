@@ -437,5 +437,29 @@
       "year": 2025,
       "value": "4.43"
     }
-  ]
+  ],
+  "golden": {
+    "status": "draft, awaiting review",
+    "expected_flags": [
+      {
+        "code": "LEVERAGE_ABOVE_MAX",
+        "severity": "high",
+        "year": 2025
+      }
+    ],
+    "acceptable_recommendations": [
+      "approve_with_conditions",
+      "decline"
+    ],
+    "key_findings": [
+      {
+        "id": "KF1",
+        "text": "Pro forma leverage of 4.43x exceeds the policy maximum of 3.50x (CP-4.2).",
+        "terms": [
+          "leverage",
+          "4.43"
+        ]
+      }
+    ]
+  }
 }

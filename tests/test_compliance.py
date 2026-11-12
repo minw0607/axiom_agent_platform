@@ -25,6 +25,22 @@ EXPECTED_TRIGGERED = {
     "concentration": {"CONCENTRATION_SENSITIVITY"},
     "revenue_decline": set(),
     "low_liquidity": set(),
+    # Golden set additions (week 6)
+    "dscr_at_minimum": set(),
+    "dscr_just_below_minimum": set(),
+    "leverage_at_maximum": set(),
+    "multiple_breaches": set(),
+    "negative_ebitda": set(),
+    "growth_with_oversized_loan": set(),
+    "concentration_disclosure": set(),
+    "concentration_at_maximum": set(),
+    "revenue_decline_at_trigger": set(),
+    "two_warnings": set(),
+    "missing_cash_flow": {"REQUIRED_DOCUMENTS", "THREE_YEARS_OF_STATEMENTS"},
+    "small_imbalance": {"FIGURES_RECONCILE"},
+    "loan_below_minimum": {"LOAN_AMOUNT_IN_SCOPE"},
+    "low_interest_coverage": set(),
+    "healthy_large_loan": set(),
 }
 
 

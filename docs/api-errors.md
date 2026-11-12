@@ -12,6 +12,7 @@ Errors use RFC 9457 problem details (`application/problem+json`). The `type` fie
 | 413 | <a id="payload-too-large"></a>`payload-too-large` | The request body is over 64 KiB. |
 | 422 | <a id="invalid-request"></a>`invalid-request` | The body does not match the schema. The `errors` field lists each problem. |
 | 422 | <a id="unknown-package"></a>`unknown-package` | The `package_id` is well formed but not in the synthetic catalog. |
+| 422 | <a id="package-not-recorded"></a>`package-not-recorded` | Demo mode replays recorded model responses, and this package has none. The golden-set packages added in week 6 are recorded for tests only until live recordings are made. |
 | 422 | <a id="idempotency-key-reused"></a>`idempotency-key-reused` | The key was already used, within 24 hours, with a different request body. |
 
 ## Job failure reasons

@@ -28,6 +28,24 @@ EXPECTED_RECOMMENDATION = {
     "concentration": "approve_with_conditions",
     "revenue_decline": "approve_with_conditions",
     "low_liquidity": "approve_with_conditions",
+    # Golden set additions (week 6). These are the scripted drafts, not the golden answers:
+    # missing_cash_flow and loan_below_minimum differ from the golden "refer", a gap the
+    # evaluation reports (evals/golden/v1/answers.md).
+    "dscr_at_minimum": "approve",
+    "dscr_just_below_minimum": "approve_with_conditions",
+    "leverage_at_maximum": "approve",
+    "multiple_breaches": "approve_with_conditions",
+    "negative_ebitda": "decline",
+    "growth_with_oversized_loan": "decline",
+    "concentration_disclosure": "approve_with_conditions",
+    "concentration_at_maximum": "approve_with_conditions",
+    "revenue_decline_at_trigger": "approve",
+    "two_warnings": "approve_with_conditions",
+    "missing_cash_flow": "approve_with_conditions",
+    "small_imbalance": "refer",
+    "loan_below_minimum": "approve",
+    "low_interest_coverage": "approve_with_conditions",
+    "healthy_large_loan": "approve",
 }
 
 

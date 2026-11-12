@@ -159,6 +159,7 @@ The platform sets scope arguments such as `job_id` from graph state; a model nev
 | Draft guardrails: three rails (decision language, investment advice, on task) and two evidence checks (number provenance, citation support) on every draft; one automated fix (`drafter_fix/v1`), counted apart from human revisions, then the job fails with `guardrail_failed` | Built and tested (week 5) |
 | PII on output (`pii_output`) and harm categories (`content_safety`, cloud-only: `not_evaluated` until the client is connected) | Built and tested (week 5) |
 | Adversarial set v1: 20 attacks run with guardrails on and off; attack success 6/20 on, 20/20 off (`evals/adversarial/`) | Built (week 5) |
+| Golden set v1: 25 packages with expected flags, acceptable recommendations and key findings, derived from the policy text and checked against the flag tool; draft until reviewed (`evals/golden/v1/answers.md`) | Built (week 6) |
 | Week 5 acceptance: `scripts/check_week5.py`, every control toggled, redaction invariants, cloud-only `not_evaluated`, the adversarial set, and guardrail events in a stack job's chain | Passing (Nov 12) |
 | Eval baseline | Week 6 |
 | Keyless demo | Week 7 |

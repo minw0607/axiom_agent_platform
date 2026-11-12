@@ -151,25 +151,18 @@ def test_ratios_match_reference_exactly(package_id: str) -> None:
 
 # 3. Scenario flags --------------------------------------------------------------
 
-EXPECTED_FLAGS = {
-    "healthy": set(),
-    "moderate": set(),
-    "weak_dscr": {"DSCR_BELOW_MIN", "DSCR_BELOW_DECLINE_FLOOR"},
-    "leverage_breach": {"LEVERAGE_ABOVE_MAX"},
-    "inconsistent_figures": set(),
-    "missing_year": {"INSUFFICIENT_HISTORY"},
-    "concentration": {"CONCENTRATION_ABOVE_MAX"},
-    "revenue_decline": {"REVENUE_DECLINE"},
-    "low_liquidity": {"LIQUIDITY_BELOW_MIN"},
-}
-
 
 @pytest.mark.parametrize("package_id", PACKAGE_IDS)
-def test_scenario_raises_expected_flags(package_id: str) -> None:
+def test_scenario_raises_the_golden_flags(package_id: str) -> None:
+    """The generator derives the golden flags from the policy text on its own; the two
+    implementations must agree on every package, flag by flag and year by year."""
     truth = load_ground_truth(PACKAGES, package_id)
     fs = ground_truth_statements(truth)
     flags = risk_flags(fs, compute_ratios(fs), load_policy())
-    assert {f.code for f in flags} == EXPECTED_FLAGS[truth["scenario"]]
+    golden = truth["golden"]["expected_flags"]
+    assert sorted((f.code, f.severity.value, f.year) for f in flags) == sorted(
+        (g["code"], g["severity"], g["year"]) for g in golden
+    )
     assert all(f.policy_ref for f in flags)
 
 
@@ -219,10 +212,11 @@ def test_reconciliation_by_scenario(package_id: str) -> None:
         for c in reconcile(ground_truth_statements(truth))
         if c.outcome == "triggered"
     }
-    expected = (
-        {("balance_sheet_balances", 2024)} if truth["scenario"] == "inconsistent_figures" else set()
-    )
-    assert triggered == expected
+    expected = {
+        "inconsistent_figures": {("balance_sheet_balances", 2024)},
+        "small_imbalance": {("balance_sheet_balances", 2025)},  # off by 3 dollars
+    }
+    assert triggered == expected.get(truth["scenario"], set())
 
 
 def test_reconciliation_without_inputs_is_not_evaluated() -> None:

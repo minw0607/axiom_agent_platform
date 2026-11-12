@@ -437,5 +437,28 @@
       "year": 2025,
       "value": "1.38"
     }
-  ]
+  ],
+  "golden": {
+    "status": "draft, awaiting review",
+    "expected_flags": [
+      {
+        "code": "REVENUE_DECLINE",
+        "severity": "warning",
+        "year": 2025
+      }
+    ],
+    "acceptable_recommendations": [
+      "approve_with_conditions"
+    ],
+    "key_findings": [
+      {
+        "id": "KF1",
+        "text": "Revenue changed by -0.14 in FY2025, beyond the policy trigger of -0.10 (CP-4.5).",
+        "terms": [
+          "revenue",
+          "-0.14"
+        ]
+      }
+    ]
+  }
 }

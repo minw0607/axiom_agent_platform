@@ -29,6 +29,11 @@ def list_packages(packages_dir: Path) -> list[dict[str, Any]]:
     return catalog
 
 
+def has_recordings(recordings_dir: Path, package_id: str) -> bool:
+    """Whether demo mode can replay a run for this package: its intake was recorded."""
+    return any(p.is_dir() for p in recordings_dir.glob(f"intake/*/{package_id}"))
+
+
 def load_package(packages_dir: Path, package_id: str) -> BorrowerPackage:
     if not PACKAGE_ID.fullmatch(package_id):
         raise UnknownPackage(package_id)

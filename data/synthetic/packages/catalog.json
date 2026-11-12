@@ -58,5 +58,95 @@
     "borrower_name": "Synthetic Borrower 10 (software reselling)",
     "industry": "software reselling",
     "scenario": "low_liquidity"
+  },
+  {
+    "package_id": "pkg-11",
+    "borrower_name": "Synthetic Borrower 11 (dental laboratory)",
+    "industry": "dental laboratory",
+    "scenario": "dscr_at_minimum"
+  },
+  {
+    "package_id": "pkg-12",
+    "borrower_name": "Synthetic Borrower 12 (sign manufacturing)",
+    "industry": "sign manufacturing",
+    "scenario": "dscr_just_below_minimum"
+  },
+  {
+    "package_id": "pkg-13",
+    "borrower_name": "Synthetic Borrower 13 (industrial cleaning)",
+    "industry": "industrial cleaning",
+    "scenario": "leverage_at_maximum"
+  },
+  {
+    "package_id": "pkg-14",
+    "borrower_name": "Synthetic Borrower 14 (metal fabrication)",
+    "industry": "metal fabrication",
+    "scenario": "multiple_breaches"
+  },
+  {
+    "package_id": "pkg-15",
+    "borrower_name": "Synthetic Borrower 15 (event staffing)",
+    "industry": "event staffing",
+    "scenario": "negative_ebitda"
+  },
+  {
+    "package_id": "pkg-16",
+    "borrower_name": "Synthetic Borrower 16 (solar installation)",
+    "industry": "solar installation",
+    "scenario": "growth_with_oversized_loan"
+  },
+  {
+    "package_id": "pkg-17",
+    "borrower_name": "Synthetic Borrower 17 (medical billing)",
+    "industry": "medical billing",
+    "scenario": "concentration_disclosure"
+  },
+  {
+    "package_id": "pkg-18",
+    "borrower_name": "Synthetic Borrower 18 (aerospace machining)",
+    "industry": "aerospace machining",
+    "scenario": "concentration_at_maximum"
+  },
+  {
+    "package_id": "pkg-19",
+    "borrower_name": "Synthetic Borrower 19 (office furniture)",
+    "industry": "office furniture",
+    "scenario": "revenue_decline_at_trigger"
+  },
+  {
+    "package_id": "pkg-20",
+    "borrower_name": "Synthetic Borrower 20 (specialty foods)",
+    "industry": "specialty foods",
+    "scenario": "two_warnings"
+  },
+  {
+    "package_id": "pkg-21",
+    "borrower_name": "Synthetic Borrower 21 (plumbing supply)",
+    "industry": "plumbing supply",
+    "scenario": "missing_cash_flow"
+  },
+  {
+    "package_id": "pkg-22",
+    "borrower_name": "Synthetic Borrower 22 (auto body repair)",
+    "industry": "auto body repair",
+    "scenario": "small_imbalance"
+  },
+  {
+    "package_id": "pkg-23",
+    "borrower_name": "Synthetic Borrower 23 (tutoring services)",
+    "industry": "tutoring services",
+    "scenario": "loan_below_minimum"
+  },
+  {
+    "package_id": "pkg-24",
+    "borrower_name": "Synthetic Borrower 24 (hotel operation)",
+    "industry": "hotel operation",
+    "scenario": "low_interest_coverage"
+  },
+  {
+    "package_id": "pkg-25",
+    "borrower_name": "Synthetic Borrower 25 (engineering consulting)",
+    "industry": "engineering consulting",
+    "scenario": "healthy_large_loan"
   }
 ]

@@ -437,5 +437,29 @@
       "year": 2025,
       "value": "1.40"
     }
-  ]
+  ],
+  "golden": {
+    "status": "draft, awaiting review",
+    "expected_flags": [
+      {
+        "code": "CONCENTRATION_ABOVE_MAX",
+        "severity": "high",
+        "year": 2025
+      }
+    ],
+    "acceptable_recommendations": [
+      "approve_with_conditions",
+      "decline"
+    ],
+    "key_findings": [
+      {
+        "id": "KF1",
+        "text": "The largest customer is 48% of revenue, above the 40% maximum (CP-5.2); a sensitivity analysis is required.",
+        "terms": [
+          "customer",
+          "48%"
+        ]
+      }
+    ]
+  }
 }

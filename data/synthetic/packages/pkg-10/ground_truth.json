@@ -437,5 +437,29 @@
       "year": 2025,
       "value": "0.97"
     }
-  ]
+  ],
+  "golden": {
+    "status": "draft, awaiting review",
+    "expected_flags": [
+      {
+        "code": "LIQUIDITY_BELOW_MIN",
+        "severity": "high",
+        "year": 2025
+      }
+    ],
+    "acceptable_recommendations": [
+      "approve_with_conditions",
+      "decline"
+    ],
+    "key_findings": [
+      {
+        "id": "KF1",
+        "text": "Current ratio of 1.08 is below the policy minimum of 1.20 (CP-4.3).",
+        "terms": [
+          "current ratio",
+          "1.08"
+        ]
+      }
+    ]
+  }
 }

@@ -151,6 +151,12 @@ def stated_numbers(text: str) -> list[Stated]:
     return out
 
 
+def claim_numbers(text: str, facts: DraftFacts) -> list[Stated]:
+    """The numbers a claim states, leaving out any inside the borrower's name
+    ("Synthetic Borrower 14" states no figure)."""
+    return stated_numbers(text.replace(facts.package.borrower_name, ""))
+
+
 def known_values(facts: DraftFacts) -> list[Decimal]:
     values: list[Decimal] = []
     for fields in facts.financials.years.values():
@@ -189,7 +195,7 @@ class NumberProvenance:
         issues = [
             {"section": i, "claim": j, "code": "unsupported_number", "value": n.text}
             for i, j, claim in claims(subject.draft)
-            for n in stated_numbers(claim.text)
+            for n in claim_numbers(claim.text, subject.facts)
             if not supported(n, known)
         ]
         return _verdict(self.name, issues, "every number traces to the inputs")
@@ -229,7 +235,7 @@ class CitationSupport:
                         issues.append(
                             {"section": i, "claim": j, "code": "blank_line", "value": c.locator}
                         )
-            for stated in stated_numbers(claim.text):
+            for stated in claim_numbers(claim.text, subject.facts):
                 need = sources.get(stated.value)
                 if need and stated.value > SMALL_COUNT and not need & cited:
                     issues.append(

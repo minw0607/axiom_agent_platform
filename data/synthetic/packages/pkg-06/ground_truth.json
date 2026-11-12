@@ -437,5 +437,21 @@
       "year": 2025,
       "value": "1.38"
     }
-  ]
+  ],
+  "golden": {
+    "status": "draft, awaiting review",
+    "expected_flags": [],
+    "acceptable_recommendations": [
+      "refer"
+    ],
+    "key_findings": [
+      {
+        "id": "KF1",
+        "text": "FY2024 total assets exceed total liabilities plus equity by 50000, so the balance sheet does not balance.",
+        "terms": [
+          "balance"
+        ]
+      }
+    ]
+  }
 }
