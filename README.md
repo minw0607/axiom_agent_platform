@@ -152,6 +152,7 @@ Every LLM judge uses a different model from the one under test and is checked ag
 | **Gate 1** · Architecture ready | Nov 15 | Supporting services run without keys; Regulus returns cited provisions | ✅ Passed: checks 7/7, design docs published |
 | Week 3 · First vertical slice | Nov 22 | Submit a package, poll, get a cited draft memo traced in Phoenix | ✅ Done; run live on all ten packages |
 | Week 4 · Compliance and human review | Nov 29 | A job pauses for review, survives a restart, and finalizes only on approval by someone other than the submitter | ✅ Passed: checks 14/14, including a restart while a job awaits review |
+| Review page (week 7 item, brought forward) | Nov 11 | A credit officer can read a draft with its findings and decide in a browser | ✅ Built |
 | **Gate 2** · Demo ready | Dec 20 | A stranger runs the demo in under 10 minutes with no API keys | ⬜ |
 | **Gate 3** · Published | Jan 10 | CI gates enforced; docs and results public | ⬜ |
 
@@ -174,7 +175,9 @@ uv run python scripts/check_week4.py
 
 This starts Postgres, Phoenix (traces at http://localhost:6006), the OpenTelemetry Collector, the Regulus and GKN MCP servers, and the platform's API (http://localhost:8000/docs) and worker. Both MCP images are built from pinned release tags (Regulus `v0.2.1`, GKN `v0.2.0`). The check script confirms the supporting services are up, Regulus returns cited provisions, and one job's retrieval never returns another job's documents. The week 4 check submits a package, restarts Postgres, the API and the worker while the draft awaits review, then approves it and checks the evidence.
 
-**Submit a package and poll for the draft:**
+**Use the review page:** open http://localhost:8000/review and sign in with one of the role keys from `.env` (the part after the colon). A relationship manager requests a memo, a credit officer reads the draft with its findings and approves, rejects or asks for changes, and an auditor reads the audit trail. The page is plain HTML and JavaScript served by the API, with a strict content security policy; it renders everything as text.
+
+**Or use the API directly.** Submit a package and poll for the draft:
 
 ```bash
 curl -i -X POST http://localhost:8000/v1/memos -H "X-API-Key: <submitter key>" -H "Idempotency-Key: $(uuidgen)" -H "content-type: application/json" -d '{"package_id": "pkg-08"}'

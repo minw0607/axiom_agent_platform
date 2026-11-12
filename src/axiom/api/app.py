@@ -10,10 +10,12 @@ import contextlib
 import hashlib
 import json
 from collections.abc import AsyncIterator, Awaitable, Callable
+from pathlib import Path
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, Header, Request, Response
-from fastapi.responses import JSONResponse
+from fastapi import Depends, FastAPI, Header, Query, Request, Response
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 
 from axiom import __version__
 from axiom.api.auth import Principal, require
@@ -22,21 +24,36 @@ from axiom.api.schemas import (
     EvidenceBundle,
     JobAccepted,
     Links,
+    Me,
     MemoJob,
+    MemoList,
     MemoRequest,
+    PackageOut,
     ReviewAccepted,
     ReviewRequest,
     to_evidence,
     to_public,
+    to_summary,
 )
-from axiom.catalog import UnknownPackage, load_package
+from axiom.catalog import UnknownPackage, list_packages, load_package
 from axiom.evidence.log import verify_chain
-from axiom.jobs.store import InMemoryJobStore, JobStore, PostgresJobStore
+from axiom.jobs.store import InMemoryJobStore, JobStatus, JobStore, PostgresJobStore
 from axiom.jobs.worker import run_worker
 from axiom.settings import Settings
 from axiom.telemetry.setup import setup_telemetry
 
 MAX_BODY_BYTES = 64 * 1024
+REVIEW_PAGE = Path(__file__).parent / "review_page"
+# The review page loads only its own files and talks only to this API. Memo text is
+# rendered as text, never as HTML (threat model T-03, improper output handling).
+REVIEW_PAGE_HEADERS = {
+    "Content-Security-Policy": "default-src 'none'; script-src 'self'; style-src 'self'; "
+    "connect-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'; "
+    "frame-ancestors 'none'",
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "no-referrer",
+    "Cache-Control": "no-store",
+}
 MAX_IDEMPOTENCY_KEY = 128
 # Status, slug, title and detail for each reason a review is refused.
 REVIEW_PROBLEMS: dict[str, tuple[int, str, str, str]] = {
@@ -111,7 +128,37 @@ def create_app(settings: Settings | None = None, store: JobStore | None = None) 
                 f"The limit is {MAX_BODY_BYTES} bytes.",
                 request.url.path,
             )
-        return await call_next(request)
+        response = await call_next(request)
+        if request.url.path.startswith("/review"):
+            response.headers.update(REVIEW_PAGE_HEADERS)
+        return response
+
+    @app.get("/", include_in_schema=False)
+    async def home() -> RedirectResponse:
+        return RedirectResponse("/review")
+
+    @app.get("/review", include_in_schema=False)
+    async def review_page() -> FileResponse:
+        return FileResponse(REVIEW_PAGE / "index.html", media_type="text/html")
+
+    app.mount("/review/assets", StaticFiles(directory=REVIEW_PAGE), name="review-assets")
+
+    @app.get("/v1/me", response_model=Me, tags=["account"], summary="Who this key belongs to")
+    async def me(
+        principal: Annotated[Principal, Depends(require("submitter", "reviewer", "auditor"))],
+    ) -> Me:
+        return Me(name=principal.name, role=principal.role)
+
+    @app.get(
+        "/v1/packages",
+        response_model=list[PackageOut],
+        tags=["memos"],
+        summary="The synthetic borrower packages a memo can be requested for",
+    )
+    async def packages(
+        principal: Annotated[Principal, Depends(require("submitter", "reviewer", "auditor"))],
+    ) -> list[PackageOut]:
+        return [PackageOut.model_validate(p) for p in list_packages(settings.packages_dir)]
 
     @app.get("/v1/health", tags=["operations"])
     async def health() -> dict[str, str]:
@@ -169,6 +216,25 @@ def create_app(settings: Settings | None = None, store: JobStore | None = None) 
         if result.replayed:
             response.headers["Idempotent-Replayed"] = "true"
         return JobAccepted(job_id=result.job.job_id, status="queued", links=Links(self=location))
+
+    @app.get(
+        "/v1/memos",
+        response_model=MemoList,
+        tags=["memos"],
+        summary="List memo jobs, most recently updated first",
+        description="Submitters see their own jobs; reviewers and auditors see all jobs.",
+    )
+    async def list_memos(
+        principal: Annotated[Principal, Depends(require("submitter", "reviewer", "auditor"))],
+        status: Annotated[list[JobStatus] | None, Query()] = None,
+        limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    ) -> MemoList:
+        jobs = await store.list_jobs(
+            principal.name if principal.role == "submitter" else None,
+            tuple(status) if status else None,
+            limit,
+        )
+        return MemoList(items=[to_summary(j) for j in jobs])
 
     @app.get("/v1/memos/{job_id}", response_model=MemoJob, tags=["memos"])
     async def get_memo(

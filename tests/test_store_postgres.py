@@ -188,3 +188,21 @@ def test_a_paused_job_resumes_through_a_new_store(store: PostgresJobStore) -> No
     assert done is not None and done.status == "approved", done.error_code
     events = asyncio.run(restarted.events(job.job_id))
     assert events[-1].type == "job_approved" and verify_chain(events).verified
+
+
+def test_list_jobs_filters_by_submitter_and_status(store: PostgresJobStore) -> None:
+    a = asyncio.run(store.submit("rm-a", "k1", "h1", "pkg-01")).job
+    b = asyncio.run(store.submit("rm-b", "k1", "h2", "pkg-02")).job
+    assert a is not None and b is not None
+    result = {"draft": {"draft_recommendation": "approve", "sections": []}}
+    asyncio.run(store.finish(a.job_id, "awaiting_review", result, None))
+    everyone = asyncio.run(store.list_jobs(None, None, 10))
+    assert [j.job_id for j in everyone] == [a.job_id, b.job_id]  # most recently updated first
+    assert (
+        everyone[0].draft_recommendation == "approve" and everyone[1].draft_recommendation is None
+    )
+    mine = asyncio.run(store.list_jobs("rm-b", None, 10))
+    assert [j.job_id for j in mine] == [b.job_id]
+    waiting = asyncio.run(store.list_jobs(None, ("awaiting_review",), 10))
+    assert [j.job_id for j in waiting] == [a.job_id]
+    assert len(asyncio.run(store.list_jobs(None, None, 1))) == 1

@@ -145,7 +145,7 @@ Sensitive data leaves through the memo, an error message, a log, a trace, or a p
 | Errors use problem+json with stable types; no stack traces or internal names | Planned W3 |
 | API responses never name a model, agent or prompt; those appear only in the auditor-only evidence endpoint | Planned W3, W7 |
 | Traces record IDs, token counts and outcomes, not document text | Planned W3 |
-| The memo is rendered as text; no HTML or links are executed by consumers (improper output handling) | Planned W7 (review UI) |
+| The memo is rendered as text; no HTML or links are executed by consumers (improper output handling) | **Built** (review page: text-only rendering, no external scripts, strict content security policy; tests forbid HTML sinks) |
 
 ### T-05 · Excessive agency
 An agent calls tools or takes actions beyond its role: the drafter deletes a job, a model chooses a different job_id, or a model output finalizes a memo.
@@ -190,7 +190,7 @@ A confident, well-formatted memo leads the reviewer to approve without checking,
 | Control | Status |
 |---|---|
 | The recommendation is a labeled draft field; rails block final-decision language elsewhere | Planned W5 |
-| Risk flags and compliance findings shown with severity next to the recommendation | Planned W7 |
+| Risk flags and compliance findings shown with severity next to the recommendation | **Built** (review page) |
 | Seeded-error oversight test: reviewers are given memos with planted errors and the catch rate is reported | Planned W10 |
 
 **Residual risk:** process risk that tooling cannot remove. The catch rate is reported honestly, not gated.

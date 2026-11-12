@@ -153,9 +153,10 @@ The platform sets scope arguments such as `job_id` from graph state; a model nev
 | Postgres checkpointer keyed by job_id, with deserialization limited to an allowlist of the platform's state types; a paused job resumes in a new worker process | Built and tested (week 4) |
 | Finalize: hashes the approved draft and attaches related AI governance provisions from Regulus to the evidence bundle, labeled related guidance; a failed lookup is `not_evaluated` and never blocks approval | Built and tested (week 4) |
 | Week 4 acceptance: `scripts/check_week4.py` restarts Postgres, the API and the worker while a job is paused, then approves it | Passing (Nov 11) |
+| Review page at `/review`: static HTML and JavaScript served by the API, text-only rendering under a strict content security policy; requests, review decisions and the audit trail by role; `GET /v1/me`, `GET /v1/packages`, `GET /v1/memos` | Built and tested (brought forward from week 7) |
 | Guardrails | Week 5 |
 | Eval baseline | Week 6 |
-| Review page, keyless demo | Week 7 |
+| Keyless demo | Week 7 |
 | CI release gates | Week 8 |
 | Cloud deployment | Week 9 |
 

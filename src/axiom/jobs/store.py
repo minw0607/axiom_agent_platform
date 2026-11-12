@@ -72,6 +72,27 @@ class ReviewResult(BaseModel):
     conflict: ReviewConflict | None = None
 
 
+class JobSummary(BaseModel):
+    """A row in a list of jobs: enough to pick one, without its working state."""
+
+    job_id: str
+    status: JobStatus
+    package_id: str
+    submitter: str
+    created_at: datetime
+    updated_at: datetime
+    draft_recommendation: str | None = None
+    human_revisions: int = 0
+
+
+def summary(job: JobRecord) -> JobSummary:
+    draft = (job.result or {}).get("draft") or {}
+    return JobSummary(
+        **job.model_dump(include=set(JobSummary.model_fields) - {"draft_recommendation"}),
+        draft_recommendation=draft.get("draft_recommendation"),
+    )
+
+
 def review_event(review: ReviewDecision) -> EventDraft:
     return EventDraft(
         type="review_submitted",
@@ -98,6 +119,9 @@ class JobStore(Protocol):
         self, submitter: str, idem_key: str, request_hash: str, package_id: str
     ) -> SubmitResult: ...
     async def get(self, job_id: str) -> JobRecord | None: ...
+    async def list_jobs(
+        self, submitter: str | None, statuses: tuple[str, ...] | None, limit: int
+    ) -> list[JobSummary]: ...
     async def claim_next(self) -> JobRecord | None: ...
     async def finish(
         self, job_id: str, status: JobStatus, result: dict[str, Any] | None, error_code: str | None
@@ -175,6 +199,18 @@ class InMemoryJobStore:
 
     async def get(self, job_id: str) -> JobRecord | None:
         return self.jobs.get(job_id)
+
+    async def list_jobs(
+        self, submitter: str | None, statuses: tuple[str, ...] | None, limit: int
+    ) -> list[JobSummary]:
+        jobs = [
+            j
+            for j in self.jobs.values()
+            if (submitter is None or j.submitter == submitter)
+            and (statuses is None or j.status in statuses)
+        ]
+        jobs.sort(key=lambda j: j.updated_at, reverse=True)
+        return [summary(j) for j in jobs[:limit]]
 
     async def claim_next(self) -> JobRecord | None:
         async with self._lock:
@@ -270,6 +306,7 @@ CREATE TABLE IF NOT EXISTS jobs (
     error_code  TEXT
 );
 CREATE INDEX IF NOT EXISTS jobs_queued ON jobs (created_at) WHERE status = 'queued';
+CREATE INDEX IF NOT EXISTS jobs_by_update ON jobs (updated_at DESC);
 ALTER TABLE jobs ADD COLUMN IF NOT EXISTS human_revisions INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE jobs ADD COLUMN IF NOT EXISTS pending_review JSONB;
 CREATE TABLE IF NOT EXISTS reviews (
@@ -341,6 +378,7 @@ async def _append(conn: Any, job_id: str, drafts: list[EventDraft]) -> list[Evid
     return new
 
 
+_SUMMARY_FIELDS = tuple(JobSummary.model_fields)
 _COLUMNS = (
     "job_id, status, package_id, submitter, created_at, updated_at, result, error_code, "
     "human_revisions, pending_review"
@@ -421,6 +459,21 @@ class PostgresJobStore:
             cur = await conn.execute(f"SELECT {_COLUMNS} FROM jobs WHERE job_id = %s", (job_id,))
             row = await cur.fetchone()
         return None if row is None else _record(row)
+
+    async def list_jobs(
+        self, submitter: str | None, statuses: tuple[str, ...] | None, limit: int
+    ) -> list[JobSummary]:
+        async with await self._connect() as conn:
+            cur = await conn.execute(
+                "SELECT job_id, status, package_id, submitter, created_at, updated_at, "
+                "result->'draft'->>'draft_recommendation', human_revisions FROM jobs "
+                "WHERE (%(sub)s::text IS NULL OR submitter = %(sub)s) "
+                "AND (%(st)s::text[] IS NULL OR status = ANY(%(st)s)) "
+                "ORDER BY updated_at DESC LIMIT %(n)s",
+                {"sub": submitter, "st": None if statuses is None else list(statuses), "n": limit},
+            )
+            rows = await cur.fetchall()
+        return [JobSummary(**dict(zip(_SUMMARY_FIELDS, r, strict=True))) for r in rows]
 
     async def claim_next(self) -> JobRecord | None:
         async with await self._connect() as conn, conn.transaction():

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Axiom Memo Review</title>
+  <link rel="stylesheet" href="/review/assets/review.css">
+  <script src="/review/assets/review.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">A</span>
+      <span>Axiom <span class="muted">· credit memo review</span></span>
+    </div>
+    <div id="who" class="who" hidden>
+      <span id="who-label"></span>
+      <button id="sign-out" class="link-button" type="button">Sign out</button>
+    </div>
+  </header>
+
+  <main id="sign-in" class="sign-in" hidden>
+    <form id="sign-in-form" class="card narrow" autocomplete="off">
+      <h1>Sign in</h1>
+      <p>Each person has an access key. It decides what you can do here:</p>
+      <ul class="roles">
+        <li><strong>Relationship manager</strong> requests memos for borrowers.</li>
+        <li><strong>Credit officer</strong> reviews a draft and approves, rejects or asks for changes.</li>
+        <li><strong>Auditor</strong> reads the record of who did what.</li>
+      </ul>
+      <label for="key-input">Access key</label>
+      <input id="key-input" type="password" spellcheck="false" autocomplete="off" required>
+      <p id="sign-in-error" class="error" role="alert" hidden></p>
+      <button class="primary" type="submit">Sign in</button>
+      <details class="help">
+        <summary>Where do I find a key in this demo?</summary>
+        <p>Open the <code>.env</code> file in the project. The lines
+          <code>SUBMITTER_API_KEYS</code>, <code>REVIEWER_API_KEYS</code> and
+          <code>AUDITOR_API_KEYS</code> each look like <code>name:key</code>.
+          Paste only the part after the colon.</p>
+        <p>This is not your OpenAI or Azure key. That one stays in <code>.env</code> and is
+          used only by the platform.</p>
+        <p>The key is kept only in this browser tab and is forgotten when you close it.</p>
+      </details>
+    </form>
+  </main>
+
+  <main id="app" class="layout" hidden>
+    <aside class="sidebar">
+      <section id="request" class="card" hidden>
+        <h2>Request a memo</h2>
+        <label for="package-select">Borrower</label>
+        <select id="package-select"></select>
+        <button id="request-button" class="primary" type="button">Request draft memo</button>
+        <p id="request-error" class="error" role="alert" hidden></p>
+      </section>
+      <section class="card list-card">
+        <div class="tabs" role="tablist" id="tabs"></div>
+        <ul id="job-list" class="job-list"></ul>
+        <p id="job-list-empty" class="muted empty" hidden></p>
+      </section>
+    </aside>
+    <section id="detail" class="detail" aria-live="polite"></section>
+  </main>
+</body>
+</html>

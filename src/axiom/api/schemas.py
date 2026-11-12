@@ -14,7 +14,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from axiom.agents.base import ModelCall
 from axiom.domain import ComplianceFinding
 from axiom.evidence.log import ChainCheck, EvidenceEvent
-from axiom.jobs.store import JobRecord, JobStatus
+from axiom.jobs.store import JobRecord, JobStatus, JobSummary
 from axiom.mcp_clients.governance import RelatedGuidance
 
 DISCLAIMER = "Draft for credit officer review. This is not a credit decision."
@@ -163,6 +163,37 @@ class MemoJob(BaseModel):
     reviews: list[ReviewOut] = Field(default_factory=list)
     revisions: Revisions
     error: JobError | None = None
+
+
+class Me(BaseModel):
+    name: str
+    role: Literal["submitter", "reviewer", "auditor"]
+
+
+class PackageOut(BaseModel):
+    package_id: str
+    borrower_name: str
+    industry: str
+
+
+class MemoSummary(BaseModel):
+    """One row of GET /v1/memos. Who submitted it is in the evidence bundle."""
+
+    job_id: str
+    status: JobStatus
+    package_id: str
+    created_at: datetime
+    updated_at: datetime
+    draft_recommendation: str | None
+    human_revisions: int
+
+
+class MemoList(BaseModel):
+    items: list[MemoSummary]
+
+
+def to_summary(job: JobSummary) -> MemoSummary:
+    return MemoSummary(**job.model_dump(exclude={"submitter"}))
 
 
 def to_public(job: JobRecord) -> MemoJob:
