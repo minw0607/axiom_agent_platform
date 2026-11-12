@@ -238,8 +238,31 @@ class CitationSupport:
         return _verdict(self.name, issues, "figures cite their source lines")
 
 
+@dataclass(frozen=True)
+class PIIOutput:
+    """Personal identifiers in the draft. The drafter only sees redacted documents, so these
+    would come from the model itself; a finding sends the draft back as an automated fix."""
+
+    name: str = "pii_output"
+    stage: Stage = "output"
+    description: str = "No personal identifiers in the draft"
+
+    async def check(self, subject: Subject) -> Verdict:
+        from axiom.guardrails.pii import redact_line  # loads Presidio on first use
+
+        if subject.draft is None:
+            return Verdict("not_evaluated", "no draft to check")
+        issues = [
+            {"section": i, "claim": j, "code": "personal_data", "value": entity}
+            for i, j, claim in claims(subject.draft)
+            for entity in sorted(redact_line(claim.text, subject.borrower_name).counts)
+        ]
+        return _verdict(self.name, issues, "no personal identifiers found")
+
+
 NUMBER_PROVENANCE = NumberProvenance()
 CITATION_SUPPORT = CitationSupport()
+PII_OUTPUT = PIIOutput()
 
 
 PROBLEM = {
@@ -254,6 +277,7 @@ PROBLEM = {
     "unsupported_number": "states {value}, which is not in the inputs",
     "figure_not_cited": "states {value} without citing that figure's source line",
     "blank_line": "cites {value}, which is a blank line",
+    "personal_data": "contains personal data ({value}); remove it",
 }
 
 

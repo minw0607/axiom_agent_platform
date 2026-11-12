@@ -15,7 +15,7 @@
 
 </div>
 
-> **Status:** Week 4. A package goes from submission to a cited draft memo with credit policy and lending-reference findings, then waits for a credit officer to approve, reject or request a revision, in demo mode with no API keys. Guardrails come next; this page describes the target design and tracks progress against the [development plan](docs/dev-plan.md).
+> **Status:** Week 5. A package goes from submission to a cited draft memo with credit policy and lending-reference findings, through layered guardrails (personal data masked, injected instructions quarantined, every number and citation checked), then waits for a credit officer to approve, reject or request a revision, in demo mode with no API keys. The evaluation baseline comes next; this page describes the target design and tracks progress against the [development plan](docs/dev-plan.md).
 
 ---
 
@@ -153,7 +153,7 @@ Every LLM judge uses a different model from the one under test and is checked ag
 | Week 3 · First vertical slice | Nov 22 | Submit a package, poll, get a cited draft memo traced in Phoenix | ✅ Done; run live on all ten packages |
 | Week 4 · Compliance and human review | Nov 29 | A job pauses for review, survives a restart, and finalizes only on approval by someone other than the submitter | ✅ Passed: checks 14/14, including a restart while a job awaits review |
 | Review page (week 7 item, brought forward) | Nov 11 | A credit officer can read a draft with its findings and decide in a browser | ✅ Built |
-| Week 5 · Guardrails | Dec 6 | Each control can be switched off; redaction leaves every financial value unchanged; cloud-only controls report not evaluated in demo | 🟡 Input and draft checks built; adversarial set next |
+| Week 5 · Guardrails | Dec 6 | Each control can be switched off; redaction leaves every financial value unchanged; cloud-only controls report not evaluated in demo | ✅ Passed: checks 16/16; attack success 6/20 with guardrails on vs 20/20 off ([results](evals/adversarial/v1/results.md)) |
 | **Gate 2** · Demo ready | Dec 20 | A stranger runs the demo in under 10 minutes with no API keys | ⬜ |
 | **Gate 3** · Published | Jan 10 | CI gates enforced; docs and results public | ⬜ |
 

@@ -24,6 +24,7 @@ from axiom.guardrails.output import (
     INVESTMENT_ADVICE,
     NUMBER_PROVENANCE,
     ON_TASK,
+    PII_OUTPUT,
 )
 from axiom.guardrails.pii import PII_REDACTION
 
@@ -63,6 +64,7 @@ def default_controls() -> list[Guardrail]:
         ON_TASK,
         NUMBER_PROVENANCE,
         CITATION_SUPPORT,
+        PII_OUTPUT,
         CONTENT_SAFETY,
     ]
 

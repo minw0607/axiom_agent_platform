@@ -2,7 +2,7 @@
 
 This document explains how the platform is put together: its layers, how a memo job flows through them, and where each piece lives in the code. The [development plan](dev-plan.md) holds the full specification; the [ADRs](adr/README.md) hold the reasoning behind each decision; the [threat model](threat-model.md) covers what can go wrong.
 
-**Status (Nov 11, 2026):** the supporting services pass the Gate 1 check, and the first vertical slice runs under `docker compose`: the API accepts a package, the worker runs intake, analyst and drafter, and polling returns a cited draft, traced in Phoenix. Every draft is checked against the credit policy by a deterministic rule engine and reviewed by a compliance agent against cited lending references (Regulation B and OCC guidance), and every job writes a hash-chained evidence log that auditors read through the evidence endpoint. A credit officer then approves, rejects or requests a revision through the review endpoint; the job pauses at a LangGraph interrupt and its state is kept by the Postgres checkpointer, so it survives a worker restart. Guardrails follow. Section 7 tracks each component.
+**Status (Nov 12, 2026):** the supporting services pass the Gate 1 check, and the first vertical slice runs under `docker compose`: the API accepts a package, the worker runs intake, analyst and drafter, and polling returns a cited draft, traced in Phoenix. Every draft is checked against the credit policy by a deterministic rule engine and reviewed by a compliance agent against cited lending references (Regulation B and OCC guidance), and every job writes a hash-chained evidence log that auditors read through the evidence endpoint. A credit officer then approves, rejects or requests a revision through the review endpoint; the job pauses at a LangGraph interrupt and its state is kept by the Postgres checkpointer, so it survives a worker restart. Layered guardrails run at intake and on every draft, each switchable in config and recorded in the evidence chain; week 5's acceptance check passes 16/16. The evaluation baseline follows. Section 7 tracks each component.
 
 ## 1. Overview
 
@@ -157,7 +157,9 @@ The platform sets scope arguments such as `job_id` from graph state; a model nev
 | Guardrail framework: one interface (`passed`, `triggered`, `not_evaluated`), switches in `config/guardrails.yaml`, a span and a `guardrail_checked` evidence event per check, results in the memo and the evidence bundle; a control switched off or failing records `not_evaluated` | Built and tested (week 5) |
 | Input guardrails: Presidio PII redaction (financial values never changed; unredacted content routes as `pii_unredacted`) and a local injection screen that quarantines the package before any model call | Built and tested (week 5) |
 | Draft guardrails: three rails (decision language, investment advice, on task) and two evidence checks (number provenance, citation support) on every draft; one automated fix (`drafter_fix/v1`), counted apart from human revisions, then the job fails with `guardrail_failed` | Built and tested (week 5) |
-| Harm categories and PII on output; adversarial set v1 | Week 5, in progress (harm categories report `not_evaluated` until the cloud client is connected) |
+| PII on output (`pii_output`) and harm categories (`content_safety`, cloud-only: `not_evaluated` until the client is connected) | Built and tested (week 5) |
+| Adversarial set v1: 20 attacks run with guardrails on and off; attack success 6/20 on, 20/20 off (`evals/adversarial/`) | Built (week 5) |
+| Week 5 acceptance: `scripts/check_week5.py`, every control toggled, redaction invariants, cloud-only `not_evaluated`, the adversarial set, and guardrail events in a stack job's chain | Passing (Nov 12) |
 | Eval baseline | Week 6 |
 | Keyless demo | Week 7 |
 | CI release gates | Week 8 |

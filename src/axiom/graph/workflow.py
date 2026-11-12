@@ -232,7 +232,13 @@ def build_workflow(ctx: AgentContext, checkpointer: BaseCheckpointSaver[Any] | N
             thresholds=tuple(t.value for t in ctx.policy.thresholds.values()),
             evidence=tuple(hits),
         )
-        subject = Subject(state["job_id"], "drafter", draft=draft, facts=facts)
+        subject = Subject(
+            state["job_id"],
+            "drafter",
+            draft=draft,
+            facts=facts,
+            borrower_name=state["package"].borrower_name,
+        )
         return [
             *await ctx.guardrails.run("generation", subject),
             *await ctx.guardrails.run("output", subject),

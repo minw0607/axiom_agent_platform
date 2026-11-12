@@ -46,17 +46,20 @@ ENTITIES = (
 # such as "account" nearby, so a bare number is not redacted.
 MIN_SCORE = 0.4
 
-# Amounts with thousands separators or decimals, dollar amounts, percentages, fiscal years.
+# Amounts with thousands separators or cents, dollar amounts, percentages, fiscal years.
 FINANCIAL = re.compile(
     r"\$?\(?\d{1,3}(?:,\d{3})+(?:\.\d+)?\)?"
     r"|\$\d+(?:\.\d+)?"
+    r"|\b\d+\.\d{2}\b(?!\.\d)"
     r"|\b\d+(?:\.\d+)?\s?%"
     r"|\bFY\s?\d{4}\b"
 )
 
 
-# A person's name, as the small model finds it reliably: two or more capitalized words.
-FULL_NAME = re.compile(r"[A-Z][\w'.-]+(?:\s+[A-Z][\w'.-]+)+")
+# A person's name, as the small model finds it reliably: two or more capitalized words,
+# each with a lowercase letter, so codes such as "REF AXC-01" are not taken for names.
+_WORD = r"[A-Z](?=[\w'.-]*[a-z])[\w'.-]+"
+FULL_NAME = re.compile(rf"{_WORD}(?:\s+{_WORD})+")
 
 
 class RedactionError(RuntimeError):
@@ -104,6 +107,8 @@ def redact_line(line: str, borrower_name: str = "") -> Redacted:
     )
     keep: list[Any] = []
     for r in sorted(found, key=lambda r: (-r.score, r.start)):
+        if r.entity_type == "PHONE_NUMBER" and line[r.start : r.end].isdigit():
+            continue  # a bare digit run such as 342657 is an amount, not a phone number
         if any(r.start < e and s < r.end for s, e in protected):
             continue
         if r.entity_type == "PERSON" and not FULL_NAME.fullmatch(line[r.start : r.end]):

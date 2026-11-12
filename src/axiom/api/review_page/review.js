@@ -58,6 +58,7 @@ const GUARDRAIL_LABEL = {
   on_task: "Only memo content (no asides, links or echoed instructions)",
   number_provenance: "Every number traces to the documents or the ratio tools",
   citation_support: "Figures cite their source lines",
+  pii_output: "No personal data in the draft",
   content_safety: "Harmful content in the draft",
 };
 const GUARDRAIL_OUTCOME = {

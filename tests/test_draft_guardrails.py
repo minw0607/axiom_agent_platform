@@ -21,13 +21,21 @@ from axiom.guardrails.output import (
     INVESTMENT_ADVICE,
     NUMBER_PROVENANCE,
     ON_TASK,
+    PII_OUTPUT,
 )
 from axiom.jobs.worker import ERROR_CODES
 from axiom.router.types import ModelRequest
 from conftest import SCRIPTED_RECORDINGS, SETTINGS, demo_context, fake_context
 
 LIVE_RECORDINGS = SETTINGS.data_dir / "recorded"
-DRAFT_CHECKS = (DECISION_LANGUAGE, INVESTMENT_ADVICE, ON_TASK, NUMBER_PROVENANCE, CITATION_SUPPORT)
+DRAFT_CHECKS = (
+    DECISION_LANGUAGE,
+    INVESTMENT_ADVICE,
+    ON_TASK,
+    NUMBER_PROVENANCE,
+    CITATION_SUPPORT,
+    PII_OUTPUT,
+)
 RECORDED = sorted(
     p
     for root in (LIVE_RECORDINGS, SCRIPTED_RECORDINGS)
@@ -70,7 +78,10 @@ def with_claim(draft: MemoDraft, section: int, claim: Claim) -> MemoDraft:
 
 def check(control: Any, draft: MemoDraft, package_id: str = "pkg-01") -> tuple[str, list[Any]]:
     s = state(package_id)
-    v = asyncio.run(control.check(Subject("j", "drafter", draft=draft, facts=facts(s))))
+    subject = Subject(
+        "j", "drafter", draft=draft, facts=facts(s), borrower_name=s["package"].borrower_name
+    )
+    v = asyncio.run(control.check(subject))
     return v.outcome, [i["code"] for i in v.details.get("issues", [])]
 
 
@@ -274,3 +285,33 @@ def test_with_the_rail_off_the_bad_draft_goes_to_review_unchanged() -> None:
     assert "error" not in s and s["automated_fixes"] == 0
     assert BAD_CLAIM in s["draft"].model_dump_json()
     assert not any(r.prompt_id == "drafter_fix" for r in requests)
+
+
+# Personal data in the draft ---------------------------------------------------------------------
+
+
+def test_personal_data_in_the_draft_is_caught_by_type_not_text() -> None:
+    draft = with_claim(
+        state()["draft"], 0, claim("The guarantor, Maria Lopez, can be reached at (555) 201-3344.")
+    )
+    s = state()
+    subject = Subject(
+        "j", "drafter", draft=draft, facts=facts(s), borrower_name=s["package"].borrower_name
+    )
+    v = asyncio.run(PII_OUTPUT.check(subject))
+    assert v.outcome == "triggered"
+    assert {i["value"] for i in v.details["issues"]} == {"PERSON", "PHONE_NUMBER"}
+    assert "Lopez" not in json.dumps(v.details)
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Proposed annual debt service is 342657.00, as computed by the ratio tools.",
+        "Synthetic Borrower 01 (precision machining) requested 1500000.",
+        "Risk flag DSCR_BELOW_MIN applies under CP-4.1.",
+    ],
+)
+def test_amounts_codes_and_the_business_name_are_not_personal_data(text: str) -> None:
+    draft = with_claim(state()["draft"], 1, claim(text))
+    assert check(PII_OUTPUT, draft)[0] == "passed"

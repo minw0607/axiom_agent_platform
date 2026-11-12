@@ -17,4 +17,5 @@ controls:
   # sends the draft back once as an automated fix; a second failure fails the job.
   number_provenance: { enabled: true }
   citation_support: { enabled: true }
+  pii_output: { enabled: true }       # Presidio on the draft's claims
   content_safety: { enabled: true }   # cloud only, harm categories (Azure AI Content Safety)
