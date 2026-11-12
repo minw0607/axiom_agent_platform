@@ -1,0 +1,10 @@
+# On/off switch for each guardrail (ADR 0004). Every control the platform has must be listed.
+# A control that is off, or cannot run here, records not_evaluated in the evidence log and
+# never reports a pass. The red-team suite flips these to measure what each control is worth.
+# The credit officer's approval is not listed: it is a hard stop in the graph, not a switch.
+version: 1
+controls:
+  # Input: borrower documents, before they are indexed or shown to a model
+  injection_shield: { enabled: true } # cloud only (Prompt Shields in Azure AI Content Safety)
+  # Output: the finished draft
+  content_safety: { enabled: true }   # cloud only, harm categories (Azure AI Content Safety)

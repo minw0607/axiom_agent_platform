@@ -6,17 +6,19 @@ import json
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from contextvars import ContextVar
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, TypeVar
 
 from pydantic import BaseModel, ValidationError
 
 from axiom.agents.prompts import Prompt, load_prompt
+from axiom.guardrails import GuardrailSuite, load_suite
 from axiom.mcp_clients.evidence import EvidenceService
 from axiom.mcp_clients.governance import GovernanceLookup
 from axiom.router.router import ModelRouter
 from axiom.router.types import ChatMessage, ModelRequest, Route
+from axiom.settings import Settings
 from axiom.tools.policy import PolicyThresholds
 
 T = TypeVar("T", bound=BaseModel)
@@ -41,6 +43,9 @@ class AgentContext:
     policy: PolicyThresholds
     prompts_dir: Path
     governance: GovernanceLookup | None = None
+    guardrails: GuardrailSuite = field(
+        default_factory=lambda: load_suite(Settings.from_env().guardrails_file)
+    )
 
     def prompt(self, prompt_id: str) -> Prompt:
         return load_prompt(self.prompts_dir, prompt_id, PROMPT_VERSIONS[prompt_id])

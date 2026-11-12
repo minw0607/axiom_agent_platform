@@ -39,6 +39,7 @@ const EVENT_LABEL = {
   job_submitted: "Memo requested",
   job_started: "Platform started drafting",
   model_call: "AI step",
+  guardrail_checked: "Safety check",
   node_completed: "Step finished",
   node_failed: "Step failed",
   job_awaiting_review: "Paused for a credit officer",
@@ -47,6 +48,15 @@ const EVENT_LABEL = {
   job_approved: "Memo approved",
   job_rejected: "Memo rejected",
   job_failed: "Job failed",
+};
+const GUARDRAIL_LABEL = {
+  injection_shield: "Hidden instructions in the documents",
+  content_safety: "Harmful content in the draft",
+};
+const GUARDRAIL_OUTCOME = {
+  passed: { label: "Passed", tone: "good" },
+  triggered: { label: "Found a problem", tone: "bad" },
+  not_evaluated: { label: "Not checked", tone: "warn" },
 };
 const STEP_LABEL = {
   intake: "reading the documents",
@@ -178,6 +188,11 @@ function borrower(packageId) {
   return p ? p.borrower_name : packageId;
 }
 
+// "approve_with_conditions" -> "approve with conditions"
+function recommendation(value) {
+  return String(value || "").replaceAll("_", " ");
+}
+
 function pill(status) {
   const s = STATUS[status] || { label: status, tone: "" };
   return el("span", { class: `pill ${s.tone}` }, s.label);
@@ -284,7 +299,7 @@ function renderList() {
             "span",
             { class: "job-meta" },
             pill(j.status),
-            j.draft_recommendation ? `Draft: ${j.draft_recommendation}` : null,
+            j.draft_recommendation ? `Draft: ${recommendation(j.draft_recommendation)}` : null,
             el("span", {}, when(j.updated_at)),
           ),
         ),
@@ -412,6 +427,7 @@ function renderDetail() {
       parts.push(el("div", { class: "notice" }, "A credit officer will review this draft. You can't decide on a memo you requested."));
     }
     parts.push(renderFindings(memo));
+    parts.push(renderGuardrails(memo));
     parts.push(renderMemo(memo));
     parts.push(renderRatios(memo));
     parts.push(renderChecks(memo));
@@ -423,10 +439,12 @@ function renderDetail() {
 
 function renderSummary(job, memo) {
   const findings = memo.findings || [];
-  const attention = findings.filter((f) => f.outcome === "triggered").length;
+  const flags = memo.risk_flags || [];
+  const highFlags = flags.filter((f) => f.severity === "high").length;
+  // High-severity risk flags need the officer's attention as much as a triggered rule does.
+  const attention = findings.filter((f) => f.outcome === "triggered").length + highFlags;
   const unchecked = findings.filter((f) => f.outcome === "not_evaluated").length;
   const passed = findings.filter((f) => f.outcome === "passed").length;
-  const flags = memo.risk_flags || [];
   const loan = memo.loan_request || {};
   const v = (k) => (loan[k] ? loan[k].value : null);
   const loanText = [
@@ -444,7 +462,7 @@ function renderSummary(job, memo) {
       "div",
       {},
       el("h2", {}, job.status === "approved" ? "Recommendation, approved by a credit officer" : "Draft recommendation"),
-      el("p", { class: "recommendation" }, memo.draft_recommendation),
+      el("p", { class: "recommendation" }, recommendation(memo.draft_recommendation)),
       loanText ? el("p", { class: "loan" }, `Request: ${loanText}`) : null,
       el("p", { class: "disclaimer" }, memo.disclaimer),
     ),
@@ -454,7 +472,7 @@ function renderSummary(job, memo) {
       el("div", { class: "count" }, el("b", {}, String(attention)), el("span", { class: `pill ${attention ? "bad" : "good"}` }, "need attention")),
       el("div", { class: "count" }, el("b", {}, String(unchecked)), el("span", { class: `pill ${unchecked ? "warn" : ""}` }, "to check yourself")),
       el("div", { class: "count" }, el("b", {}, String(passed)), el("span", { class: "pill good" }, "checks passed")),
-      el("div", { class: "count" }, el("b", {}, String(flags.length)), el("span", { class: `pill ${flags.length ? "warn" : ""}` }, flags.length === 1 ? "risk flag" : "risk flags")),
+      el("div", { class: "count" }, el("b", {}, String(flags.length)), el("span", { class: `pill ${highFlags ? "bad" : flags.length ? "warn" : ""}` }, flags.length === 1 ? "risk flag" : "risk flags")),
     ),
   );
 }
@@ -482,7 +500,7 @@ function renderDecision(job) {
     state.pending = { decision, idem: newKey() };
     renderDetail();
   };
-  const rec = job.memo.draft_recommendation;
+  const rec = recommendation(job.memo.draft_recommendation);
   const verbs = {
     approve: `Approve this memo and its recommendation to ${rec}?`,
     revise: "Send it back for changes?",
@@ -717,6 +735,45 @@ function renderReviews(job) {
 
 // Audit trail (auditor only) ----------------------------------------------------------------
 
+function renderGuardrails(memo) {
+  const checks = memo.guardrails || [];
+  const card = el("section", { class: "card" }, el("h2", {}, "Safety checks"));
+  if (!checks.length) {
+    card.append(el("p", { class: "muted" }, "No safety checks were recorded for this draft."));
+    return card;
+  }
+  const skipped = checks.filter((g) => g.outcome === "not_evaluated").length;
+  card.append(
+    el(
+      "p",
+      { class: "muted" },
+      "Automatic checks on the borrower's documents and on the draft. ",
+      skipped
+        ? `${skipped} could not run here, so they are marked “Not checked”, never “Passed”.`
+        : "",
+    ),
+    el(
+      "ul",
+      { class: "findings" },
+      checks.map((g) => {
+        const o = GUARDRAIL_OUTCOME[g.outcome] || { label: g.outcome, tone: "" };
+        return el(
+          "li",
+          { class: "finding" },
+          el("span", { class: `pill ${o.tone}` }, o.label),
+          el(
+            "div",
+            {},
+            el("div", {}, GUARDRAIL_LABEL[g.control] || g.control),
+            el("div", { class: "finding-ref" }, g.outcome === "passed" ? g.control : `${g.control} · ${g.reason}`),
+          ),
+        );
+      }),
+    ),
+  );
+  return card;
+}
+
 function renderAudit(job) {
   const card = el("section", { class: "card" }, el("h2", {}, "Audit trail"));
   if (state.evidenceError) card.append(el("p", { class: "error" }, state.evidenceError));
@@ -749,6 +806,10 @@ function renderAudit(job) {
         if (p.node) label += `: ${STEP_LABEL[p.node] || p.node}`;
         if (ev.type === "review_submitted") label += `: ${p.decision}${p.comments ? ` (“${p.comments}”)` : ""}`;
         if (ev.type === "model_call" && p.attempt > 1) label += ` (attempt ${p.attempt})`;
+        if (ev.type === "guardrail_checked") {
+          const o = GUARDRAIL_OUTCOME[p.outcome] || { label: p.outcome };
+          label = `${EVENT_LABEL[ev.type]}: ${GUARDRAIL_LABEL[p.control] || p.control}, ${o.label.toLowerCase()}`;
+        }
         return el("li", {}, el("time", { datetime: ev.at }, clock(ev.at)), el("span", {}, label), el("span", { class: "actor" }, ev.actor));
       }),
     ),

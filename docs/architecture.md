@@ -154,7 +154,8 @@ The platform sets scope arguments such as `job_id` from graph state; a model nev
 | Finalize: hashes the approved draft and attaches related AI governance provisions from Regulus to the evidence bundle, labeled related guidance; a failed lookup is `not_evaluated` and never blocks approval | Built and tested (week 4) |
 | Week 4 acceptance: `scripts/check_week4.py` restarts Postgres, the API and the worker while a job is paused, then approves it | Passing (Nov 11) |
 | Review page at `/review`: static HTML and JavaScript served by the API, text-only rendering under a strict content security policy; requests, review decisions and the audit trail by role; `GET /v1/me`, `GET /v1/packages`, `GET /v1/memos` | Built and tested (brought forward from week 7) |
-| Guardrails | Week 5 |
+| Guardrail framework: one interface (`passed`, `triggered`, `not_evaluated`), switches in `config/guardrails.yaml`, a span and a `guardrail_checked` evidence event per check, results in the memo and the evidence bundle; a control switched off or failing records `not_evaluated` | Built and tested (week 5) |
+| Guardrail controls: PII redaction, injection screen, policy rails, number provenance, citation support, harm categories | Week 5, in progress (the two cloud-only controls report `not_evaluated` until connected) |
 | Eval baseline | Week 6 |
 | Keyless demo | Week 7 |
 | CI release gates | Week 8 |

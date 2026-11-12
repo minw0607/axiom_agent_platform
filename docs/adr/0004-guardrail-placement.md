@@ -40,3 +40,12 @@ Controls are switched in `config/guardrails.yaml`. The human approval gate is th
 - A control that cannot run, such as a cloud-only control in demo mode, records `not_evaluated` and never reports a pass (fail closed).
 - Output failures go back to the drafter once as an automated fix; a second failure fails the job.
 - The API gateway still enforces authentication, rate limits and request size, but it is not where content policy lives.
+
+## Implementation (week 5)
+
+- **The interface** is in `src/axiom/guardrails/base.py`. A control has a name, a stage and a `check` that returns a verdict; the suite adds the job, node and switch state and records a `GuardrailResult`. Results hold codes, counts and a short reason, never document or draft text, because they go into the evidence log and the public memo.
+- **Where the stages run.** Input controls run inside the intake node before documents are indexed or sent to a model. Generation and output controls run inside the drafter node on each draft, including a redraft after a credit officer's comments.
+- **Switches.** `config/guardrails.yaml` must name every control the platform has, each `enabled: true` or `false`. An unknown or missing name stops the platform at startup, so a typo cannot switch a control off silently.
+- **Fail closed.** A control that is switched off, raises an error, or needs a cloud service that is not connected records `not_evaluated` with the reason. None of these paths can produce `passed`.
+- **Evidence.** Each result becomes a `guardrail_checked` event in the job's hash chain: input results before the node's model calls, the others after them. The evidence bundle lists every result; the public memo shows each control's latest result, for the current draft.
+- **Names.** The cloud injection screen is called `injection_shield` in the platform, because the public API never contains the word "prompt"; it uses Azure AI Content Safety's Prompt Shields.

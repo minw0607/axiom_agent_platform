@@ -79,6 +79,11 @@ class Settings:
         }
 
     @property
+    def guardrails_file(self) -> Path:
+        """The guardrail on/off switches (ADR 0004)."""
+        return self.config_dir / "guardrails.yaml"
+
+    @property
     def packages_dir(self) -> Path:
         return self.data_dir / "synthetic" / "packages"
 

@@ -26,6 +26,7 @@ from axiom.graph.workflow import (
     resume_workflow,
     run_workflow,
 )
+from axiom.guardrails import load_suite
 from axiom.jobs.store import JobRecord, JobStatus, JobStore, PostgresJobStore
 from axiom.mcp_clients.client import MCPToolClient
 from axiom.mcp_clients.evidence import EvidenceService, GKNEvidence, InMemoryEvidence
@@ -61,6 +62,7 @@ def build_context(settings: Settings) -> AgentContext:
         evidence=evidence,
         policy=load_policy(settings.config_dir / "policy_thresholds.yaml"),
         prompts_dir=settings.prompts_dir,
+        guardrails=load_suite(settings.guardrails_file),
         governance=(
             RegulusGovernance(MCPToolClient(settings.regulus_mcp_url, settings.mcp_shared_secret))
             if settings.regulus_mcp_url and settings.mcp_shared_secret
@@ -91,6 +93,7 @@ def serialize_state(state: MemoState, policy_version: str) -> dict[str, Any]:
         "reviews",
         "human_revisions",
         "automated_fixes",
+        "guardrails",
         "outcome",
         "related_guidance",
         "approved_draft_sha256",
@@ -120,19 +123,34 @@ def _sha256(value: Any) -> str:
 
 
 def run_events(
-    result: dict[str, Any], calls_before: int = 0, completed_before: int = 0
+    result: dict[str, Any],
+    calls_before: int = 0,
+    completed_before: int = 0,
+    guardrails_before: int = 0,
 ) -> list[EventDraft]:
-    """The evidence events for one segment of a run, in order: each node's model calls
-    (every attempt, valid or not), then that node's outcome. A resumed run passes how many
-    calls and completed nodes the earlier segments already logged."""
+    """The evidence events for one segment of a run, in order: for each node, its input
+    guardrails, its model calls (every attempt, valid or not), its other guardrails, then
+    the node's outcome. A resumed run passes how many calls, completed nodes and guardrail
+    results the earlier segments already logged."""
     events: list[EventDraft] = []
     calls = result.get("model_calls", [])[calls_before:]
+    checked = result.get("guardrails", [])[guardrails_before:]
+
+    def guardrail_events(node: str, input_stage: bool) -> list[EventDraft]:
+        return [
+            EventDraft(type="guardrail_checked", actor=WORKER, payload=g)
+            for g in checked
+            if g["node"] == node and (g["stage"] == "input") == input_stage
+        ]
+
     nodes = list(result.get("completed", [])[completed_before:])
     if result.get("error_node"):
         nodes.append(result["error_node"])
     for node in nodes:
+        events += guardrail_events(node, input_stage=True)
         for call in (c for c in calls if c["node"] == node):
             events.append(EventDraft(type="model_call", actor=WORKER, payload=call))
+        events += guardrail_events(node, input_stage=False)
         if node == result.get("error_node") and node not in result["completed"][completed_before:]:
             events.append(
                 EventDraft(
@@ -237,7 +255,10 @@ async def resume_job(
         await store.append_events(
             job.job_id,
             run_events(
-                result, len(before.get("model_calls", [])), len(before.get("completed", []))
+                result,
+                len(before.get("model_calls", [])),
+                len(before.get("completed", [])),
+                len(before.get("guardrails", [])),
             ),
         )
         status = await _settle(store, job.job_id, state, result)

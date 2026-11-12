@@ -8,4 +8,4 @@ Settings that change behavior without code changes:
 
 Real model deployment names live in environment settings, never here.
 
-**Built (week 3):** `routing.demo.yaml`, `routing.local.yaml`, `policy_thresholds.yaml`, `otel-collector.yaml`. **Planned:** `routing.cloud.yaml`, `guardrails.yaml`, `thresholds.yaml` (weeks 5-9).
+**Built (week 3):** `routing.demo.yaml`, `routing.local.yaml`, `policy_thresholds.yaml`, `otel-collector.yaml`. **Built (week 5):** `guardrails.yaml`; it must list every control the platform has, and the platform refuses to start if a name is unknown or missing. **Planned:** `routing.cloud.yaml`, `thresholds.yaml` (weeks 8-9).

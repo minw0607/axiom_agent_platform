@@ -1,7 +1,8 @@
 """The memo workflow as a LangGraph state graph (ADR 0001).
 
 intake -> analyst -> drafter -> compliance -> human_review, then finalize, back to the
-drafter, or the end. A rule-based supervisor, plain code with no model, picks each
+drafter, or the end. Guardrails (ADR 0004) run inside intake, on the documents, and inside
+the drafter, on each draft. A rule-based supervisor, plain code with no model, picks each
 transition: on to the next node, or to the end when a node fails.
 
 human_review is a LangGraph interrupt: the run pauses there and the checkpointer keeps the
@@ -39,6 +40,7 @@ from axiom.domain import (
     ReviewDecision,
     RiskFlag,
 )
+from axiom.guardrails import GuardrailResult, Subject
 from axiom.mcp_clients.evidence import EvidenceHit
 from axiom.mcp_clients.governance import RelatedGuidance
 from axiom.memory.checkpoint import serializer
@@ -72,6 +74,7 @@ class MemoState(TypedDict, total=False):
     reviews: Annotated[list[ReviewDecision], operator.add]
     human_revisions: int
     automated_fixes: int  # guardrail fixes, counted apart from human revisions (week 5)
+    guardrails: Annotated[list[GuardrailResult], operator.add]
     outcome: str  # "approved" or "rejected", set once a credit officer decides
     approved_draft_sha256: str
     related_guidance: RelatedGuidance
@@ -109,9 +112,18 @@ def _traced(name: str, fn: Node) -> Node:
 def build_workflow(ctx: AgentContext, checkpointer: BaseCheckpointSaver[Any] | None = None) -> Any:
     async def intake(state: MemoState) -> dict[str, Any]:
         package = state["package"]
+        # Input guardrails see the documents before they are indexed or shown to a model.
+        checked = await ctx.guardrails.run(
+            "input", Subject(state["job_id"], "intake", documents=package.documents)
+        )
         hashes = await ctx.evidence.ingest(state["job_id"], package.documents)
         fs, _ = await run_intake(ctx, package)
-        return {"source_hashes": hashes, "financials": fs, "checks": reconcile(fs)}
+        return {
+            "source_hashes": hashes,
+            "financials": fs,
+            "checks": reconcile(fs),
+            "guardrails": checked,
+        }
 
     async def analyst(state: MemoState) -> dict[str, Any]:
         ratios, flags, narrative, _ = await run_analyst(
@@ -133,7 +145,12 @@ def build_workflow(ctx: AgentContext, checkpointer: BaseCheckpointSaver[Any] | N
             state["narrative"],
             revision,
         )
-        return {"draft": draft, "evidence": hits}
+        subject = Subject(state["job_id"], "drafter", draft=draft)
+        checked = [
+            *await ctx.guardrails.run("generation", subject),
+            *await ctx.guardrails.run("output", subject),
+        ]
+        return {"draft": draft, "evidence": hits, "guardrails": checked}
 
     async def compliance(state: MemoState) -> dict[str, Any]:
         rule_findings = evaluate(
@@ -268,6 +285,7 @@ async def run_workflow(
                 "reviews": [],
                 "human_revisions": 0,
                 "automated_fixes": 0,
+                "guardrails": [],
             },
             thread(job_id),
         )

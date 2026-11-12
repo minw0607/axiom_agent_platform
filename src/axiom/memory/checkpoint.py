@@ -19,14 +19,21 @@ from pydantic import BaseModel
 
 from axiom import domain
 from axiom.agents.base import ModelCall
+from axiom.guardrails import GuardrailResult
 from axiom.mcp_clients.evidence import EvidenceHit
 from axiom.mcp_clients.governance import RelatedGuidance, RelatedProvision
 
 
 def allowed_types() -> list[tuple[str, str]]:
-    """Every Pydantic model and enum in the domain, plus the call, evidence and guidance
-    records."""
-    types: list[type[Any]] = [ModelCall, EvidenceHit, RelatedGuidance, RelatedProvision]
+    """Every Pydantic model and enum in the domain, plus the call, evidence, guidance and
+    guardrail records."""
+    types: list[type[Any]] = [
+        ModelCall,
+        EvidenceHit,
+        RelatedGuidance,
+        RelatedProvision,
+        GuardrailResult,
+    ]
     for _, obj in inspect.getmembers(domain, inspect.isclass):
         if obj.__module__ == domain.__name__ and issubclass(obj, BaseModel | enum.Enum):
             types.append(obj)

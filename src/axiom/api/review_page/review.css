@@ -177,7 +177,8 @@ button:disabled { opacity: 0.55; cursor: default; }
 
 .summary { display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: start; }
 @media (max-width: 640px) { .summary { grid-template-columns: 1fr; } }
-.recommendation { font-size: 1.6rem; font-weight: 700; text-transform: capitalize; margin: 0.1rem 0 0.4rem; }
+.recommendation { font-size: 1.6rem; font-weight: 700; margin: 0.1rem 0 0.4rem; }
+.recommendation::first-letter { text-transform: uppercase; }
 .disclaimer { font-size: 0.85rem; color: var(--muted); border-left: 3px solid var(--border); padding-left: 0.6rem; }
 .counts { display: flex; flex-direction: column; gap: 0.35rem; min-width: 12rem; }
 .count { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; }

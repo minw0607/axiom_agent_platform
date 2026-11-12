@@ -14,6 +14,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from axiom.agents.base import ModelCall
 from axiom.domain import ComplianceFinding
 from axiom.evidence.log import ChainCheck, EvidenceEvent
+from axiom.guardrails import GuardrailResult, latest
 from axiom.jobs.store import JobRecord, JobStatus, JobSummary
 from axiom.mcp_clients.governance import RelatedGuidance
 
@@ -112,6 +113,15 @@ class SectionOut(BaseModel):
     claims: list[ClaimOut]
 
 
+class GuardrailOut(BaseModel):
+    """A safety check's result for the current draft. not_evaluated means it did not run."""
+
+    control: str
+    stage: str
+    outcome: Literal["passed", "triggered", "not_evaluated"]
+    reason: str
+
+
 class MemoOut(BaseModel):
     disclaimer: str = DISCLAIMER
     policy_version: str
@@ -125,6 +135,10 @@ class MemoOut(BaseModel):
     findings: list[FindingOut] = Field(
         default_factory=list,
         description="Credit policy and lending-reference findings: drafting aids, not decisions",
+    )
+    guardrails: list[GuardrailOut] = Field(
+        default_factory=list,
+        description="Each safety check's latest result. Every run is in the evidence bundle",
     )
     source_hashes: dict[str, str]
 
@@ -212,6 +226,12 @@ def to_public(job: JobRecord) -> MemoJob:
             risk_flags=r["risk_flags"],
             reconciliation=r["checks"],
             findings=r.get("findings", []),
+            guardrails=[
+                GuardrailOut(**g.model_dump(include={"control", "stage", "outcome", "reason"}))
+                for g in latest(
+                    [GuardrailResult.model_validate(g) for g in r.get("guardrails", [])]
+                )
+            ],
             source_hashes=r.get("source_hashes", {}),
         )
     return MemoJob(
@@ -258,6 +278,7 @@ class EvidenceBundle(BaseModel):
     source_hashes: dict[str, str]
     model_calls: list[ModelCall]
     findings: list[ComplianceFinding]
+    guardrails: list[GuardrailResult] = Field(default_factory=list)
     retrieved: list[RetrievedPassage]
     citations: list[CitationRecord]
     related_guidance: RelatedGuidance | None = None
@@ -290,6 +311,7 @@ def to_evidence(job: JobRecord, events: list[EvidenceEvent], chain: ChainCheck) 
         source_hashes=r.get("source_hashes", {}),
         model_calls=r.get("model_calls", []),
         findings=r.get("findings", []),
+        guardrails=r.get("guardrails", []),
         retrieved=[
             RetrievedPassage(
                 collection=h["collection"],
