@@ -7,6 +7,7 @@ license = "MIT"
 authors = [{ name = "Min Wu" }]
 requires-python = ">=3.11,<3.12"
 dependencies = [
+    "en-core-web-sm",
     "fastapi>=0.115",
     "langgraph>=0.6",
     "langgraph-checkpoint-postgres>=3",
@@ -15,6 +16,7 @@ dependencies = [
     "opentelemetry-exporter-otlp-proto-grpc>=1.27",
     "opentelemetry-instrumentation-fastapi>=0.48b0",
     "opentelemetry-sdk>=1.27",
+    "presidio-analyzer>=2.2.366",
     "psycopg[binary]>=3.2",
     "pydantic>=2.8",
     "pyyaml>=6",
@@ -58,3 +60,6 @@ testpaths = ["tests"]
 # and Python skips hidden .pth files.
 pythonpath = ["src"]
 addopts = "-ra"
+
+[tool.uv.sources]
+en-core-web-sm = { url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl" }

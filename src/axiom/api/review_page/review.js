@@ -50,13 +50,21 @@ const EVENT_LABEL = {
   job_failed: "Job failed",
 };
 const GUARDRAIL_LABEL = {
-  injection_shield: "Hidden instructions in the documents",
+  pii_redaction: "Personal data in the documents",
+  injection_screen: "Instructions aimed at the AI (local screen)",
+  injection_shield: "Instructions aimed at the AI (cloud screen)",
   content_safety: "Harmful content in the draft",
 };
 const GUARDRAIL_OUTCOME = {
   passed: { label: "Passed", tone: "good" },
   triggered: { label: "Found a problem", tone: "bad" },
   not_evaluated: { label: "Not checked", tone: "warn" },
+};
+const ERROR_TEXT = {
+  document_quarantined:
+    "A borrower document contains text aimed at the AI, such as an instruction to ignore its rules, so no AI read the package. An auditor can see which document and line.",
+  no_permitted_model: "Personal data could not be masked, and no model is allowed to see it unmasked here.",
+  invalid_package: "The package could not be read, or loan terms are missing.",
 };
 const STEP_LABEL = {
   intake: "reading the documents",
@@ -415,7 +423,7 @@ function renderDetail() {
         { class: "status-text" },
         ACTIVE.has(job.status) ? el("span", { class: "spinner" }) : null,
         status.text,
-        job.error ? ` Error code: ${job.error.code}.` : "",
+        job.error ? ` ${ERROR_TEXT[job.error.code] || ""} Error code: ${job.error.code}.` : "",
       ),
     ),
   ];
@@ -756,7 +764,8 @@ function renderGuardrails(memo) {
       "ul",
       { class: "findings" },
       checks.map((g) => {
-        const o = GUARDRAIL_OUTCOME[g.outcome] || { label: g.outcome, tone: "" };
+        // Masking personal data is the control doing its job, not a problem with the memo.
+        const o = g.action === "redacted" ? { label: "Masked", tone: "good" } : GUARDRAIL_OUTCOME[g.outcome] || { label: g.outcome, tone: "" };
         return el(
           "li",
           { class: "finding" },
@@ -808,7 +817,8 @@ function renderAudit(job) {
         if (ev.type === "model_call" && p.attempt > 1) label += ` (attempt ${p.attempt})`;
         if (ev.type === "guardrail_checked") {
           const o = GUARDRAIL_OUTCOME[p.outcome] || { label: p.outcome };
-          label = `${EVENT_LABEL[ev.type]}: ${GUARDRAIL_LABEL[p.control] || p.control}, ${o.label.toLowerCase()}`;
+          const did = { redacted: "masked", quarantined: "quarantined, job stopped" }[p.action];
+          label = `${EVENT_LABEL[ev.type]}: ${GUARDRAIL_LABEL[p.control] || p.control}, ${did || o.label.toLowerCase()}`;
         }
         return el("li", {}, el("time", { datetime: ev.at }, clock(ev.at)), el("span", {}, label), el("span", { class: "actor" }, ev.actor));
       }),

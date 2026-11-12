@@ -24,4 +24,5 @@ A failed job returns `status: failed` and a public `error.code`. Internal detail
 | `output_validation_failed` | A model's output failed validation twice, for example a figure that does not match its source line. |
 | `model_unavailable` | Every permitted model failed. |
 | `no_permitted_model` | The data's sensitivity allows no available model, so the job stopped (fail closed). |
+| `document_quarantined` | A borrower document contains instructions aimed at the AI, so the job stopped before any model saw the package. The evidence bundle names the document, line and pattern. |
 | `internal_error` | An unexpected error. |

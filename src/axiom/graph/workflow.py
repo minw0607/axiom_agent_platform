@@ -25,7 +25,13 @@ from langgraph.types import Command, interrupt
 from opentelemetry.trace import Status, StatusCode
 
 from axiom.agents.analyst import run_analyst
-from axiom.agents.base import AgentContext, AgentOutputError, ModelCall, collect_calls
+from axiom.agents.base import (
+    AgentContext,
+    AgentOutputError,
+    ModelCall,
+    collect_calls,
+    sensitivity,
+)
 from axiom.agents.compliance import run_compliance_review
 from axiom.agents.drafter import run_drafter
 from axiom.agents.intake import IntakeError, run_intake
@@ -40,22 +46,33 @@ from axiom.domain import (
     ReviewDecision,
     RiskFlag,
 )
-from axiom.guardrails import GuardrailResult, Subject
+from axiom.guardrails import GuardrailResult, Subject, pii_protected
 from axiom.mcp_clients.evidence import EvidenceHit
 from axiom.mcp_clients.governance import RelatedGuidance
 from axiom.memory.checkpoint import serializer
-from axiom.router.types import FailClosed, ProviderError
+from axiom.router.types import FailClosed, ProviderError, Sensitivity
 from axiom.telemetry.setup import tracer
 from axiom.tools.policy_rules import RuleInput, evaluate
 from axiom.tools.reconcile import reconcile
 
 NODE_ORDER = ("intake", "analyst", "drafter", "compliance")
 REVIEW_NODES = ("human_review", "finalize")
-EXPECTED_ERRORS = (IntakeError, AgentOutputError, ProviderError, FailClosed)
 
 
 class ReviewError(RuntimeError):
     """A review the graph cannot accept, such as a third revision. The API checks first."""
+
+
+class DocumentQuarantined(RuntimeError):
+    """An input guardrail found instructions aimed at the AI. No model sees the package."""
+
+    def __init__(self, guardrails: list[GuardrailResult]) -> None:
+        blocked = [r.control for r in guardrails if r.action == "quarantined"]
+        super().__init__(f"quarantined by {', '.join(blocked)}")
+        self.guardrails = guardrails
+
+
+EXPECTED_ERRORS = (IntakeError, AgentOutputError, ProviderError, FailClosed, DocumentQuarantined)
 
 
 class MemoState(TypedDict, total=False):
@@ -75,6 +92,7 @@ class MemoState(TypedDict, total=False):
     human_revisions: int
     automated_fixes: int  # guardrail fixes, counted apart from human revisions (week 5)
     guardrails: Annotated[list[GuardrailResult], operator.add]
+    pii_redacted: bool  # set by intake; False routes every model call as pii_unredacted
     outcome: str  # "approved" or "rejected", set once a credit officer decides
     approved_draft_sha256: str
     related_guidance: RelatedGuidance
@@ -92,16 +110,19 @@ def _traced(name: str, fn: Node) -> Node:
         with tracer().start_as_current_span(f"node {name}") as span:
             span.set_attribute("axiom.job_id", state["job_id"])
             span.set_attribute("axiom.node", name)
-            with collect_calls() as calls:
+            level: Sensitivity = "standard" if state.get("pii_redacted") else "pii_unredacted"
+            with collect_calls() as calls, sensitivity(level):
                 try:
                     update = await fn(state)
                 except EXPECTED_ERRORS as exc:
                     span.set_status(Status(StatusCode.ERROR, type(exc).__name__))
-                    # Keep the attempts that failed: the evidence log records every call.
+                    # Keep the attempts that failed, and the guardrail results that stopped
+                    # the node: the evidence log records both.
                     return {
                         "error": f"{type(exc).__name__}: {exc}",
                         "error_node": name,
                         "model_calls": list(calls),
+                        "guardrails": getattr(exc, "guardrails", []),
                     }
             span.set_attribute("axiom.node.model_calls", len(calls))
             return {**update, "model_calls": list(calls), "completed": [name]}
@@ -113,12 +134,26 @@ def build_workflow(ctx: AgentContext, checkpointer: BaseCheckpointSaver[Any] | N
     async def intake(state: MemoState) -> dict[str, Any]:
         package = state["package"]
         # Input guardrails see the documents before they are indexed or shown to a model.
-        checked = await ctx.guardrails.run(
-            "input", Subject(state["job_id"], "intake", documents=package.documents)
+        # Redaction runs first; the rest of the job sees only the redacted documents.
+        checked, screened = await ctx.guardrails.screen(
+            "input",
+            Subject(
+                state["job_id"],
+                "intake",
+                documents=package.documents,
+                borrower_name=package.borrower_name,
+            ),
         )
-        hashes = await ctx.evidence.ingest(state["job_id"], package.documents)
-        fs, _ = await run_intake(ctx, package)
+        if any(r.action == "quarantined" for r in checked):
+            raise DocumentQuarantined(checked)
+        package = package.model_copy(update={"documents": screened.documents})
+        redacted = pii_protected(checked)
+        with sensitivity("standard" if redacted else "pii_unredacted"):
+            hashes = await ctx.evidence.ingest(state["job_id"], package.documents)
+            fs, _ = await run_intake(ctx, package)
         return {
+            "package": package,
+            "pii_redacted": redacted,
             "source_hashes": hashes,
             "financials": fs,
             "checks": reconcile(fs),

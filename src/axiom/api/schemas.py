@@ -119,6 +119,7 @@ class GuardrailOut(BaseModel):
     control: str
     stage: str
     outcome: Literal["passed", "triggered", "not_evaluated"]
+    action: Literal["none", "redacted", "quarantined"] = "none"
     reason: str
 
 
@@ -227,7 +228,7 @@ def to_public(job: JobRecord) -> MemoJob:
             reconciliation=r["checks"],
             findings=r.get("findings", []),
             guardrails=[
-                GuardrailOut(**g.model_dump(include={"control", "stage", "outcome", "reason"}))
+                GuardrailOut(**g.model_dump(include=set(GuardrailOut.model_fields)))
                 for g in latest(
                     [GuardrailResult.model_validate(g) for g in r.get("guardrails", [])]
                 )

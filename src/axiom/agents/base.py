@@ -17,7 +17,7 @@ from axiom.guardrails import GuardrailSuite, load_suite
 from axiom.mcp_clients.evidence import EvidenceService
 from axiom.mcp_clients.governance import GovernanceLookup
 from axiom.router.router import ModelRouter
-from axiom.router.types import ChatMessage, ModelRequest, Route
+from axiom.router.types import ChatMessage, ModelRequest, Route, Sensitivity
 from axiom.settings import Settings
 from axiom.tools.policy import PolicyThresholds
 
@@ -71,6 +71,18 @@ class ModelCall(BaseModel):
 
 
 _CALL_SINK: ContextVar[list[ModelCall] | None] = ContextVar("axiom_model_calls", default=None)
+_SENSITIVITY: ContextVar[Sensitivity] = ContextVar("axiom_sensitivity", default="pii_unredacted")
+
+
+@contextmanager
+def sensitivity(level: Sensitivity) -> Iterator[None]:
+    """Mark every model call inside the block. Calls are pii_unredacted unless a node says
+    the documents were redacted, so a missing redaction can never route as standard."""
+    token = _SENSITIVITY.set(level)
+    try:
+        yield
+    finally:
+        _SENSITIVITY.reset(token)
 
 
 @contextmanager
@@ -112,6 +124,7 @@ async def call_structured(
             prompt_id=prompt.prompt_id,
             prompt_version=prompt.version,
             recording_key=recording_key if attempt == 1 else f"{recording_key}.retry",
+            sensitivity=_SENSITIVITY.get(),
         )
         response, decision = await ctx.router.complete(request)
         errors = []

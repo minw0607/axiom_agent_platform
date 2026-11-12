@@ -45,6 +45,7 @@ ERROR_CODES = {
     "ProviderError": "model_unavailable",
     "FailClosed": "no_permitted_model",
     "ReviewError": "review_not_applied",
+    "DocumentQuarantined": "document_quarantined",
 }
 
 
@@ -94,6 +95,7 @@ def serialize_state(state: MemoState, policy_version: str) -> dict[str, Any]:
         "human_revisions",
         "automated_fixes",
         "guardrails",
+        "pii_redacted",
         "outcome",
         "related_guidance",
         "approved_draft_sha256",

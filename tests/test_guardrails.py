@@ -32,7 +32,15 @@ from test_api import KEYS, SETTINGS_WITH_KEYS, submit
 from test_review import COMMENTS, SETTINGS_SOD, review
 
 CONFIG = SETTINGS.guardrails_file
+CONTROLS = ["pii_redaction", "injection_screen", "injection_shield", "content_safety"]
 CLOUD_ONLY = {"injection_shield", "content_safety"}
+
+
+def switches(**enabled: object) -> str:
+    """A guardrails.yaml body switching every control on, except those given."""
+    lines = [f"  {c}: {{enabled: {str(enabled.get(c, True)).lower()}}}" for c in CONTROLS]
+    lines += [f"  {c}: {{enabled: {v}}}" for c, v in enabled.items() if c not in CONTROLS]
+    return "controls:\n" + "\n".join(lines) + "\n"
 
 
 @dataclass
@@ -72,28 +80,20 @@ def write(tmp_path: Path, body: str) -> Path:
 
 
 def test_an_unknown_control_in_the_config_is_refused(tmp_path: Path) -> None:
-    path = write(
-        tmp_path,
-        "controls:\n  injection_shield: {enabled: true}\n  content_safety: {enabled: true}\n"
-        "  typo_control: {enabled: false}\n",
-    )
+    path = write(tmp_path, switches(typo_control="false"))
     with pytest.raises(GuardrailConfigError, match="unknown controls in config: typo_control"):
         load_suite(path)
 
 
 def test_a_control_missing_from_the_config_is_refused(tmp_path: Path) -> None:
-    path = write(tmp_path, "controls:\n  injection_shield: {enabled: true}\n")
-    with pytest.raises(GuardrailConfigError, match="missing from config: content_safety"):
+    path = write(tmp_path, switches().replace("  content_safety: {enabled: true}\n", ""))
+    with pytest.raises(GuardrailConfigError, match=r"missing from config: content_safety$"):
         load_suite(path)
 
 
 @pytest.mark.parametrize("value", ["'yes'", "1", "null"])
 def test_a_switch_must_be_true_or_false(tmp_path: Path, value: str) -> None:
-    path = write(
-        tmp_path,
-        f"controls:\n  injection_shield: {{enabled: {value}}}\n"
-        "  content_safety: {enabled: true}\n",
-    )
+    path = write(tmp_path, switches(content_safety=value))
     with pytest.raises(GuardrailConfigError, match="must be true or false"):
         load_suite(path)
 
@@ -142,13 +142,17 @@ def test_cloud_only_controls_report_not_evaluated_in_demo_mode() -> None:
         run_workflow(demo_context(), "job-demo", load_package(SETTINGS.packages_dir, "pkg-01"))
     )
     results = state["guardrails"]
-    assert {r.control for r in results} == CLOUD_ONLY
-    assert {r.outcome for r in results} == {"not_evaluated"}
-    assert all(r.enabled and "not connected" in r.reason for r in results)
-    assert {(r.control, r.stage, r.node) for r in results} == {
+    assert [(r.control, r.stage, r.node) for r in results] == [
+        ("pii_redaction", "input", "intake"),
+        ("injection_screen", "input", "intake"),
         ("injection_shield", "input", "intake"),
         ("content_safety", "output", "drafter"),
-    }
+    ]
+    cloud = [r for r in results if r.control in CLOUD_ONLY]
+    assert {r.outcome for r in cloud} == {"not_evaluated"}
+    assert all(r.enabled and "not connected" in r.reason for r in cloud)
+    # The local controls run in demo mode, and a clean package passes both.
+    assert [r.outcome for r in results[:2]] == ["passed", "passed"]
 
 
 def test_latest_keeps_each_controls_last_result_in_first_run_order() -> None:
@@ -222,6 +226,8 @@ def test_every_guardrail_result_reaches_the_evidence_log_and_bundle(
         events = asyncio.run(store.events(job_id))
         checked = [e.payload for e in events if e.type == "guardrail_checked"]
         assert [(p["control"], p["outcome"]) for p in checked] == [
+            ("pii_redaction", "passed"),
+            ("injection_screen", "passed"),
             ("injection_shield", "not_evaluated"),
             ("content_safety", "not_evaluated"),
         ]
@@ -232,10 +238,7 @@ def test_every_guardrail_result_reaches_the_evidence_log_and_bundle(
         bundle = client.get(
             f"/v1/memos/{job_id}/evidence", headers={"X-API-Key": KEYS["auditor"]}
         ).json()
-        assert [b["control"] for b in bundle["guardrails"]] == [
-            "injection_shield",
-            "content_safety",
-        ]
+        assert [b["control"] for b in bundle["guardrails"]] == CONTROLS
 
 
 def test_the_memo_shows_each_checks_latest_result_without_internal_names(
@@ -249,10 +252,10 @@ def test_the_memo_shows_each_checks_latest_result_without_internal_names(
         body = client.get(f"/v1/memos/{job_id}", headers={"X-API-Key": KEYS["submitter"]}).json()
         shown = body["memo"]["guardrails"]
         # The redraft ran content_safety twice; the memo shows the latest once.
-        assert [s["control"] for s in shown] == ["injection_shield", "content_safety"]
-        assert all(set(s) == {"control", "stage", "outcome", "reason"} for s in shown)
+        assert [s["control"] for s in shown] == CONTROLS
+        assert all(set(s) == {"control", "stage", "outcome", "action", "reason"} for s in shown)
         events = asyncio.run(store.events(job_id))
-        assert sum(e.type == "guardrail_checked" for e in events) == 3
+        assert sum(e.type == "guardrail_checked" for e in events) == 5
 
 
 def test_switching_a_control_off_shows_in_the_evidence(
@@ -263,9 +266,7 @@ def test_switching_a_control_off_shows_in_the_evidence(
     for f in SETTINGS.config_dir.iterdir():
         if f.is_file():
             (config / f.name).write_text(f.read_text())
-    (config / "guardrails.yaml").write_text(
-        "controls:\n  injection_shield: {enabled: false}\n  content_safety: {enabled: true}\n"
-    )
+    (config / "guardrails.yaml").write_text(switches(injection_shield=False))
     settings = replace(SETTINGS_WITH_KEYS, config_dir=config)
     with TestClient(create_app(settings, store)) as client:
         job_id = submit(client).json()["job_id"]
@@ -273,5 +274,5 @@ def test_switching_a_control_off_shows_in_the_evidence(
         checked = [
             e.payload for e in asyncio.run(store.events(job_id)) if e.type == "guardrail_checked"
         ]
-        assert checked[0]["control"] == "injection_shield"
-        assert (checked[0]["enabled"], checked[0]["reason"]) == (False, SWITCHED_OFF)
+        assert checked[2]["control"] == "injection_shield"
+        assert (checked[2]["enabled"], checked[2]["reason"]) == (False, SWITCHED_OFF)

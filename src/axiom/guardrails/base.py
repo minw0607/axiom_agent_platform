@@ -12,7 +12,7 @@ evidence log and the public API.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any, Literal, Protocol
 
 from opentelemetry.trace import Status, StatusCode
@@ -23,6 +23,8 @@ from axiom.telemetry.setup import tracer
 
 Stage = Literal["input", "generation", "output"]
 Outcome = Literal["passed", "triggered", "not_evaluated"]
+# What a control did about a finding. A quarantine stops the job before any model call.
+Action = Literal["none", "redacted", "quarantined"]
 STAGES: tuple[Stage, ...] = ("input", "generation", "output")
 
 
@@ -37,16 +39,23 @@ class GuardrailResult(BaseModel):
     outcome: Outcome
     enabled: bool
     reason: str = Field(max_length=300)
+    action: Action = "none"
     details: dict[str, Any] = Field(default_factory=dict)
 
 
 @dataclass(frozen=True)
 class Verdict:
-    """What a control returns. The suite turns it into a GuardrailResult."""
+    """What a control returns. The suite turns it into a GuardrailResult.
+
+    An input control that rewrites the documents, such as redaction, returns them in
+    `documents`; the controls after it, and the rest of the job, see the rewritten ones.
+    """
 
     outcome: Outcome
     reason: str
     details: dict[str, Any] = field(default_factory=dict)
+    action: Action = "none"
+    documents: tuple[Document, ...] | None = None
 
 
 @dataclass(frozen=True)
@@ -57,6 +66,7 @@ class Subject:
     node: str
     documents: tuple[Document, ...] = ()
     draft: MemoDraft | None = None
+    borrower_name: str = ""
 
 
 class Guardrail(Protocol):
@@ -98,9 +108,22 @@ class GuardrailSuite:
         return [c for c in self.controls if c.stage == stage]
 
     async def run(self, stage: Stage, subject: Subject) -> list[GuardrailResult]:
-        return [await self._check(control, subject) for control in self.for_stage(stage)]
+        results, _ = await self.screen(stage, subject)
+        return results
 
-    async def _check(self, control: Guardrail, subject: Subject) -> GuardrailResult:
+    async def screen(self, stage: Stage, subject: Subject) -> tuple[list[GuardrailResult], Subject]:
+        """Run the stage's controls in order, each on the documents the one before it left."""
+        results: list[GuardrailResult] = []
+        for control in self.for_stage(stage):
+            result, documents = await self._check(control, subject)
+            results.append(result)
+            if documents is not None:
+                subject = replace(subject, documents=documents)
+        return results, subject
+
+    async def _check(
+        self, control: Guardrail, subject: Subject
+    ) -> tuple[GuardrailResult, tuple[Document, ...] | None]:
         enabled = self.enabled[control.name]
         with tracer().start_as_current_span(f"guardrail {control.name}") as span:
             span.set_attribute("axiom.job_id", subject.job_id)
@@ -116,15 +139,18 @@ class GuardrailSuite:
                     span.set_status(Status(StatusCode.ERROR, type(exc).__name__))
                     verdict = Verdict("not_evaluated", f"check failed ({type(exc).__name__})")
             span.set_attribute("axiom.guardrail.outcome", verdict.outcome)
-            return GuardrailResult(
+            span.set_attribute("axiom.guardrail.action", verdict.action)
+            result = GuardrailResult(
                 control=control.name,
                 stage=control.stage,
                 node=subject.node,
                 outcome=verdict.outcome,
                 enabled=enabled,
                 reason=verdict.reason[:300],
+                action=verdict.action,
                 details=verdict.details,
             )
+            return result, verdict.documents
 
 
 def latest(results: list[GuardrailResult]) -> list[GuardrailResult]:
