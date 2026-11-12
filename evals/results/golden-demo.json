@@ -13,7 +13,9 @@
     "recommendation_acceptable": 0.92,
     "number_provenance": 1.0,
     "citation_coverage": 1.0,
-    "key_finding_recall_terms": 0.94
+    "key_finding_recall_terms": 0.94,
+    "citation_support_judge": null,
+    "key_finding_recall_judge": null
   },
   "rows": [
     {

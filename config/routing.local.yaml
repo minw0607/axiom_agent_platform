@@ -5,6 +5,9 @@ routes:
   extraction: { primary: small-a, fallback: frontier-a }
   narrative: { primary: frontier-a, fallback: small-a }
   compliance: { primary: frontier-a, fallback: small-a }
+  # The evaluation grader. A different model from the drafter, with no fallback: falling
+  # back to the drafter's model would let a model grade its own work.
+  judge: { primary: small-a }
 sensitivity:
   # Unredacted PII may only reach a local model. With none configured, the job fails closed.
   pii_unredacted: { allow: [local-small], on_unavailable: fail_closed }

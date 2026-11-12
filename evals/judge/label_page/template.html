@@ -1,0 +1,165 @@
+<title>Grader Calibration Labels</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one reading column of numbered items under a sticky progress bar, like a review queue. */
+:root {
+  --bg: #f4f6f9; --surface: #ffffff; --sunk: #eef1f6; --fg: #17202c; --muted: #5a6576;
+  --line: #d9dfe8; --accent: #1d4e89; --accent-fg: #ffffff;
+  --yes: #1f6f4a; --yes-bg: #e3f2ea; --no: #a12d24; --no-bg: #f9e5e2; --maybe: #7a5b00; --maybe-bg: #f6eed6;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11161d; --surface: #182029; --sunk: #1f2833; --fg: #e4e9f0; --muted: #9aa6b6;
+  --line: #2c3745; --accent: #7fb0ec; --accent-fg: #0c1420;
+  --yes: #74c79b; --yes-bg: #17302a; --no: #f0938a; --no-bg: #3a1f1d; --maybe: #e2c06a; --maybe-bg: #33290f; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #11161d; --surface: #182029; --sunk: #1f2833; --fg: #e4e9f0; --muted: #9aa6b6;
+  --line: #2c3745; --accent: #7fb0ec; --accent-fg: #0c1420;
+  --yes: #74c79b; --yes-bg: #17302a; --no: #f0938a; --no-bg: #3a1f1d; --maybe: #e2c06a; --maybe-bg: #33290f; color-scheme: dark }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 15px/1.55 var(--sans); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+.wrap { max-width: 54rem; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+header.intro { padding-block: 28px 8px; }
+h1 { font-size: 1.55rem; font-weight: 600; margin: 0 0 6px; text-wrap: balance; }
+.intro p { margin: 0 0 10px; color: var(--muted); max-width: 65ch; }
+.intro strong { color: var(--fg); font-weight: 600; }
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); }
+.bar .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding-block: 10px; }
+.progress { display: flex; align-items: center; gap: 10px; flex: 1 1 240px; min-width: 0; }
+.meter { flex: 1; height: 6px; border-radius: 3px; background: var(--sunk); overflow: hidden; }
+.meter i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .25s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 500; white-space: nowrap; }
+.filters { display: flex; gap: 4px; }
+.filters button { font: inherit; font-size: .85rem; border: 1px solid var(--line); background: var(--surface); color: var(--muted); padding: 4px 10px; border-radius: 6px; cursor: pointer; }
+.filters button[aria-pressed="true"] { background: var(--sunk); color: var(--fg); border-color: var(--muted); }
+.status { font-size: .85rem; color: var(--muted); width: 100%; }
+.status.warn { color: var(--no); }
+main { display: grid; gap: 14px; padding-block: 16px 48px; }
+.item { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.item.done { border-left: 4px solid var(--accent); padding-left: 13px; }
+.head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; }
+.id { font: 500 .8rem var(--mono); color: var(--muted); }
+.kind { font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.q { font-size: .9rem; color: var(--muted); margin: 0; }
+.claim, .finding { margin: 0; font-size: 1rem; }
+.finding { font-weight: 500; }
+.src { display: grid; gap: 6px; min-width: 0; }
+.src div { background: var(--sunk); border-radius: 6px; padding: 8px 10px; min-width: 0; }
+.src .ref { font: .75rem var(--mono); color: var(--muted); display: block; margin-bottom: 2px; }
+.src code { font: .85rem/1.5 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+.memo { margin: 0; padding-left: 1.1rem; display: grid; gap: 4px; font-size: .92rem; }
+details summary { cursor: pointer; color: var(--accent); font-size: .9rem; }
+.choices { display: flex; flex-wrap: wrap; gap: 8px; }
+.choices button { font: 500 .92rem var(--sans); border: 1px solid var(--line); background: var(--surface); color: var(--fg); padding: 7px 14px; border-radius: 6px; cursor: pointer; }
+.choices button:disabled { opacity: .5; cursor: default; }
+.choices button[aria-pressed="true"][data-v$="supported"]:not([data-v^="not"]), .choices button[aria-pressed="true"][data-v="covered"] { background: var(--yes-bg); border-color: var(--yes); color: var(--yes); }
+.choices button[aria-pressed="true"][data-v^="not"] { background: var(--no-bg); border-color: var(--no); color: var(--no); }
+.choices button[aria-pressed="true"][data-v="unsure"] { background: var(--maybe-bg); border-color: var(--maybe); color: var(--maybe); }
+textarea { font: .9rem var(--sans); width: 100%; min-height: 2.4rem; resize: vertical; border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; background: var(--surface); color: var(--fg); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.empty { color: var(--muted); text-align: center; padding: 24px; }
+@media (prefers-reduced-motion: reduce) { .meter i { transition: none; } }
+</style>
+
+<header class="intro wrap">
+  <h1>Grader calibration labels</h1>
+  <p>The memo grader is an AI model. It is trusted only as far as it agrees with you, so label each of these 30 items as you judge it. The claims come from real drafts of synthetic borrower memos; some have been altered.</p>
+  <p><strong>Citation items:</strong> do the source lines shown support every factual part of the claim? <strong>Finding items:</strong> does the memo state the finding's substance, including its key number? Pick <strong>Not sure</strong> rather than guess, and add a note when an item is borderline. Your choices save as you go.</p>
+</header>
+<div class="bar"><div class="wrap">
+  <div class="progress"><span class="meter"><i id="meter"></i></span><span class="count" id="count">0 of 30 labelled</span></div>
+  <div class="filters" role="group" aria-label="Show">
+    <button id="f-all" data-f="all" aria-pressed="true">All</button>
+    <button id="f-todo" data-f="todo" aria-pressed="false">To label</button>
+    <button id="f-done" data-f="done" aria-pressed="false">Labelled</button>
+  </div>
+  <div class="status" id="status" role="status">Connecting to saved labels…</div>
+</div></div>
+<main class="wrap" id="list"></main>
+
+<script>
+const ITEMS = __ITEMS__;
+const CHOICES = {
+  citation: [["supported", "Supported"], ["not_supported", "Not supported"], ["unsure", "Not sure"]],
+  finding: [["covered", "Covered"], ["not_covered", "Not covered"], ["unsure", "Not sure"]],
+};
+const labels = {};          // item_id -> {verdict, note}
+let db = null, filter = "all", writable = false;
+const $ = (id) => document.getElementById(id);
+function el(tag, props, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(props || {})) {
+    if (k === "text") n.textContent = v; else if (k.startsWith("on")) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+}
+function setStatus(text, warn) { const s = $("status"); s.textContent = text; s.classList.toggle("warn", !!warn); }
+
+function card(item, index) {
+  const lab = labels[item.item_id];
+  const body = item.type === "citation"
+    ? [el("p", { class: "q", text: "Do these source lines support every factual part of the claim?" }),
+       el("p", { class: "claim", text: item.claim }),
+       el("div", { class: "src" }, ...item.sources.map(s => el("div", {}, el("span", { class: "ref", text: `${s.doc_id} · ${s.locator}` }), el("code", { text: s.text }))))]
+    : [el("p", { class: "q", text: "Does the memo state this finding?" }),
+       el("p", { class: "finding", text: item.finding }),
+       el("details", {}, el("summary", { text: `Read the memo (${item.memo.length} claims)` }),
+         el("ol", { class: "memo" }, ...item.memo.map(c => el("li", { text: c }))))];
+  const choices = el("div", { class: "choices", role: "group", "aria-label": "Your label" },
+    ...CHOICES[item.type].map(([v, text]) => {
+      const b = el("button", { type: "button", "data-v": v, id: `b-${item.item_id}-${v}`, "aria-pressed": String(lab?.verdict === v), text, onclick: () => save(item.item_id, { verdict: v }) });
+      if (!writable) b.disabled = true;
+      return b;
+    }));
+  const note = el("textarea", { id: `n-${item.item_id}`, placeholder: "Note (optional)", "aria-label": "Note", onchange: (e) => save(item.item_id, { note: e.target.value.trim() }) });
+  note.value = lab?.note || "";
+  if (!writable) note.disabled = true;
+  return el("article", { class: "item" + (lab?.verdict ? " done" : ""), id: `item-${item.item_id}` },
+    el("div", { class: "head" }, el("span", { class: "id", text: `${index + 1} · ${item.item_id}` }), el("span", { class: "kind", text: item.type === "citation" ? "Citation support" : "Key finding" })),
+    ...body, choices, note);
+}
+
+function render() {
+  const done = ITEMS.filter(i => labels[i.item_id]?.verdict).length;
+  $("count").textContent = `${done} of ${ITEMS.length} labelled`;
+  $("meter").style.width = `${(100 * done) / ITEMS.length}%`;
+  const shown = ITEMS.map((it, i) => [it, i]).filter(([it]) => filter === "all" || (filter === "done") === !!labels[it.item_id]?.verdict);
+  $("list").replaceChildren(...(shown.length ? shown.map(([it, i]) => card(it, i)) : [el("p", { class: "empty", text: filter === "todo" ? "Everything is labelled. Thank you." : "Nothing labelled yet." })]));
+}
+
+const pending = {};
+async function save(id, patch) {
+  if (!db || !writable) return;
+  const next = { verdict: null, note: "", ...labels[id], ...patch };
+  if (labels[id] && labels[id].verdict === next.verdict && (labels[id].note || "") === next.note) return;
+  labels[id] = next; render();
+  pending[id] = (pending[id] || Promise.resolve()).then(() =>
+    db.doc(`labels/${id}`).set({ verdict: next.verdict, note: next.note, at: new Date().toISOString() })
+      .then(() => setStatus("Saved."))
+      .catch((e) => setStatus(`Could not save ${id}: ${e && e.message ? e.message : "try again"}.`, true)));
+}
+
+for (const b of document.querySelectorAll(".filters button")) b.addEventListener("click", () => {
+  filter = b.dataset.f;
+  for (const o of document.querySelectorAll(".filters button")) o.setAttribute("aria-pressed", String(o === b));
+  render();
+});
+
+render();
+(async () => {
+  try { db = window.claude?.use ? await window.claude.use("db") : null; } catch { db = null; }
+  if (!db) { setStatus("Labels can't be saved in this view. Open the page signed in to claude.ai.", true); return; }
+  writable = true; render();
+  const timer = setTimeout(() => setStatus("Still connecting. Your earlier labels may not show yet.", true), 10000);
+  db.collection("labels").onSnapshot((snap) => {
+    for (const d of snap.docs) { const v = d.data(); if (v) labels[d.id] = { verdict: v.verdict || null, note: v.note || "" }; }
+    if (!snap.metadata.fromCache) { clearTimeout(timer); setStatus(snap.empty ? "Ready. Nothing labelled yet." : "Saved labels loaded."); }
+    render();
+  }, (e) => { clearTimeout(timer); setStatus(`Saved labels could not load (${e.code}). Reload the page later.`, true); });
+})();
+</script>

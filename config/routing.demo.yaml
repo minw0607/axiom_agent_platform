@@ -3,5 +3,6 @@ routes:
   extraction: { primary: recorded }
   narrative: { primary: recorded }
   compliance: { primary: recorded }
+  judge: { primary: recorded }
 sensitivity:
   pii_unredacted: { allow: [recorded], on_unavailable: fail_closed }

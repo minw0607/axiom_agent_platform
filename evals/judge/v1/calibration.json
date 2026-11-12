@@ -1,0 +1,758 @@
+{
+  "version": 1,
+  "items": [
+    {
+      "item_id": "cit-01",
+      "type": "citation",
+      "package_id": "pkg-01",
+      "claim": "No risk flags and no failed reconciliation checks were provided in connection with the 2025 ratios computed from the supplied revenue, EBITDA, interest expense, current asset, current liability, debt, equity, and loan request figures.",
+      "sources": [
+        {
+          "doc_id": "pkg-01-income_statement",
+          "locator": "line 8",
+          "text": "| Revenue | 12,400,000 | 13,144,000 | 13,801,200 |"
+        },
+        {
+          "doc_id": "pkg-01-income_statement",
+          "locator": "line 11",
+          "text": "| EBITDA | 2,108,000 | 2,234,480 | 2,346,204 |"
+        },
+        {
+          "doc_id": "pkg-01-income_statement",
+          "locator": "line 13",
+          "text": "| Interest expense | 208,000 | 169,000 | 130,000 |"
+        },
+        {
+          "doc_id": "pkg-01-balance_sheet",
+          "locator": "line 11",
+          "text": "| Total current assets | 4,216,000 | 4,468,960 | 4,692,408 |"
+        },
+        {
+          "doc_id": "pkg-01-balance_sheet",
+          "locator": "line 13",
+          "text": "| Total current liabilities | 2,108,000 | 2,234,480 | 2,346,204 |"
+        },
+        {
+          "doc_id": "pkg-01-balance_sheet",
+          "locator": "line 14",
+          "text": "| Total debt (bank and term loans) | 3,200,000 | 2,600,000 | 2,000,000 |"
+        },
+        {
+          "doc_id": "pkg-01-balance_sheet",
+          "locator": "line 16",
+          "text": "| Total equity | 3,008,000 | 3,734,480 | 4,446,204 |"
+        },
+        {
+          "doc_id": "pkg-01-loan_application",
+          "locator": "line 5",
+          "text": "Requested amount: $1,500,000"
+        }
+      ],
+      "built_as": "as_drafted"
+    },
+    {
+      "item_id": "cit-02",
+      "type": "citation",
+      "package_id": "pkg-01",
+      "claim": "For 2025, reported revenue was 15334666, EBITDA was 2346204, interest expense was 130000, and net income was 1365115.",
+      "sources": [
+        {
+          "doc_id": "pkg-01-income_statement",
+          "locator": "line 8",
+          "text": "| Revenue | 12,400,000 | 13,144,000 | 13,801,200 |"
+        },
+        {
+          "doc_id": "pkg-01-income_statement",
+          "locator": "line 11",
+          "text": "| EBITDA | 2,108,000 | 2,234,480 | 2,346,204 |"
+        },
+        {
+          "doc_id": "pkg-01-income_statement",
+          "locator": "line 13",
+          "text": "| Interest expense | 208,000 | 169,000 | 130,000 |"
+        },
+        {
+          "doc_id": "pkg-01-income_statement",
+          "locator": "line 15",
+          "text": "| Net income | 1,124,800 | 1,250,565 | 1,365,115 |"
+        }
+      ],
+      "built_as": "changed_number"
+    },
+    {
+      "item_id": "cit-03",
+      "type": "citation",
+      "package_id": "pkg-02",
+      "claim": "No policy risk flags or failed reconciliation checks were reported.",
+      "sources": [
+        {
+          "doc_id": "pkg-02-income_statement",
+          "locator": "line 8",
+          "text": "| Revenue | 28,900,000 | 30,056,000 | 31,558,800 |"
+        },
+        {
+          "doc_id": "pkg-02-income_statement",
+          "locator": "line 11",
+          "text": "| EBITDA | 2,601,000 | 2,705,040 | 2,840,292 |"
+        },
+        {
+          "doc_id": "pkg-02-income_statement",
+          "locator": "line 13",
+          "text": "| Interest expense | 336,000 | 280,000 | 224,000 |"
+        },
+        {
+          "doc_id": "pkg-02-balance_sheet",
+          "locator": "line 11",
+          "text": "| Total current assets | 7,514,000 | 7,814,560 | 8,205,288 |"
+        },
+        {
+          "doc_id": "pkg-02-balance_sheet",
+          "locator": "line 13",
+          "text": "| Total current liabilities | 4,335,000 | 4,508,400 | 4,733,820 |"
+        },
+        {
+          "doc_id": "pkg-02-balance_sheet",
+          "locator": "line 14",
+          "text": "| Total debt (bank and term loans) | 4,800,000 | 4,000,000 | 3,200,000 |"
+        },
+        {
+          "doc_id": "pkg-02-balance_sheet",
+          "locator": "line 16",
+          "text": "| Total equity | 1,579,000 | 2,506,160 | 3,471,468 |"
+        },
+        {
+          "doc_id": "pkg-02-loan_application",
+          "locator": "line 5",
+          "text": "Requested amount: $2,000,000"
+        },
+        {
+          "doc_id": "pkg-02-loan_application",
+          "locator": "line 6",
+          "text": "Interest rate: 7.50% fixed"
+        },
+        {
+          "doc_id": "pkg-02-loan_application",
+          "locator": "line 7",
+          "text": "Term: 5 years"
+        },
+        {
+          "doc_id": "pkg-02-loan_application",
+          "locator": "line 8",
+          "text": "Amortization: 5 years, level monthly payments"
+        }
+      ],
+      "built_as": "as_drafted"
+    },
+    {
+      "item_id": "cit-04",
+      "type": "citation",
+      "package_id": "pkg-02",
+      "claim": "For 2025, the borrower reported revenue of 31558800, EBITDA of 2840292, interest expense of 224000, and net income of 1677219.",
+      "sources": [
+        {
+          "doc_id": "pkg-02-income_statement",
+          "locator": "line 8",
+          "text": "| Revenue | 28,900,000 | 30,056,000 | 31,558,800 |"
+        },
+        {
+          "doc_id": "pkg-02-income_statement",
+          "locator": "line 11",
+          "text": "| EBITDA | 2,601,000 | 2,705,040 | 2,840,292 |"
+        },
+        {
+          "doc_id": "pkg-02-income_statement",
+          "locator": "line 13",
+          "text": "| Interest expense | 336,000 | 280,000 | 224,000 |"
+        },
+        {
+          "doc_id": "pkg-02-income_statement",
+          "locator": "line 15",
+          "text": "| Net income | 1,413,750 | 1,533,780 | 1,677,219 |"
+        }
+      ],
+      "built_as": "as_drafted"
+    },
+    {
+      "item_id": "cit-05",
+      "type": "citation",
+      "package_id": "pkg-03",
+      "claim": "No policy risk flags were provided and no failed reconciliation checks were provided.",
+      "sources": [
+        {
+          "doc_id": "pkg-03-income_statement",
+          "locator": "line 15",
+          "text": "| Net income | 336,000 | 380,730 | 418,846 |"
+        }
+      ],
+      "built_as": "wrong_line"
+    },
+    {
+      "item_id": "cit-06",
+      "type": "citation",
+      "package_id": "pkg-03",
+      "claim": "For 2025, revenue was 7039020, EBITDA was 985462, interest expense was 117000, and net income was 418846.",
+      "sources": [
+        {
+          "doc_id": "pkg-03-income_statement",
+          "locator": "line 8",
+          "text": "| Revenue | 6,700,000 | 6,901,000 | 7,039,020 |"
+        },
+        {
+          "doc_id": "pkg-03-income_statement",
+          "locator": "line 11",
+          "text": "| EBITDA | 938,000 | 966,140 | 985,462 |"
+        },
+        {
+          "doc_id": "pkg-03-income_statement",
+          "locator": "line 13",
+          "text": "| Interest expense | 180,000 | 148,500 | 117,000 |"
+        },
+        {
+          "doc_id": "pkg-03-income_statement",
+          "locator": "line 15",
+          "text": "| Net income | 336,000 | 380,730 | 418,846 |"
+        }
+      ],
+      "built_as": "as_drafted"
+    },
+    {
+      "item_id": "cit-07",
+      "type": "citation",
+      "package_id": "pkg-04",
+      "claim": "Risk flag DSCR_BELOW_MIN is high severity and states that pro forma DSCR 0.93 is below the policy minimum of 1.25 under CP-4.1.",
+      "sources": [
+        {
+          "doc_id": "pkg-04-income_statement",
+          "locator": "line 11",
+          "text": "| EBITDA | 1,046,500 | 1,056,965 | 1,025,256 |"
+        },
+        {
+          "doc_id": "pkg-04-loan_application",
+          "locator": "line 5",
+          "text": "Requested amount: $1,400,000"
+        },
+        {
+          "doc_id": "pkg-04-loan_application",
+          "locator": "line 6",
+          "text": "Interest rate: 8.25% fixed"
+        },
+        {
+          "doc_id": "pkg-04-loan_application",
+          "locator": "line 7",
+          "text": "Term: 5 years"
+        },
+        {
+          "doc_id": "pkg-04-loan_application",
+          "locator": "line 8",
+          "text": "Amortization: 5 years, level monthly payments"
+        }
+      ],
+      "built_as": "as_drafted"
+    },
+    {
+      "item_id": "cit-08",
+      "type": "citation",
+      "package_id": "pkg-04",
+      "claim": "FY2025 revenue was 8915270, EBITDA was 1025256, interest expense was 104000, and net income was 420942, and revenue has grown in every year since the business was founded.",
+      "sources": [
+        {
+          "doc_id": "pkg-04-income_statement",
+          "locator": "line 8",
+          "text": "| Revenue | 9,100,000 | 9,191,000 | 8,915,270 |"
+        },
+        {
+          "doc_id": "pkg-04-income_statement",
+          "locator": "line 11",
+          "text": "| EBITDA | 1,046,500 | 1,056,965 | 1,025,256 |"
+        },
+        {
+          "doc_id": "pkg-04-income_statement",
+          "locator": "line 13",
+          "text": "| Interest expense | 208,000 | 156,000 | 104,000 |"
+        },
+        {
+          "doc_id": "pkg-04-income_statement",
+          "locator": "line 15",
+          "text": "| Net income | 358,875 | 405,724 | 420,942 |"
+        }
+      ],
+      "built_as": "unsupported_clause"
+    },
+    {
+      "item_id": "cit-09",
+      "type": "citation",
+      "package_id": "pkg-05",
+      "claim": "Risk flag LEVERAGE_ABOVE_MAX is high severity because pro forma leverage of 4.43 exceeds the policy maximum of 3.50 under CP-4.2 for 2025.",
+      "sources": [
+        {
+          "doc_id": "pkg-05-income_statement",
+          "locator": "line 11",
+          "text": "| EBITDA | 2,028,000 | 2,129,400 | 2,214,576 |"
+        },
+        {
+          "doc_id": "pkg-05-balance_sheet",
+          "locator": "line 14",
+          "text": "| Total debt (bank and term loans) | 7,800,000 | 7,300,000 | 6,800,000 |"
+        },
+        {
+          "doc_id": "pkg-05-loan_application",
+          "locator": "line 5",
+          "text": "Requested amount: $3,000,000"
+        }
+      ],
+      "built_as": "as_drafted"
+    },
+    {
+      "item_id": "cit-10",
+      "type": "citation",
+      "package_id": "pkg-05",
+      "claim": "FY2025 revenue was 17035200, EBITDA was 2214576, interest expense was 510000, and net income was 603432.",
+      "sources": [
+        {
+          "doc_id": "pkg-05-income_statement",
+          "locator": "line 8",
+          "text": "| Revenue | 15,600,000 | 16,380,000 | 17,035,200 |"
+        },
+        {
+          "doc_id": "pkg-05-income_statement",
+          "locator": "line 11",
+          "text": "| EBITDA | 2,028,000 | 2,129,400 | 2,214,576 |"
+        },
+        {
+          "doc_id": "pkg-05-income_statement",
+          "locator": "line 13",
+          "text": "| Interest expense | 585,000 | 547,500 | 510,000 |"
+        },
+        {
+          "doc_id": "pkg-05-income_statement",
+          "locator": "line 15",
+          "text": "| Net income | 407,250 | 511,425 | 603,432 |"
+        }
+      ],
+      "built_as": "as_drafted"
+    },
+    {
+      "item_id": "cit-11",
+      "type": "citation",
+      "package_id": "pkg-06",
+      "claim": "No policy risk flags were provided, and revenue has grown in every year since the business was founded.",
+      "sources": [
+        {
+          "doc_id": "pkg-06-income_statement",
+          "locator": "line 8",
+          "text": "| Revenue | 11,200,000 | 11,760,000 | 12,465,600 |"
+        },
+        {
+          "doc_id": "pkg-06-income_statement",
+          "locator": "line 11",
+          "text": "| EBITDA | 1,568,000 | 1,646,400 | 1,745,184 |"
+        },
+        {
+          "doc_id": "pkg-06-balance_sheet",
+          "locator": "line 11",
+          "text": "| Total current assets | 3,360,000 | 3,528,000 | 3,739,680 |"
+        },
+        {
+          "doc_id": "pkg-06-balance_sheet",
+          "locator": "line 13",
+          "text": "| Total current liabilities | 2,016,000 | 2,116,800 | 2,243,808 |"
+        }
+      ],
+      "built_as": "changed_number"
+    },
+    {
+      "item_id": "cit-12",
+      "type": "citation",
+      "package_id": "pkg-06",
+      "claim": "For 2025, revenue was 12465600, EBITDA was 1745184, interest expense was 84000, and net income was 1035888.",
+      "sources": [
+        {
+          "doc_id": "pkg-06-income_statement",
+          "locator": "line 8",
+          "text": "| Revenue | 11,200,000 | 11,760,000 | 12,465,600 |"
+        },
+        {
+          "doc_id": "pkg-06-income_statement",
+          "locator": "line 11",
+          "text": "| EBITDA | 1,568,000 | 1,646,400 | 1,745,184 |"
+        },
+        {
+          "doc_id": "pkg-06-income_statement",
+          "locator": "line 13",
+          "text": "| Interest expense | 147,000 | 115,500 | 84,000 |"
+        },
+        {
+          "doc_id": "pkg-06-income_statement",
+          "locator": "line 15",
+          "text": "| Net income | 855,750 | 938,175 | 1,035,888 |"
+        }
+      ],
+      "built_as": "as_drafted"
+    },
+    {
+      "item_id": "cit-13",
+      "type": "citation",
+      "package_id": "pkg-07",
+      "claim": "For 2025, ebitda_margin was 0.17, revenue_growth was 0.12, dscr was 2.52, and interest_coverage was 6.59.",
+      "sources": [
+        {
+          "doc_id": "pkg-07-income_statement",
+          "locator": "line 8",
+          "text": "| Revenue | 4,300,000 | 4,816,000 |"
+        },
+        {
+          "doc_id": "pkg-07-income_statement",
+          "locator": "line 11",
+          "text": "| EBITDA | 731,000 | 818,720 |"
+        },
+        {
+          "doc_id": "pkg-07-income_statement",
+          "locator": "line 13",
+          "text": "| Interest expense | 104,000 | 84,800 |"
+        }
+      ],
+      "built_as": "as_drafted"
+    },
+    {
+      "item_id": "cit-14",
+      "type": "citation",
+      "package_id": "pkg-07",
+      "claim": "FY2025 revenue was 4816000, EBITDA was 818720, interest expense was 84800, and net income was 355440.",
+      "sources": [
+        {
+          "doc_id": "pkg-07-income_statement",
+          "locator": "line 15",
+          "text": "| Net income | 275,250 | 355,440 |"
+        }
+      ],
+      "built_as": "wrong_line"
+    },
+    {
+      "item_id": "cit-15",
+      "type": "citation",
+      "package_id": "pkg-08",
+      "claim": "No failed reconciliation check was listed in the reconciliation results provided for the borrower.",
+      "sources": [
+        {
+          "doc_id": "pkg-08-income_statement",
+          "locator": "line 8",
+          "text": "| Revenue | 19,800,000 | 21,186,000 | 22,457,160 |"
+        },
+        {
+          "doc_id": "pkg-08-income_statement",
+          "locator": "line 11",
+          "text": "| EBITDA | 2,970,000 | 3,177,900 | 3,368,574 |"
+        },
+        {
+          "doc_id": "pkg-08-balance_sheet",
+          "locator": "line 14",
+          "text": "| Total debt (bank and term loans) | 3,600,000 | 2,900,000 | 2,200,000 |"
+        }
+      ],
+      "built_as": "as_drafted"
+    },
+    {
+      "item_id": "cit-16",
+      "type": "citation",
+      "package_id": "pkg-08",
+      "claim": "For 2025, revenue was 22457160, EBITDA was 3368574, interest expense was 154000, and net income was 2020930.",
+      "sources": [
+        {
+          "doc_id": "pkg-08-income_statement",
+          "locator": "line 8",
+          "text": "| Revenue | 19,800,000 | 21,186,000 | 22,457,160 |"
+        },
+        {
+          "doc_id": "pkg-08-income_statement",
+          "locator": "line 11",
+          "text": "| EBITDA | 2,970,000 | 3,177,900 | 3,368,574 |"
+        },
+        {
+          "doc_id": "pkg-08-income_statement",
+          "locator": "line 13",
+          "text": "| Interest expense | 252,000 | 203,000 | 154,000 |"
+        },
+        {
+          "doc_id": "pkg-08-income_statement",
+          "locator": "line 15",
+          "text": "| Net income | 1,648,500 | 1,841,175 | 2,020,930 |"
+        }
+      ],
+      "built_as": "as_drafted"
+    },
+    {
+      "item_id": "cit-17",
+      "type": "citation",
+      "package_id": "pkg-09",
+      "claim": "No failed reconciliation checks were reported in the input, and no reconciliation issues are named for referral, and revenue has grown in every year since the business was founded.",
+      "sources": [
+        {
+          "doc_id": "pkg-09-income_statement",
+          "locator": "line 8",
+          "text": "| Revenue | 13,500,000 | 13,770,000 | 11,842,200 |"
+        },
+        {
+          "doc_id": "pkg-09-balance_sheet",
+          "locator": "line 12",
+          "text": "| Total assets | 6,925,000 | 7,019,500 | 6,344,770 |"
+        }
+      ],
+      "built_as": "unsupported_clause"
+    },
+    {
+      "item_id": "cit-18",
+      "type": "citation",
+      "package_id": "pkg-09",
+      "claim": "For 2025, revenue was 11842200, EBITDA was 1421064, interest expense was 87000, and net income was 775548.",
+      "sources": [
+        {
+          "doc_id": "pkg-09-income_statement",
+          "locator": "line 8",
+          "text": "| Revenue | 13,500,000 | 13,770,000 | 11,842,200 |"
+        },
+        {
+          "doc_id": "pkg-09-income_statement",
+          "locator": "line 11",
+          "text": "| EBITDA | 1,620,000 | 1,652,400 | 1,421,064 |"
+        },
+        {
+          "doc_id": "pkg-09-income_statement",
+          "locator": "line 13",
+          "text": "| Interest expense | 150,000 | 118,500 | 87,000 |"
+        },
+        {
+          "doc_id": "pkg-09-income_statement",
+          "locator": "line 15",
+          "text": "| Net income | 877,500 | 925,425 | 775,548 |"
+        }
+      ],
+      "built_as": "as_drafted"
+    },
+    {
+      "item_id": "cit-19",
+      "type": "citation",
+      "package_id": "pkg-10",
+      "claim": "The high-severity risk flag LIQUIDITY_BELOW_MIN is raised for 2025 because current_ratio 1.08 is below the policy minimum of 1.20 under CP-4.3.",
+      "sources": [
+        {
+          "doc_id": "pkg-10-balance_sheet",
+          "locator": "line 11",
+          "text": "| Total current assets | 1,232,000 | 1,293,600 | 1,345,344 |"
+        },
+        {
+          "doc_id": "pkg-10-balance_sheet",
+          "locator": "line 13",
+          "text": "| Total current liabilities | 1,144,000 | 1,201,200 | 1,249,248 |"
+        }
+      ],
+      "built_as": "as_drafted"
+    },
+    {
+      "item_id": "cit-20",
+      "type": "citation",
+      "package_id": "pkg-10",
+      "claim": "For 2025, the borrower reported revenue of 10677333, EBITDA of 1441440, interest_expense of 56000, and net_income of 926580.",
+      "sources": [
+        {
+          "doc_id": "pkg-10-income_statement",
+          "locator": "line 8",
+          "text": "| Revenue | 8,800,000 | 9,240,000 | 9,609,600 |"
+        },
+        {
+          "doc_id": "pkg-10-income_statement",
+          "locator": "line 11",
+          "text": "| EBITDA | 1,320,000 | 1,386,000 | 1,441,440 |"
+        },
+        {
+          "doc_id": "pkg-10-income_statement",
+          "locator": "line 13",
+          "text": "| Interest expense | 98,000 | 77,000 | 56,000 |"
+        },
+        {
+          "doc_id": "pkg-10-income_statement",
+          "locator": "line 15",
+          "text": "| Net income | 804,000 | 869,250 | 926,580 |"
+        }
+      ],
+      "built_as": "changed_number"
+    },
+    {
+      "item_id": "kf-01",
+      "type": "finding",
+      "package_id": "pkg-01",
+      "finding": "Pro forma DSCR of 2.34 meets the 1.25 minimum and pro forma leverage of 1.49x is within 3.50x; no policy threshold is breached.",
+      "memo": [
+        "Synthetic Borrower 01 (precision machining) is described as a fictional precision machining business founded in 2004 with about 60 employees.",
+        "The requested loan amount is 1500000 at an interest rate of 7.25 with a term of 7 years and amortization of 7 years.",
+        "For 2025, reported revenue was 13801200, EBITDA was 2346204, interest expense was 130000, and net income was 1365115.",
+        "For 2025, reported total current assets were 4692408, total current liabilities were 2346204, total assets were 8792408, total liabilities were 4346204, total debt was 2000000, and total equity was 4446204.",
+        "The ratio outputs for 2025 report EBITDA margin of 0.17, current ratio of 2.00, leverage of 0.85, interest coverage of 14.82, debt to equity of 0.45, DSCR of 3.21, proposed annual debt service of 273873.36, pro forma DSCR of 2.34, and pro forma leverage of 1.49.",
+        "No risk flags and no failed reconciliation checks were provided in connection with the 2025 ratios computed from the supplied revenue, EBITDA, interest expense, current asset, current liability, debt, equity, and loan request figures.",
+        "The draft recommendation for the credit officer is approve for the requested 1500000 loan based on the supplied review showing no risk flags and no failed reconciliation checks."
+      ],
+      "built_as": "own_finding"
+    },
+    {
+      "item_id": "kf-02",
+      "type": "finding",
+      "package_id": "pkg-02",
+      "finding": "Pro forma leverage of 4.43x exceeds the policy maximum of 3.50x (CP-4.2).",
+      "memo": [
+        "Synthetic Borrower 02 (food distribution) is a food distribution business founded in 2004 with about 140 employees.",
+        "The borrower requested 2000000 at an interest rate of 7.50, a term of 5 years, and amortization of 5 years.",
+        "For 2025, the borrower reported revenue of 31558800, EBITDA of 2840292, interest expense of 224000, and net income of 1677219.",
+        "For 2025, the borrower reported total current assets of 8205288, total current liabilities of 4733820, total assets of 11405288, total liabilities of 7933820, total debt of 3200000, and total equity of 3471468.",
+        "The tested ratios show 2025 EBITDA margin of 0.09, current ratio of 1.73, leverage of 1.13, interest coverage of 10.98, debt to equity of 0.92, DSCR of 2.77, revenue growth of 0.05, proposed annual debt service of 480910.80, pro forma DSCR of 1.89, and pro forma leverage of 1.83.",
+        "No policy risk flags or failed reconciliation checks were reported.",
+        "The draft recommendation for credit officer review is approve because no policy risk flags or failed reconciliation checks were reported."
+      ],
+      "built_as": "finding_from_pkg-05"
+    },
+    {
+      "item_id": "kf-03",
+      "type": "finding",
+      "package_id": "pkg-03",
+      "finding": "Pro forma DSCR of 1.30 meets the 1.25 minimum and pro forma leverage of 2.50x is within 3.50x; no policy threshold is breached.",
+      "memo": [
+        "Synthetic Borrower 03 (commercial landscaping) is a fictional commercial landscaping business founded in 2004, with about 85 employees.",
+        "The borrower requested 900000 at 8.00 with a 5-year term and 5-year amortization.",
+        "For 2025, revenue was 7039020, EBITDA was 985462, interest expense was 117000, and net income was 418846.",
+        "For 2025, total current assets were 1759755, total current liabilities were 1337414, total assets were 4059755, total liabilities were 2897414, total debt was 1560000, and total equity was 1162341.",
+        "For 2025, EBITDA margin was 0.14, current ratio was 1.32, leverage was 1.58, interest coverage was 5.77, debt to equity was 1.34, DSCR was 1.84, revenue growth was 0.02, proposed annual debt service was 218985.00, pro forma DSCR was 1.30, and pro forma leverage was 2.50.",
+        "No policy risk flags were provided and no failed reconciliation checks were provided.",
+        "No single customer accounted for more than 14% of FY2025 revenue, management has operated the business for more than five years, and the owners guarantee existing bank debt personally.",
+        "The draft recommendation for the credit officer is approve, based on the absence of provided policy risk flags and failed reconciliation checks for the 900000 request."
+      ],
+      "built_as": "own_finding"
+    },
+    {
+      "item_id": "kf-04",
+      "type": "finding",
+      "package_id": "pkg-04",
+      "finding": "2 fiscal years are provided; the policy requires 3 (CP-3.1).",
+      "memo": [
+        "Synthetic Borrower 04 (specialty printing) is a fictional specialty printing business founded in 2004, with about 60 employees.",
+        "The borrower requested 1400000 at an interest rate of 8.25, with a term of 5 years and amortization of 5 years.",
+        "FY2025 revenue was 8915270, EBITDA was 1025256, interest expense was 104000, and net income was 420942.",
+        "FY2025 total current assets were 2407123, total current liabilities were 1604749, total assets were 5307123, total liabilities were 2904749, total debt was 1300000, and total equity was 2402374.",
+        "Computed FY2025 ratios include ebitda_margin of 0.11, current_ratio of 1.50, leverage of 1.27, interest_coverage of 6.40, debt_to_equity of 0.54, dscr of 1.36, revenue_growth of -0.03, proposed_annual_debt_service of 342657.00, pro_forma_dscr of 0.93, and pro_forma_leverage of 2.63.",
+        "Risk flag DSCR_BELOW_MIN is high severity and states that pro forma DSCR 0.93 is below the policy minimum of 1.25 under CP-4.1.",
+        "Risk flag DSCR_BELOW_DECLINE_FLOOR is high severity and states that pro forma DSCR 0.93 is below 1.00 under CP-6.3.",
+        "No failed reconciliation check was reported in the input package.",
+        "Draft recommendation for credit officer consideration is decline because DSCR_BELOW_DECLINE_FLOOR was raised and the request includes 1400000 at 8.25 over a term of 5 years with amortization of 5 years."
+      ],
+      "built_as": "finding_from_pkg-07"
+    },
+    {
+      "item_id": "kf-05",
+      "type": "finding",
+      "package_id": "pkg-05",
+      "finding": "Pro forma leverage of 4.43x exceeds the policy maximum of 3.50x (CP-4.2).",
+      "memo": [
+        "Synthetic Borrower 05 (regional trucking) is a regional trucking business founded in 2004 with about 110 employees.",
+        "The borrower requested 3000000 at an interest rate of 7.75, with a term of 7 years and amortization of 10 years.",
+        "No single customer accounted for more than 14% of FY2025 revenue, and management has operated the business for more than five years.",
+        "FY2025 revenue was 17035200, EBITDA was 2214576, interest expense was 510000, and net income was 603432.",
+        "FY2025 total current assets were 3577392, total current liabilities were 2725632, total assets were 13377392, total liabilities were 9525632, total debt was 6800000, and total equity was 3851760.",
+        "The provided ratio analysis shows FY2025 EBITDA margin of 0.13, current ratio of 1.31, leverage of 3.07, interest coverage of 2.58, debt to equity of 1.77, DSCR of 2.19, revenue growth of 0.04, proposed annual debt service of 432038.28, pro forma DSCR of 1.54, and pro forma leverage of 4.43.",
+        "The pro forma DSCR of 1.54 assumes existing debt service continues alongside the requested loan.",
+        "Risk flag LEVERAGE_ABOVE_MAX is high severity because pro forma leverage of 4.43 exceeds the policy maximum of 3.50 under CP-4.2 for 2025.",
+        "No reconciliation issues were reported.",
+        "The borrower operates in regional trucking and serves commercial customers in its region, which should be considered in assessing industry and customer risk.",
+        "Draft recommendation for credit officer review is approve_with_conditions, with a condition that pro forma leverage be brought within the CP-4.2 policy maximum of 3.50 or otherwise mitigated to the credit officer's satisfaction before closing.",
+        "The draft recommendation reflects the high-severity LEVERAGE_ABOVE_MAX flag and the reported pro forma leverage of 4.43."
+      ],
+      "built_as": "own_finding"
+    },
+    {
+      "item_id": "kf-06",
+      "type": "finding",
+      "package_id": "pkg-06",
+      "finding": "FY2024 total assets exceed total liabilities plus equity by 50000, so the balance sheet does not balance.",
+      "memo": [
+        "Synthetic Borrower 06 (HVAC contracting) is an HVAC contracting business that serves commercial customers in its region.",
+        "The borrower requested 1200000 at an interest rate of 7.50 with a term of 5 years and amortization of 5 years.",
+        "For 2025, revenue was 12465600, EBITDA was 1745184, interest expense was 84000, and net income was 1035888.",
+        "For 2025, total current assets were 3739680, total current liabilities were 2243808, total assets were 5739680, total liabilities were 3443808, total debt was 1200000, and total equity was 2295872.",
+        "The provided ratios show ebitda_margin of 0.14 in 2023, 0.14 in 2024, and 0.14 in 2025; revenue_growth was 0.05 in 2024 and 0.06 in 2025.",
+        "The provided ratios show interest_coverage of 8.76 in 2023, 11.83 in 2024, and 17.44 in 2025, and dscr of 2.63 in 2023, 2.91 in 2024, and 3.27 in 2025.",
+        "For 2025, proposed_annual_debt_service is 288546.48, pro_forma_dscr is 2.12, and pro_forma_leverage is 1.38.",
+        "No policy risk flags were provided.",
+        "The failed reconciliation check is balance_sheet_balances, which triggered in 2024 because total assets 5578000 differs from total liabilities + equity 5528000 by 50000.",
+        "Draft recommendation is refer because the balance_sheet_balances reconciliation check triggered in 2024."
+      ],
+      "built_as": "own_finding"
+    },
+    {
+      "item_id": "kf-07",
+      "type": "finding",
+      "package_id": "pkg-07",
+      "finding": "Current ratio of 1.08 is below the policy minimum of 1.20 (CP-4.3).",
+      "memo": [
+        "Synthetic Borrower 07 (craft brewing) is a craft brewing business founded in 2019, with about 28 employees.",
+        "The borrower serves commercial customers in its region, and no single customer accounted for more than 14% of FY2025 revenue.",
+        "The request is for 700000 at interest_rate_pct 8.50, term_years 7, and amortization_years 7.",
+        "FY2025 revenue was 4816000, EBITDA was 818720, interest expense was 84800, and net income was 355440.",
+        "For 2025, ebitda_margin was 0.17, revenue_growth was 0.12, dscr was 2.52, and interest_coverage was 6.59.",
+        "FY2025 total_current_assets were 1492960, total_current_liabilities were 770560, total_debt was 1060000, and total_equity was 2262400.",
+        "For 2025, current_ratio was 1.94, leverage was 1.29, debt_to_equity was 0.47, proposed_annual_debt_service was 133026.48, pro_forma_dscr was 1.79, and pro_forma_leverage was 2.15.",
+        "Risk flag INSUFFICIENT_HISTORY is a warning under CP-3.1 because 2 fiscal years were provided and the policy requires 3.",
+        "No failed reconciliation checks were reported for the package.",
+        "The draft recommendation is approve_with_conditions for the requested 700000 loan, conditioned on receipt of the additional fiscal year required to address INSUFFICIENT_HISTORY."
+      ],
+      "built_as": "finding_from_pkg-10"
+    },
+    {
+      "item_id": "kf-08",
+      "type": "finding",
+      "package_id": "pkg-08",
+      "finding": "The largest customer is 48% of revenue, above the 40% maximum (CP-5.2); a sensitivity analysis is required.",
+      "memo": [
+        "Synthetic Borrower 08 (contract packaging) is a fictional contract packaging business founded in 2004, with about 120 employees.",
+        "The borrower requests 2500000 at an interest rate of 7.50 with a term of 7 and amortization of 7.",
+        "For 2025, revenue was 22457160, EBITDA was 3368574, interest expense was 154000, and net income was 2020930.",
+        "The tested ratios show 2025 EBITDA margin of 0.15, current ratio of 1.83, leverage of 0.65, interest coverage of 18.50, debt to equity of 0.40, and DSCR of 3.94.",
+        "The tested pro forma metrics for 2025 show proposed annual debt service of 460148.28, pro forma DSCR of 2.56, and pro forma leverage of 1.40, with the pro forma DSCR assuming existing debt service continues alongside the requested loan.",
+        "Risk flag CONCENTRATION_ABOVE_MAX is high severity under CP-5.2 because the largest customer is 48% of revenue, above 40%, and the supporting business description states that the largest customer accounted for approximately 48% of FY2025 revenue under a contract that renews annually.",
+        "No failed reconciliation check was listed in the reconciliation results provided for the borrower.",
+        "The draft recommendation is approve_with_conditions for credit officer review, with a condition requiring customer-concentration sensitivity analysis and mitigation for CONCENTRATION_ABOVE_MAX."
+      ],
+      "built_as": "own_finding"
+    },
+    {
+      "item_id": "kf-09",
+      "type": "finding",
+      "package_id": "pkg-09",
+      "finding": "Pro forma DSCR of 1.89 meets the 1.25 minimum and pro forma leverage of 1.83x is within 3.50x; no policy threshold is breached.",
+      "memo": [
+        "Synthetic Borrower 09 (retail furniture) is a retail furniture business founded in 2004 with about 75 employees.",
+        "The borrower requested 800000 at 8.00 with a 5-year term and 5-year amortization.",
+        "For 2025, revenue was 11842200, EBITDA was 1421064, interest expense was 87000, and net income was 775548.",
+        "For 2025, total current assets were 4144770, total current liabilities were 2250018, total assets were 6344770, total liabilities were 3410018, total debt was 1160000, and total equity was 2934752.",
+        "Reported ratios show EBITDA margin of 0.12 in 2023, 0.12 in 2024, and 0.12 in 2025; DSCR of 2.84 in 2023, 3.07 in 2024, and 2.80 in 2025; and current ratio of 1.84 in 2023, 1.84 in 2024, and 1.84 in 2025.",
+        "For 2025, proposed annual debt service is 194653.44, pro forma DSCR is 2.03, and pro forma leverage is 1.38, with the pro forma DSCR note stating that it assumes existing debt service continues alongside the requested loan.",
+        "Risk flag REVENUE_DECLINE, severity warning, applies to 2025 under policy reference CP-4.5 because revenue changed by -0.14 in 2025, beyond the policy trigger of -0.10.",
+        "No failed reconciliation checks were reported in the input, and no reconciliation issues are named for referral.",
+        "Draft recommendation is approve_with_conditions for credit officer consideration, with a condition that the borrower provide a revenue stabilization plan and monitoring tied to the REVENUE_DECLINE warning flag."
+      ],
+      "built_as": "finding_from_pkg-02"
+    },
+    {
+      "item_id": "kf-10",
+      "type": "finding",
+      "package_id": "pkg-10",
+      "finding": "Current ratio of 1.08 is below the policy minimum of 1.20 (CP-4.3).",
+      "memo": [
+        "Synthetic Borrower 10 (software reselling) is a software reselling business founded in 2004 with about 40 employees.",
+        "The borrower requests 600000 with interest_rate_pct of 7.75, term_years of 3, and amortization_years of 3.",
+        "For 2025, the borrower reported revenue of 9609600, EBITDA of 1441440, interest_expense of 56000, and net_income of 926580.",
+        "For 2025, the borrower reported total_current_assets of 1345344, total_current_liabilities of 1249248, total_assets of 2945344, total_liabilities of 2049248, total_debt of 800000, and total_equity of 896096.",
+        "The computed 2025 ratios include ebitda_margin of 0.15, current_ratio of 1.08, leverage of 0.56, interest_coverage of 23.06, debt_to_equity of 0.89, dscr of 4.05, proposed_annual_debt_service of 224792.40, pro_forma_dscr of 2.48, and pro_forma_leverage of 0.97.",
+        "The high-severity risk flag LIQUIDITY_BELOW_MIN is raised for 2025 because current_ratio 1.08 is below the policy minimum of 1.20 under CP-4.3.",
+        "No failed reconciliation check is listed in the input for this borrower.",
+        "Draft recommendation for credit officer review is approve_with_conditions, with a condition that the borrower address LIQUIDITY_BELOW_MIN by demonstrating current_ratio at or above 1.20 or providing other acceptable liquidity support before closing."
+      ],
+      "built_as": "own_finding"
+    }
+  ]
+}

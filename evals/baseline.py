@@ -39,6 +39,16 @@ from axiom.settings import REPO_ROOT, Settings
 from axiom.tools.policy import load_policy
 
 HERE = Path(__file__).parent
+sys.path.insert(0, str(HERE / "judge"))
+from grader import (  # noqa: E402
+    CitationItem,
+    FindingItem,
+    Source,
+    grade_citation,
+    grade_finding,
+    independent,
+)
+
 RESULTS = HERE / "results"
 PAIRS = HERE / "counterfactual" / "v1" / "pairs.yaml"
 SCRIPTED = REPO_ROOT / "tests" / "fixtures" / "recorded"
@@ -64,6 +74,8 @@ GATES = {
     "number_provenance": 1.00,
     "citation_coverage": 1.00,
     "key_finding_recall_terms": 0.80,
+    "citation_support_judge": 0.90,
+    "key_finding_recall_judge": 0.80,
     "counterfactual_consistency": 1.00,
 }
 
@@ -197,6 +209,8 @@ METRICS = (
     "number_provenance",
     "citation_coverage",
     "key_finding_recall_terms",
+    "citation_support_judge",
+    "key_finding_recall_judge",
 )
 
 
@@ -211,17 +225,74 @@ def summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
     return summary
 
 
-async def run_golden(mode: str, repeats: int, packages: list[str] | None) -> dict[str, Any]:
+def cited_sources(state: MemoState, citations: Any) -> tuple[Source, ...]:
+    """The text each citation points at: a document line, or a retrieved passage."""
+    docs = {d.doc_id: d.text.split("\n") for d in state["package"].documents}
+    hits = {h.chunk_id: h.text for h in state.get("evidence", [])}
+    out = []
+    for c in citations:
+        n = c.locator.removeprefix("line ")
+        lines = docs.get(c.doc_id, [])
+        if c.locator.startswith("line ") and n.isdigit() and 0 < int(n) <= len(lines):
+            out.append(Source(c.doc_id, c.locator, lines[int(n) - 1]))
+        elif c.locator in hits:
+            out.append(Source(c.doc_id, c.locator, hits[c.locator]))
+    return tuple(out)
+
+
+async def judge_memo(
+    ctx: AgentContext, state: MemoState, truth: dict[str, Any], tag: str
+) -> dict[str, Any]:
+    """The grader's two measures for one memo. None where nothing could be graded, and for a
+    memo the grader's own model drafted."""
+    draft = state.get("draft")
+    if draft is None:
+        return {"citation_support_judge": None, "key_finding_recall_judge": None}
+    drafters = {c.alias for c in state.get("model_calls", []) if c.node == "drafter" and c.valid}
+    pid = truth["package_id"]
+    verdicts = []
+    for i, section in enumerate(draft.sections):
+        for j, claim in enumerate(section.claims):
+            if not claim.citations:
+                continue
+            item = CitationItem(
+                f"{pid}-{tag}-s{i}c{j}", claim.text, cited_sources(state, claim.citations)
+            )
+            verdicts.append(independent(await grade_citation(ctx, item), drafters).verdict)
+    memo = tuple(c.text for s in draft.sections for c in s.claims)
+    found = []
+    for k in truth["golden"]["key_findings"]:
+        finding = FindingItem(f"{pid}-{tag}-{k['id']}", k["text"], memo)
+        found.append(independent(await grade_finding(ctx, finding), drafters).verdict)
+    graded = [v for v in verdicts if v is not None]
+    judged = [v for v in found if v is not None]
+    return {
+        "citation_support_judge": sum(v == "supported" for v in graded) / len(graded)
+        if graded
+        else None,
+        "key_finding_recall_judge": sum(v == "covered" for v in judged) / len(judged)
+        if judged
+        else None,
+        "judge_not_evaluated": (len(verdicts) - len(graded)) + (len(found) - len(judged)),
+    }
+
+
+async def run_golden(
+    mode: str, repeats: int, packages: list[str] | None, judge: bool | None = None
+) -> dict[str, Any]:
     settings = Settings.from_env()
     ids = packages or [p["package_id"] for p in list_packages(settings.packages_dir)]
     ctx = context(mode)
+    judge = mode == "live" if judge is None else judge
     rows = []
     for repeat in range(1, repeats + 1):
         for pid in ids:
             state = await run_one(ctx, load_package(settings.packages_dir, pid), f"g{repeat}")
-            rows.append(
-                {"repeat": repeat, **score(state, load_ground_truth(settings.packages_dir, pid))}
-            )
+            truth = load_ground_truth(settings.packages_dir, pid)
+            row = {"repeat": repeat, **score(state, truth)}
+            if judge:
+                row |= await judge_memo(ctx, state, truth, f"g{repeat}")
+            rows.append(row)
     return {
         "suite": "golden",
         "mode": mode,
@@ -409,12 +480,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--repeats", type=int, default=1)
     parser.add_argument("--packages", nargs="*", help="package ids (default: all 25)")
     parser.add_argument("--mlflow", action="store_true", help="log the run to MLflow")
+    parser.add_argument(
+        "--no-judge", action="store_true", help="skip the grader (it runs by default in live mode)"
+    )
     args = parser.parse_args(argv)
     suites = ("golden", "counterfactual") if args.suite == "all" else (args.suite,)
     for suite in suites:
         started = time.time()
         report = asyncio.run(
-            run_golden(args.mode, args.repeats, args.packages)
+            run_golden(args.mode, args.repeats, args.packages, False if args.no_judge else None)
             if suite == "golden"
             else run_counterfactual(args.mode, args.repeats)
         )

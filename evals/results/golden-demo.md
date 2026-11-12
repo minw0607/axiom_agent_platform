@@ -16,6 +16,8 @@ Demo mode replays scripted recordings built from the ground truth, so these numb
 | number_provenance | 100% | 100% |
 | citation_coverage | 100% | 100% |
 | key_finding_recall_terms | 94% | 80% |
+| citation_support_judge | None | 90% |
+| key_finding_recall_judge | None | 80% |
 
 | Package | Scenario | Outcome | Recommendation | Acceptable | Flags missed / extra | Key findings missed |
 |---|---|---|---|---|---|---|

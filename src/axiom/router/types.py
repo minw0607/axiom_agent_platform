@@ -6,7 +6,7 @@ from typing import Literal, Protocol
 
 from pydantic import BaseModel, ConfigDict
 
-Route = Literal["extraction", "narrative", "compliance"]
+Route = Literal["extraction", "narrative", "compliance", "judge"]  # judge: evaluation only
 Sensitivity = Literal["standard", "pii_unredacted"]
 
 
