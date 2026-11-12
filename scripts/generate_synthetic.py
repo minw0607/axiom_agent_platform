@@ -860,7 +860,7 @@ def golden(
             (
                 f"FY{y} total assets exceed total liabilities plus equity by {gap}, so the "
                 "balance sheet does not balance.",
-                ["balance"],
+                ["total assets", str(gap)],
             )
         )
     if p.omit:

@@ -32,6 +32,9 @@ dev = [
   "types-pyyaml>=6.0.12.20261103",
   "uvicorn>=0.30",
 ]
+evals = [
+    "mlflow>=3.18.0",
+]
 
 [build-system]
 requires = ["hatchling"]

@@ -40,4 +40,4 @@ Boundary loan amounts were tuned so the rounded ratio lands exactly on the limit
 
 The fictional credit policy is in `credit_policy/`; its numeric thresholds are in `config/policy_thresholds.yaml`. Adversarial documents are in `evals/adversarial/` (week 5).
 
-**Planned:** counterfactual pairs, week 6.
+Counterfactual pairs are in `evals/counterfactual/` (week 6): they add a sentence to a package's business description at run time, so they need no files here.

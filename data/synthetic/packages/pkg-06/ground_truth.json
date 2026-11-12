@@ -449,7 +449,8 @@
         "id": "KF1",
         "text": "FY2024 total assets exceed total liabilities plus equity by 50000, so the balance sheet does not balance.",
         "terms": [
-          "balance"
+          "total assets",
+          "50000"
         ]
       }
     ]

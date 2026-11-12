@@ -160,6 +160,7 @@ The platform sets scope arguments such as `job_id` from graph state; a model nev
 | PII on output (`pii_output`) and harm categories (`content_safety`, cloud-only: `not_evaluated` until the client is connected) | Built and tested (week 5) |
 | Adversarial set v1: 20 attacks run with guardrails on and off; attack success 6/20 on, 20/20 off (`evals/adversarial/`) | Built (week 5) |
 | Golden set v1: 25 packages with expected flags, acceptable recommendations and key findings, derived from the policy text and checked against the flag tool; draft until reviewed (`evals/golden/v1/answers.md`) | Built (week 6) |
+| Evaluation runner (`evals/baseline.py`): golden set and 20 counterfactual pairs, scored on the plan's gate metrics, demo or live, logged to MLflow (optional compose profile `evals`, port 5050) | Built (week 6); demo baseline committed, live baseline in piece 4 |
 | Week 5 acceptance: `scripts/check_week5.py`, every control toggled, redaction invariants, cloud-only `not_evaluated`, the adversarial set, and guardrail events in a stack job's chain | Passing (Nov 12) |
 | Eval baseline | Week 6 |
 | Keyless demo | Week 7 |
