@@ -151,7 +151,7 @@ Every LLM judge uses a different model from the one under test and is checked ag
 | Repository scaffold | Nov 8 | Structure, tooling, and CI in place | ✅ Done |
 | **Gate 1** · Architecture ready | Nov 15 | Supporting services run without keys; Regulus returns cited provisions | ✅ Passed: checks 7/7, design docs published |
 | Week 3 · First vertical slice | Nov 22 | Submit a package, poll, get a cited draft memo traced in Phoenix | ✅ Done; run live on all ten packages |
-| Week 4 · Compliance and human review | Nov 29 | A job pauses for review, survives a restart, and finalizes only on approval by someone other than the submitter | 🔶 In progress: evidence log, policy rule engine, compliance reviewer and human review done |
+| Week 4 · Compliance and human review | Nov 29 | A job pauses for review, survives a restart, and finalizes only on approval by someone other than the submitter | ✅ Passed: checks 14/14, including a restart while a job awaits review |
 | **Gate 2** · Demo ready | Dec 20 | A stranger runs the demo in under 10 minutes with no API keys | ⬜ |
 | **Gate 3** · Published | Jan 10 | CI gates enforced; docs and results public | ⬜ |
 
@@ -164,14 +164,15 @@ uv sync
 uv run pytest
 ```
 
-**The stack:** with [Docker](https://docs.docker.com/get-docker/) running, copy `.env.example` to `.env` and set `MCP_SHARED_SECRET` and a submitter key (`SUBMITTER_API_KEYS=rm-demo:<random key>`), then:
+**The stack:** with [Docker](https://docs.docker.com/get-docker/) running, copy `.env.example` to `.env` and set `MCP_SHARED_SECRET` and one key per role (`SUBMITTER_API_KEYS=rm-demo:<random key>`, and likewise `REVIEWER_API_KEYS` and `AUDITOR_API_KEYS`), then:
 
 ```bash
 docker compose up -d --build
 uv run python scripts/check_gate1.py
+uv run python scripts/check_week4.py
 ```
 
-This starts Postgres, Phoenix (traces at http://localhost:6006), the OpenTelemetry Collector, the Regulus and GKN MCP servers, and the platform's API (http://localhost:8000/docs) and worker. Both MCP images are built from pinned release tags (Regulus `v0.2.1`, GKN `v0.2.0`). The check script confirms the supporting services are up, Regulus returns cited provisions, and one job's retrieval never returns another job's documents.
+This starts Postgres, Phoenix (traces at http://localhost:6006), the OpenTelemetry Collector, the Regulus and GKN MCP servers, and the platform's API (http://localhost:8000/docs) and worker. Both MCP images are built from pinned release tags (Regulus `v0.2.1`, GKN `v0.2.0`). The check script confirms the supporting services are up, Regulus returns cited provisions, and one job's retrieval never returns another job's documents. The week 4 check submits a package, restarts Postgres, the API and the worker while the draft awaits review, then approves it and checks the evidence.
 
 **Submit a package and poll for the draft:**
 

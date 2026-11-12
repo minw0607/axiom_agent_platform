@@ -14,6 +14,7 @@ from pydantic import BaseModel, ValidationError
 
 from axiom.agents.prompts import Prompt, load_prompt
 from axiom.mcp_clients.evidence import EvidenceService
+from axiom.mcp_clients.governance import GovernanceLookup
 from axiom.router.router import ModelRouter
 from axiom.router.types import ChatMessage, ModelRequest, Route
 from axiom.tools.policy import PolicyThresholds
@@ -39,6 +40,7 @@ class AgentContext:
     evidence: EvidenceService
     policy: PolicyThresholds
     prompts_dir: Path
+    governance: GovernanceLookup | None = None
 
     def prompt(self, prompt_id: str) -> Prompt:
         return load_prompt(self.prompts_dir, prompt_id, PROMPT_VERSIONS[prompt_id])

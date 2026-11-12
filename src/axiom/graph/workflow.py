@@ -12,6 +12,7 @@ and reject ends the run. No path reaches finalize without an approval.
 
 from __future__ import annotations
 
+import hashlib
 import operator
 from collections.abc import Awaitable, Callable
 from typing import Annotated, Any, TypedDict
@@ -39,6 +40,7 @@ from axiom.domain import (
     RiskFlag,
 )
 from axiom.mcp_clients.evidence import EvidenceHit
+from axiom.mcp_clients.governance import RelatedGuidance
 from axiom.memory.checkpoint import serializer
 from axiom.router.types import FailClosed, ProviderError
 from axiom.telemetry.setup import tracer
@@ -71,6 +73,8 @@ class MemoState(TypedDict, total=False):
     human_revisions: int
     automated_fixes: int  # guardrail fixes, counted apart from human revisions (week 5)
     outcome: str  # "approved" or "rejected", set once a credit officer decides
+    approved_draft_sha256: str
+    related_guidance: RelatedGuidance
     model_calls: Annotated[list[ModelCall], operator.add]
     completed: Annotated[list[str], operator.add]
     error: str
@@ -166,7 +170,13 @@ def build_workflow(ctx: AgentContext, checkpointer: BaseCheckpointSaver[Any] | N
         last = state["reviews"][-1]
         if last.decision != "approve":  # unreachable by routing; a hard stop all the same
             raise ReviewError("finalize needs an approval")
-        return {"outcome": "approved", "completed": ["finalize"]}
+        draft = state["draft"]
+        return {
+            "outcome": "approved",
+            "approved_draft_sha256": hashlib.sha256(draft.model_dump_json().encode()).hexdigest(),
+            "related_guidance": await related_guidance(ctx, state),
+            "completed": ["finalize"],
+        }
 
     def supervisor(after: str) -> Callable[[MemoState], str]:
         """Rule-based routing: stop on error, otherwise the next node in the fixed order,
@@ -202,6 +212,36 @@ def build_workflow(ctx: AgentContext, checkpointer: BaseCheckpointSaver[Any] | N
     graph.add_conditional_edges("human_review", after_review)
     graph.add_edge("finalize", END)
     return graph.compile(checkpointer=checkpointer or InMemorySaver(serde=serializer()))
+
+
+GOVERNANCE_DESCRIPTION = (
+    "An AI system of specialist agents drafts commercial credit memos. Every number comes "
+    "from a sourced figure or a tested ratio tool, every claim is cited, a rule engine and a "
+    "reviewer agent check the draft against credit policy and lending references, a credit "
+    "officer who did not submit the job approves it, and every model call and decision is "
+    "logged in a hash-chained evidence record."
+)
+
+
+async def related_guidance(ctx: AgentContext, state: MemoState) -> RelatedGuidance:
+    """Regulus provisions related to how this memo was produced. Never blocks finalize."""
+    triggered = sorted({f.rule_id for f in state.get("findings", []) if f.outcome == "triggered"})
+    query = (
+        f"{GOVERNANCE_DESCRIPTION} Draft recommendation: {state['draft'].draft_recommendation}. "
+        f"Human revisions: {state.get('human_revisions', 0)}. "
+        f"Findings triggered: {', '.join(triggered) or 'none'}."
+    )
+    if ctx.governance is None:
+        return RelatedGuidance(
+            status="not_evaluated", reason="Regulus is not configured", query=query
+        )
+    try:
+        provisions = await ctx.governance.lookup(query, k=5)
+    except Exception as exc:  # related guidance must never stop an approved memo
+        return RelatedGuidance(
+            status="not_evaluated", reason=f"lookup failed ({type(exc).__name__})", query=query
+        )
+    return RelatedGuidance(status="attached", query=query, provisions=provisions)
 
 
 def thread(job_id: str) -> dict[str, Any]:

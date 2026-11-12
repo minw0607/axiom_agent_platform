@@ -15,6 +15,7 @@ from axiom.agents.base import ModelCall
 from axiom.domain import ComplianceFinding
 from axiom.evidence.log import ChainCheck, EvidenceEvent
 from axiom.jobs.store import JobRecord, JobStatus
+from axiom.mcp_clients.governance import RelatedGuidance
 
 DISCLAIMER = "Draft for credit officer review. This is not a credit decision."
 DISCLAIMERS = {
@@ -228,6 +229,7 @@ class EvidenceBundle(BaseModel):
     findings: list[ComplianceFinding]
     retrieved: list[RetrievedPassage]
     citations: list[CitationRecord]
+    related_guidance: RelatedGuidance | None = None
     events: list[EvidenceEvent]
     chain: ChainCheck
 
@@ -267,6 +269,7 @@ def to_evidence(job: JobRecord, events: list[EvidenceEvent], chain: ChainCheck) 
             for h in [*r.get("evidence", []), *r.get("reference_evidence", [])]
         ],
         citations=citations,
+        related_guidance=r.get("related_guidance"),
         events=events,
         chain=chain,
     )

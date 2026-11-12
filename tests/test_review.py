@@ -286,5 +286,10 @@ def test_checkpoints_load_only_allowlisted_types() -> None:
         ctx, saver, _ = _paused("g-4")
         approve = ReviewDecision(decision="approve", reviewer="x", round=1)
         state = asyncio.run(resume_workflow(ctx, "g-4", approve, saver))
+        # Reload the finished checkpoint, finalize's output included.
+        from axiom.graph.workflow import build_workflow, thread
+
+        snapshot = asyncio.run(build_workflow(ctx, saver).aget_state(thread("g-4")))
     assert state["outcome"] == "approved"
+    assert snapshot.values["related_guidance"].status == "not_evaluated"
     assert ("axiom.domain", "ReviewDecision") in allowed_types()

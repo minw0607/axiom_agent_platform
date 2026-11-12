@@ -151,7 +151,8 @@ The platform sets scope arguments such as `job_id` from graph state; a model nev
 | Lending references: Regulation B excerpts and OCC Rating Credit Risk passages, quoted exactly, with a provenance manifest checked by test | Built (week 4) |
 | Human review: LangGraph interrupt after compliance; `POST /v1/memos/{id}/review` (reviewer role, idempotent); the submitter cannot review their own job; at most two human revisions, counted apart from automated fixes; reject ends the job, and only an approval reaches finalize | Built and tested (week 4) |
 | Postgres checkpointer keyed by job_id, with deserialization limited to an allowlist of the platform's state types; a paused job resumes in a new worker process | Built and tested (week 4) |
-| Finalize: Regulus related provisions, restart acceptance test, ADR 0006 | Week 4 |
+| Finalize: hashes the approved draft and attaches related AI governance provisions from Regulus to the evidence bundle, labeled related guidance; a failed lookup is `not_evaluated` and never blocks approval | Built and tested (week 4) |
+| Week 4 acceptance: `scripts/check_week4.py` restarts Postgres, the API and the worker while a job is paused, then approves it | Passing (Nov 11) |
 | Guardrails | Week 5 |
 | Eval baseline | Week 6 |
 | Review page, keyless demo | Week 7 |
@@ -167,8 +168,9 @@ The platform sets scope arguments such as `job_id` from graph state; a model nev
 | [0003](adr/0003-tool-integration.md) | MCP for sibling services; in-process calls for deterministic tools |
 | [0004](adr/0004-guardrail-placement.md) | Layered guardrails at four stages |
 | [0005](adr/0005-model-routing.md) | Thin in-house router with logical aliases |
+| [0006](adr/0006-memory-architecture.md) | Postgres checkpointer keyed by job_id; long-term memory deferred until its controls exist |
 | [0007](adr/0007-deterministic-computation.md) | Code computes; models extract and write; every figure checked against its source line |
 | [0011](adr/0011-workflow-control.md) | Rule-based supervisor in code; no model decides the path |
 | [0012](adr/0012-regulatory-position.md) | NIST AI RMF primary; SR 26-2 by analogy; rule engine plus cited lending references |
 
-The remaining ADRs (0006, 0008–0010) are written in the week each decision is made.
+The remaining ADRs (0008–0010) are written in the week each decision is made.

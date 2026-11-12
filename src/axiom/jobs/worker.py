@@ -29,6 +29,7 @@ from axiom.graph.workflow import (
 from axiom.jobs.store import JobRecord, JobStatus, JobStore, PostgresJobStore
 from axiom.mcp_clients.client import MCPToolClient
 from axiom.mcp_clients.evidence import EvidenceService, GKNEvidence, InMemoryEvidence
+from axiom.mcp_clients.governance import RegulusGovernance
 from axiom.router.router import ModelRouter
 from axiom.settings import Settings
 from axiom.telemetry.setup import setup_telemetry, shutdown_telemetry, tracer
@@ -60,6 +61,11 @@ def build_context(settings: Settings) -> AgentContext:
         evidence=evidence,
         policy=load_policy(settings.config_dir / "policy_thresholds.yaml"),
         prompts_dir=settings.prompts_dir,
+        governance=(
+            RegulusGovernance(MCPToolClient(settings.regulus_mcp_url, settings.mcp_shared_secret))
+            if settings.regulus_mcp_url and settings.mcp_shared_secret
+            else None
+        ),
     )
 
 
@@ -86,6 +92,8 @@ def serialize_state(state: MemoState, policy_version: str) -> dict[str, Any]:
         "human_revisions",
         "automated_fixes",
         "outcome",
+        "related_guidance",
+        "approved_draft_sha256",
         "model_calls",
         "completed",
         "error",
@@ -102,6 +110,7 @@ NODE_OUTPUTS = {
     "analyst": ("ratios", "risk_flags", "narrative"),
     "drafter": ("draft", "evidence"),
     "compliance": ("findings", "reference_evidence"),
+    "finalize": ("approved_draft_sha256", "related_guidance"),
 }
 WORKER = "worker"
 
@@ -148,6 +157,13 @@ def run_events(
             payload["not_evaluated"] = [
                 f["rule_id"] for f in result.get("findings", []) if f["outcome"] == "not_evaluated"
             ]
+        if node == "finalize":
+            guidance = result.get("related_guidance") or {}
+            payload["approved_draft_sha256"] = result.get("approved_draft_sha256")
+            payload["related_guidance"] = {
+                "status": guidance.get("status"),
+                "provisions": [p["citation"] for p in guidance.get("provisions", [])],
+            }
         events.append(EventDraft(type="node_completed", actor=WORKER, payload=payload))
     return events
 

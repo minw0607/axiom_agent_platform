@@ -39,6 +39,7 @@ class Settings:
     prompts_dir: Path = REPO_ROOT / "prompts"
     database_url: str | None = None
     gkn_mcp_url: str | None = None
+    regulus_mcp_url: str | None = None
     mcp_shared_secret: str | None = None
     otel_endpoint: str | None = None
     submitter_keys: dict[str, str] = field(default_factory=dict)
@@ -56,6 +57,7 @@ class Settings:
             prompts_dir=_path("AXIOM_PROMPTS_DIR", REPO_ROOT / "prompts"),
             database_url=os.environ.get("DATABASE_URL") or None,
             gkn_mcp_url=os.environ.get("GKN_MCP_URL") or None,
+            regulus_mcp_url=os.environ.get("REGULUS_MCP_URL") or None,
             mcp_shared_secret=os.environ.get("MCP_SHARED_SECRET") or None,
             otel_endpoint=os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT") or None,
             submitter_keys=_keys("SUBMITTER_API_KEYS"),

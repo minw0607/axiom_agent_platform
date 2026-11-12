@@ -26,6 +26,7 @@ uv run ruff format .                         # format
 uv run mypy                                  # type check (strict)
 docker compose up -d --build                 # supporting services (needs MCP_SHARED_SECRET)
 uv run python scripts/check_gate1.py         # Gate 1 acceptance check
+uv run python scripts/check_week4.py         # week 4 check: review survives a restart
 ```
 
 ## Conventions
