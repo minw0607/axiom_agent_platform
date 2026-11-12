@@ -282,3 +282,12 @@ def test_evidence_shows_a_tampered_chain(client: TestClient, store: InMemoryJobS
 def test_evidence_for_unknown_job_is_not_found(client: TestClient) -> None:
     r = client.get("/v1/memos/job_nope/evidence", headers={"X-API-Key": KEYS["auditor"]})
     assert r.status_code == 404
+
+
+def test_docs_page_offers_api_key_authorization(client: TestClient) -> None:
+    spec = client.get("/openapi.json").json()
+    scheme = spec["components"]["securitySchemes"]["APIKeyHeader"]
+    assert scheme == {**scheme, "type": "apiKey", "in": "header", "name": "X-API-Key"}
+    review = spec["paths"]["/v1/memos/{job_id}/review"]["post"]
+    assert review["security"] == [{"APIKeyHeader": []}]
+    assert "security" not in spec["paths"]["/v1/health"]["get"]

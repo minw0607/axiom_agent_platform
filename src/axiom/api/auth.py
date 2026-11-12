@@ -6,12 +6,21 @@ import hmac
 from dataclasses import dataclass
 from typing import Literal
 
-from fastapi import Request
+from fastapi import Request, Security
+from fastapi.security import APIKeyHeader
 
 from axiom.api.errors import Problem
 from axiom.settings import Settings
 
 Role = Literal["submitter", "reviewer", "auditor"]
+# Declared as a security scheme so the /docs page offers an Authorize button. auto_error is
+# off so a missing key still gets the API's own 401 problem response.
+API_KEY = APIKeyHeader(
+    name="X-API-Key",
+    auto_error=False,
+    description="A submitter, reviewer or auditor key from SUBMITTER_API_KEYS, "
+    "REVIEWER_API_KEYS or AUDITOR_API_KEYS",
+)
 
 
 @dataclass(frozen=True)
@@ -46,9 +55,9 @@ def authenticate(settings: Settings, presented: str | None) -> Principal:
 
 
 def require(*roles: Role):  # type: ignore[no-untyped-def]
-    def dependency(request: Request) -> Principal:
+    def dependency(request: Request, key: str | None = Security(API_KEY)) -> Principal:
         settings: Settings = request.app.state.settings
-        principal = authenticate(settings, request.headers.get("X-API-Key"))
+        principal = authenticate(settings, key)
         if principal.role not in roles:
             raise Problem(403, "forbidden", "This key's role cannot perform this action")
         return principal
