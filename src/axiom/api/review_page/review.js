@@ -53,6 +53,11 @@ const GUARDRAIL_LABEL = {
   pii_redaction: "Personal data in the documents",
   injection_screen: "Instructions aimed at the AI (local screen)",
   injection_shield: "Instructions aimed at the AI (cloud screen)",
+  decision_language: "No credit decision stated as already made",
+  investment_advice: "No investment advice",
+  on_task: "Only memo content (no asides, links or echoed instructions)",
+  number_provenance: "Every number traces to the documents or the ratio tools",
+  citation_support: "Figures cite their source lines",
   content_safety: "Harmful content in the draft",
 };
 const GUARDRAIL_OUTCOME = {
@@ -63,6 +68,8 @@ const GUARDRAIL_OUTCOME = {
 const ERROR_TEXT = {
   document_quarantined:
     "A borrower document contains text aimed at the AI, such as an instruction to ignore its rules, so no AI read the package. An auditor can see which document and line.",
+  guardrail_failed:
+    "The draft still failed a safety check after one automatic correction, so it was not sent for review. An auditor can see which check.",
   no_permitted_model: "Personal data could not be masked, and no model is allowed to see it unmasked here.",
   invalid_package: "The package could not be read, or loan terms are missing.",
 };
@@ -435,7 +442,7 @@ function renderDetail() {
       parts.push(el("div", { class: "notice" }, "A credit officer will review this draft. You can't decide on a memo you requested."));
     }
     parts.push(renderFindings(memo));
-    parts.push(renderGuardrails(memo));
+    parts.push(renderGuardrails(job, memo));
     parts.push(renderMemo(memo));
     parts.push(renderRatios(memo));
     parts.push(renderChecks(memo));
@@ -743,7 +750,7 @@ function renderReviews(job) {
 
 // Audit trail (auditor only) ----------------------------------------------------------------
 
-function renderGuardrails(memo) {
+function renderGuardrails(job, memo) {
   const checks = memo.guardrails || [];
   const card = el("section", { class: "card" }, el("h2", {}, "Safety checks"));
   if (!checks.length) {
@@ -757,7 +764,10 @@ function renderGuardrails(memo) {
       { class: "muted" },
       "Automatic checks on the borrower's documents and on the draft. ",
       skipped
-        ? `${skipped} could not run here, so they are marked “Not checked”, never “Passed”.`
+        ? `${skipped} could not run here, so they are marked “Not checked”, never “Passed”. `
+        : "",
+      job.revisions && job.revisions.automated
+        ? `The platform corrected the draft automatically ${job.revisions.automated === 1 ? "once" : `${job.revisions.automated} times`} after a check failed; the results below are for the corrected draft.`
         : "",
     ),
     el(

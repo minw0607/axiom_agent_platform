@@ -28,6 +28,7 @@ PROMPT_VERSIONS = {
     "analyst": "v1",
     "drafter": "v3",
     "drafter_revision": "v1",
+    "drafter_fix": "v1",
     "compliance": "v2",
 }
 

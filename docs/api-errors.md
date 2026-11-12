@@ -25,4 +25,5 @@ A failed job returns `status: failed` and a public `error.code`. Internal detail
 | `model_unavailable` | Every permitted model failed. |
 | `no_permitted_model` | The data's sensitivity allows no available model, so the job stopped (fail closed). |
 | `document_quarantined` | A borrower document contains instructions aimed at the AI, so the job stopped before any model saw the package. The evidence bundle names the document, line and pattern. |
+| `guardrail_failed` | A draft still failed a guardrail, such as number provenance or the decision-language rail, after its one automated fix. The evidence bundle has both rounds of results. |
 | `internal_error` | An unexpected error. |

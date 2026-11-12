@@ -158,10 +158,16 @@ def scripted_drafter(package_id: str, payload: dict[str, Any]) -> dict[str, Any]
             "citations": cite("total_current_assets", "total_current_liabilities"),
         },
     ]
+
+    def flag_citations(code: str) -> list[dict[str, str]]:
+        if code.startswith("CONCENTRATION"):  # the share comes from the business description
+            return cite_text("largest customer")
+        return cite(*FLAG_FIELDS.get(code, ("ebitda",)))
+
     risks = [
         {
             "text": f"{f['code']} ({f['policy_ref']}): {f['message']}",
-            "citations": cite(*FLAG_FIELDS.get(f["code"], ("ebitda",))),
+            "citations": flag_citations(f["code"]),
         }
         for f in payload["risk_flags"]
     ]

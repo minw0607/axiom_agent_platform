@@ -47,6 +47,8 @@ from axiom.domain import (
     RiskFlag,
 )
 from axiom.guardrails import GuardrailResult, Subject, pii_protected
+from axiom.guardrails.base import DraftFacts
+from axiom.guardrails.output import problems
 from axiom.mcp_clients.evidence import EvidenceHit
 from axiom.mcp_clients.governance import RelatedGuidance
 from axiom.memory.checkpoint import serializer
@@ -69,10 +71,36 @@ class DocumentQuarantined(RuntimeError):
     def __init__(self, guardrails: list[GuardrailResult]) -> None:
         blocked = [r.control for r in guardrails if r.action == "quarantined"]
         super().__init__(f"quarantined by {', '.join(blocked)}")
-        self.guardrails = guardrails
+        self.state_update: dict[str, Any] = {"guardrails": guardrails}
 
 
-EXPECTED_ERRORS = (IntakeError, AgentOutputError, ProviderError, FailClosed, DocumentQuarantined)
+class GuardrailFailed(RuntimeError):
+    """A draft still failed a guardrail after its one automated fix."""
+
+    def __init__(
+        self, guardrails: list[GuardrailResult], last: list[GuardrailResult], automated_fixes: int
+    ) -> None:
+        failed = sorted({r.control for r in last if fails(r)})
+        super().__init__(f"draft failed {', '.join(failed)} after an automated fix")
+        self.state_update: dict[str, Any] = {
+            "guardrails": guardrails,
+            "automated_fixes": automated_fixes,
+        }
+
+
+EXPECTED_ERRORS = (
+    IntakeError,
+    AgentOutputError,
+    ProviderError,
+    FailClosed,
+    DocumentQuarantined,
+    GuardrailFailed,
+)
+
+
+def fails(result: GuardrailResult) -> bool:
+    """A generation or output check that found a problem. not_evaluated sends nothing back."""
+    return result.stage in ("generation", "output") and result.outcome == "triggered"
 
 
 class MemoState(TypedDict, total=False):
@@ -122,7 +150,7 @@ def _traced(name: str, fn: Node) -> Node:
                         "error": f"{type(exc).__name__}: {exc}",
                         "error_node": name,
                         "model_calls": list(calls),
-                        "guardrails": getattr(exc, "guardrails", []),
+                        **getattr(exc, "state_update", {}),
                     }
             span.set_attribute("axiom.node.model_calls", len(calls))
             return {**update, "model_calls": list(calls), "completed": [name]}
@@ -169,7 +197,7 @@ def build_workflow(ctx: AgentContext, checkpointer: BaseCheckpointSaver[Any] | N
     async def drafter(state: MemoState) -> dict[str, Any]:
         reviews = state.get("reviews", [])
         revision = (state["draft"], reviews) if reviews else None
-        draft, hits, _ = await run_drafter(
+        inputs = (
             ctx,
             state["job_id"],
             state["package"],
@@ -180,12 +208,35 @@ def build_workflow(ctx: AgentContext, checkpointer: BaseCheckpointSaver[Any] | N
             state["narrative"],
             revision,
         )
-        subject = Subject(state["job_id"], "drafter", draft=draft)
-        checked = [
+        draft, hits, _ = await run_drafter(*inputs)
+        checked = await check_draft(state, draft, hits)
+        fixes = state.get("automated_fixes", 0)
+        if any(fails(r) for r in checked):
+            # One automated fix, counted apart from the credit officer's revisions.
+            fixes += 1
+            draft, hits, _ = await run_drafter(*inputs, fix=(draft, problems(checked, draft)))
+            second = await check_draft(state, draft, hits)
+            checked += second
+            if any(fails(r) for r in second):
+                raise GuardrailFailed(checked, second, fixes)
+        return {"draft": draft, "evidence": hits, "guardrails": checked, "automated_fixes": fixes}
+
+    async def check_draft(
+        state: MemoState, draft: MemoDraft, hits: list[EvidenceHit]
+    ) -> list[GuardrailResult]:
+        facts = DraftFacts(
+            package=state["package"],
+            financials=state["financials"],
+            ratios=tuple(state["ratios"]),
+            checks=tuple(state["checks"]),
+            thresholds=tuple(t.value for t in ctx.policy.thresholds.values()),
+            evidence=tuple(hits),
+        )
+        subject = Subject(state["job_id"], "drafter", draft=draft, facts=facts)
+        return [
             *await ctx.guardrails.run("generation", subject),
             *await ctx.guardrails.run("output", subject),
         ]
-        return {"draft": draft, "evidence": hits, "guardrails": checked}
 
     async def compliance(state: MemoState) -> dict[str, Any]:
         rule_findings = evaluate(

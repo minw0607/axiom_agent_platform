@@ -119,9 +119,11 @@ async def run_drafter(
     checks: list[CheckResult],
     narrative: list[str],
     revision: tuple[MemoDraft, list[ReviewDecision]] | None = None,
+    fix: tuple[MemoDraft, list[dict[str, str]]] | None = None,
 ) -> tuple[MemoDraft, list[EvidenceHit], list[ModelCall]]:
     """Draft the memo, or with `revision` (the previous draft and the reviews so far)
-    revise it for the credit officer's comments under the same validation."""
+    revise it for the credit officer's comments under the same validation. With `fix`
+    (the draft and the problems the guardrails found), correct it once (automated fix)."""
     hits = await ctx.evidence.retrieve(job_id, EVIDENCE_QUERY, k=4, collection="job")
     chunk_ids = {h.chunk_id for h in hits}
     payload: dict[str, Any] = {
@@ -140,6 +142,11 @@ async def run_drafter(
         payload["previous_draft"] = previous.model_dump(mode="json")
         payload["reviewer_comments"] = [r.comments for r in rounds]
         prompt_id, key_suffix = "drafter_revision", f".r{len(rounds)}"
+    if fix is not None:
+        failed, problems = fix
+        payload["previous_draft"] = failed.model_dump(mode="json")
+        payload["problems"] = problems
+        prompt_id = "drafter_fix"
     prompt = ctx.prompt(prompt_id)
     draft, calls = await call_structured(
         ctx,

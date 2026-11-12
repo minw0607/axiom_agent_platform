@@ -156,7 +156,8 @@ The platform sets scope arguments such as `job_id` from graph state; a model nev
 | Review page at `/review`: static HTML and JavaScript served by the API, text-only rendering under a strict content security policy; requests, review decisions and the audit trail by role; `GET /v1/me`, `GET /v1/packages`, `GET /v1/memos` | Built and tested (brought forward from week 7) |
 | Guardrail framework: one interface (`passed`, `triggered`, `not_evaluated`), switches in `config/guardrails.yaml`, a span and a `guardrail_checked` evidence event per check, results in the memo and the evidence bundle; a control switched off or failing records `not_evaluated` | Built and tested (week 5) |
 | Input guardrails: Presidio PII redaction (financial values never changed; unredacted content routes as `pii_unredacted`) and a local injection screen that quarantines the package before any model call | Built and tested (week 5) |
-| Output guardrails: policy rails, number provenance, citation support, harm categories, PII on output | Week 5, in progress (the two cloud-only controls report `not_evaluated` until connected) |
+| Draft guardrails: three rails (decision language, investment advice, on task) and two evidence checks (number provenance, citation support) on every draft; one automated fix (`drafter_fix/v1`), counted apart from human revisions, then the job fails with `guardrail_failed` | Built and tested (week 5) |
+| Harm categories and PII on output; adversarial set v1 | Week 5, in progress (harm categories report `not_evaluated` until the cloud client is connected) |
 | Eval baseline | Week 6 |
 | Keyless demo | Week 7 |
 | CI release gates | Week 8 |

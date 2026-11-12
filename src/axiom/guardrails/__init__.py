@@ -18,6 +18,13 @@ from axiom.guardrails.base import (
 )
 from axiom.guardrails.cloud import CONTENT_SAFETY, INJECTION_SHIELD
 from axiom.guardrails.injection import INJECTION_SCREEN
+from axiom.guardrails.output import (
+    CITATION_SUPPORT,
+    DECISION_LANGUAGE,
+    INVESTMENT_ADVICE,
+    NUMBER_PROVENANCE,
+    ON_TASK,
+)
 from axiom.guardrails.pii import PII_REDACTION
 
 __all__ = [
@@ -47,7 +54,17 @@ def pii_protected(results: list[GuardrailResult]) -> bool:
 def default_controls() -> list[Guardrail]:
     """The platform's controls in the order they run within each stage."""
     # Input order matters: redaction first, so the injection screens see redacted text.
-    return [PII_REDACTION, INJECTION_SCREEN, INJECTION_SHIELD, CONTENT_SAFETY]
+    return [
+        PII_REDACTION,
+        INJECTION_SCREEN,
+        INJECTION_SHIELD,
+        DECISION_LANGUAGE,
+        INVESTMENT_ADVICE,
+        ON_TASK,
+        NUMBER_PROVENANCE,
+        CITATION_SUPPORT,
+        CONTENT_SAFETY,
+    ]
 
 
 def read_switches(path: Path) -> dict[str, bool]:

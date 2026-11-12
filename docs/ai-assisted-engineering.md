@@ -115,3 +115,14 @@ Lesson: a validator that checks each answer is not the same as one that checks t
 - **A missing redaction cannot route as standard.** Model calls default to `pii_unredacted`. Only a redaction that actually ran marks them `standard`, so switching it off, or a failure, sends the job to the router's local-only rule.
 - **Quarantine stops the job.** The screen's patterns cover overriding instructions, role changes, text addressed to the AI, steering the decision, hidden markup and invisible characters. A match stops the job before indexing or any model call. A test checks that no request reaches the router, and another that the injected text does reach the models when the screen is switched off: that switch is what the adversarial set measures.
 - **Image size.** Presidio needs spaCy and a language model. The small English model is about 12 MB; the default large one is over 500 MB.
+
+**Draft guardrails and the automated fix (Nov 12, week 5).** Delegated: three rails, number provenance, citation support, and the fix-then-fail loop.
+- **Calibrated on every recorded draft first.** Before writing tests, the five checks ran over all 61 recorded drafts: first drafts and revisions, live and scripted. The first pass flagged three things:
+  - "14%" and "48%" customer shares cited to a retrieved passage rather than a line. That is valid support, so a passage of the figure's document now counts.
+  - pkg-06's "5528000" (total liabilities plus equity), which comes from the reconciliation tool's output. The tool's results are now known inputs.
+  - pkg-08's scripted draft citing the EBITDA line for the 48% concentration figure. The check was right: the seed script had no citation rule for that flag. It now cites the business description, and the three affected recordings were regenerated.
+  After that, all 61 drafts pass, and a test keeps it so.
+- **Rounding has a limit.** "$13.8 million" for 13,801,200 passes; "$13.9 million" does not, because a number may round only within the precision it shows.
+- **The fix is narrow and cannot loop.** The fix prompt gets each problem with its claim and is told to change nothing else. Each draft gets one fix, and a second failure fails the job. The evidence records positions and codes, not claim text. Tests cover a fix that works, a fix that fails, and a rail switched off, where the bad draft reaches review unchanged.
+- **Code rails, not a framework.** The plan allowed NeMo Guardrails. Pattern rails in code give the same passed, triggered or not-evaluated results with less to install, and each pattern has a test that fires and a benign sentence that must not. Their limit is the same as the injection screen's: rewording evades them, and the adversarial set measures it.
+- **Cleanup.** 61 duplicate recordings named like `pkg-01 2.json`, left by the move out of iCloud, were tracked in git. Nothing loaded them; ten were stale drafts. They are removed.

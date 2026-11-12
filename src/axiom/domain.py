@@ -101,6 +101,14 @@ class FinancialStatements(Frozen):
     def fiscal_years(self) -> list[int]:
         return sorted(self.years)
 
+    def loan_figures(self) -> list[Figure]:
+        return [
+            self.loan.requested_amount,
+            self.loan.interest_rate_pct,
+            self.loan.term_years,
+            self.loan.amortization_years,
+        ]
+
     def get(self, year: int, field: str) -> Decimal | None:
         figure = self.years.get(year, {}).get(field)
         return None if figure is None else figure.value

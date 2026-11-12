@@ -180,8 +180,8 @@ The model invents a ratio, misreads a figure, or cites a source that does not sa
 |---|---|
 | All arithmetic in deterministic, unit-tested Python | Planned W3 |
 | Reconciliation checks at intake (balance sheet balances, totals foot) | Planned W3 |
-| Number provenance: every number in the memo matches an extracted figure or tool output | Planned W5 |
-| Claims are structured objects with citations; coverage is computed, support checked by an independent judge model | Planned W5–W6 |
+| Number provenance: every number in the memo matches an extracted figure or tool output | **Built** W5: also policy thresholds and numbers in the documents; rounding only within the number's shown precision |
+| Claims are structured objects with citations; coverage is computed, support checked by an independent judge model | **Built** W5 (deterministic): a stated figure must cite its source line or a passage of its document. Judge model planned W6 |
 | Release gates: ratio exactness 100%, provenance 100%, citation support ≥ 0.90 | Planned W6–W8 |
 
 ### T-08 · Human-agent trust exploitation (rubber-stamping)
@@ -190,7 +190,7 @@ A confident, well-formatted memo leads the reviewer to approve without checking,
 
 | Control | Status |
 |---|---|
-| The recommendation is a labeled draft field; rails block final-decision language elsewhere | Planned W5 |
+| The recommendation is a labeled draft field; rails block final-decision language elsewhere | **Built** W5: `decision_language` rail; a triggered rail gets one automated fix, then the job fails |
 | Risk flags and compliance findings shown with severity next to the recommendation | **Built** (review page) |
 | Seeded-error oversight test: reviewers are given memos with planted errors and the catch rate is reported | Planned W10 |
 

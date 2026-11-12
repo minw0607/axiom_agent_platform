@@ -9,5 +9,12 @@ controls:
   pii_redaction: { enabled: true }    # Presidio; financial values are never changed
   injection_screen: { enabled: true } # local patterns; a match quarantines the package
   injection_shield: { enabled: true } # cloud only (Prompt Shields in Azure AI Content Safety)
-  # Output: the finished draft
+  # Generation: policy rails on each draft's claims
+  decision_language: { enabled: true }  # no credit decision stated as made
+  investment_advice: { enabled: true }
+  on_task: { enabled: true }            # no chatbot asides, links or echoed instructions
+  # Output: each draft checked against its inputs. A triggered generation or output check
+  # sends the draft back once as an automated fix; a second failure fails the job.
+  number_provenance: { enabled: true }
+  citation_support: { enabled: true }
   content_safety: { enabled: true }   # cloud only, harm categories (Azure AI Content Safety)

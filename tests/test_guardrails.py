@@ -32,7 +32,9 @@ from test_api import KEYS, SETTINGS_WITH_KEYS, submit
 from test_review import COMMENTS, SETTINGS_SOD, review
 
 CONFIG = SETTINGS.guardrails_file
-CONTROLS = ["pii_redaction", "injection_screen", "injection_shield", "content_safety"]
+CONTROLS = [c.name for c in default_controls()]
+INPUT = ["pii_redaction", "injection_screen", "injection_shield"]
+DRAFT = [c for c in CONTROLS if c not in INPUT]
 CLOUD_ONLY = {"injection_shield", "content_safety"}
 
 
@@ -142,17 +144,14 @@ def test_cloud_only_controls_report_not_evaluated_in_demo_mode() -> None:
         run_workflow(demo_context(), "job-demo", load_package(SETTINGS.packages_dir, "pkg-01"))
     )
     results = state["guardrails"]
-    assert [(r.control, r.stage, r.node) for r in results] == [
-        ("pii_redaction", "input", "intake"),
-        ("injection_screen", "input", "intake"),
-        ("injection_shield", "input", "intake"),
-        ("content_safety", "output", "drafter"),
-    ]
+    assert [r.control for r in results] == CONTROLS
+    assert {r.node for r in results if r.control in INPUT} == {"intake"}
+    assert {r.node for r in results if r.control in DRAFT} == {"drafter"}
     cloud = [r for r in results if r.control in CLOUD_ONLY]
     assert {r.outcome for r in cloud} == {"not_evaluated"}
     assert all(r.enabled and "not connected" in r.reason for r in cloud)
-    # The local controls run in demo mode, and a clean package passes both.
-    assert [r.outcome for r in results[:2]] == ["passed", "passed"]
+    # Every local control runs in demo mode, and a clean package passes them all.
+    assert {r.outcome for r in results if r.control not in CLOUD_ONLY} == {"passed"}
 
 
 def test_latest_keeps_each_controls_last_result_in_first_run_order() -> None:
@@ -226,10 +225,7 @@ def test_every_guardrail_result_reaches_the_evidence_log_and_bundle(
         events = asyncio.run(store.events(job_id))
         checked = [e.payload for e in events if e.type == "guardrail_checked"]
         assert [(p["control"], p["outcome"]) for p in checked] == [
-            ("pii_redaction", "passed"),
-            ("injection_screen", "passed"),
-            ("injection_shield", "not_evaluated"),
-            ("content_safety", "not_evaluated"),
+            (c, "not_evaluated" if c in CLOUD_ONLY else "passed") for c in CONTROLS
         ]
         # The input check is logged before intake's first model call.
         types = [e.type for e in events]
@@ -251,11 +247,12 @@ def test_the_memo_shows_each_checks_latest_result_without_internal_names(
         work(store, SETTINGS_SOD)
         body = client.get(f"/v1/memos/{job_id}", headers={"X-API-Key": KEYS["submitter"]}).json()
         shown = body["memo"]["guardrails"]
-        # The redraft ran content_safety twice; the memo shows the latest once.
+        # The memo shows each check's latest result once.
         assert [s["control"] for s in shown] == CONTROLS
         assert all(set(s) == {"control", "stage", "outcome", "action", "reason"} for s in shown)
         events = asyncio.run(store.events(job_id))
-        assert sum(e.type == "guardrail_checked" for e in events) == 5
+        # The redraft reran the draft checks; the input checks ran once.
+        assert sum(e.type == "guardrail_checked" for e in events) == len(INPUT) + 2 * len(DRAFT)
 
 
 def test_switching_a_control_off_shows_in_the_evidence(

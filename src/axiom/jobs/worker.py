@@ -46,6 +46,7 @@ ERROR_CODES = {
     "FailClosed": "no_permitted_model",
     "ReviewError": "review_not_applied",
     "DocumentQuarantined": "document_quarantined",
+    "GuardrailFailed": "guardrail_failed",
 }
 
 

@@ -13,12 +13,21 @@ evidence log and the public API.
 from __future__ import annotations
 
 from dataclasses import dataclass, field, replace
+from decimal import Decimal
 from typing import Any, Literal, Protocol
 
 from opentelemetry.trace import Status, StatusCode
 from pydantic import BaseModel, ConfigDict, Field
 
-from axiom.domain import Document, MemoDraft
+from axiom.domain import (
+    BorrowerPackage,
+    CheckResult,
+    Document,
+    FinancialStatements,
+    MemoDraft,
+    RatioResult,
+)
+from axiom.mcp_clients.evidence import EvidenceHit
 from axiom.telemetry.setup import tracer
 
 Stage = Literal["input", "generation", "output"]
@@ -59,6 +68,18 @@ class Verdict:
 
 
 @dataclass(frozen=True)
+class DraftFacts:
+    """What a draft may draw on: the checks after drafting compare the draft with these."""
+
+    package: BorrowerPackage
+    financials: FinancialStatements
+    ratios: tuple[RatioResult, ...] = ()
+    checks: tuple[CheckResult, ...] = ()
+    thresholds: tuple[Decimal, ...] = ()
+    evidence: tuple[EvidenceHit, ...] = ()
+
+
+@dataclass(frozen=True)
 class Subject:
     """What a stage hands its controls: the documents at input, the draft after it."""
 
@@ -67,6 +88,7 @@ class Subject:
     documents: tuple[Document, ...] = ()
     draft: MemoDraft | None = None
     borrower_name: str = ""
+    facts: DraftFacts | None = None
 
 
 class Guardrail(Protocol):
