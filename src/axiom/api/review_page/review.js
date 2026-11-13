@@ -96,6 +96,9 @@ const state = {
   decisionError: null,
   comments: "",
   busy: false,
+  dashboard: null,
+  dashboardError: null,
+  listLoaded: false,
 };
 
 // Helpers ---------------------------------------------------------------------------------
@@ -233,7 +236,7 @@ async function signIn(key) {
   state.packages = new Map(packages.map((p) => [p.package_id, p]));
   state.tab = me.role === "reviewer" ? "review" : "all";
   showApp();
-  await refreshList();
+  await Promise.all([refreshList(), loadDashboard()]);
 }
 
 function signOut() {
@@ -241,6 +244,7 @@ function signOut() {
   Object.assign(state, {
     key: null, me: null, jobs: [], selectedId: null, job: null, evidence: null,
     evidenceError: null, pending: null, decisionError: null, comments: "",
+    dashboard: null, dashboardError: null, listLoaded: false,
   });
   $("app").hidden = true;
   $("who").hidden = true;
@@ -335,13 +339,17 @@ function renderList() {
 async function refreshList() {
   try {
     const data = await api("GET", "/v1/memos?limit=200");
+    const changed = !state.listLoaded || JSON.stringify(data.items) !== JSON.stringify(state.jobs);
     state.jobs = data.items;
+    state.listLoaded = true;
+    if (changed) {
+      renderTabs();
+      renderList();
+    }
   } catch (error) {
     if (error.status === 401) return signOut();
     return;
   }
-  renderTabs();
-  renderList();
   const row = state.jobs.find((j) => j.job_id === state.selectedId);
   if (row && state.job && (row.status !== state.job.status || row.updated_at !== state.job.updated_at)) {
     await loadSelected();
@@ -400,14 +408,9 @@ async function requestMemo() {
 
 function renderDetail() {
   const detail = $("detail");
+  $("overview").setAttribute("aria-current", state.selectedId ? "false" : "true");
   if (!state.selectedId) {
-    const hint =
-      state.me && state.me.role === "reviewer"
-        ? "Pick a memo under “Needs review” to read the draft and decide."
-        : state.me && state.me.role === "submitter"
-          ? "Request a memo, or pick one from the list to follow its progress."
-          : "Pick a memo to read it and its audit trail.";
-    detail.replaceChildren(el("div", { class: "card placeholder" }, hint));
+    detail.replaceChildren(...renderDashboard());
     return;
   }
   const job = state.job;
@@ -863,12 +866,135 @@ async function loadEvidence() {
   renderDetail();
 }
 
+// The dashboard ---------------------------------------------------------------------------
+
+const DASHBOARD_TITLE = {
+  submitter: "Your requests",
+  reviewer: "Your review queue",
+  auditor: "Audit overview",
+};
+const DASHBOARD_HINT = {
+  submitter: "Request a memo, or pick one to follow its progress.",
+  reviewer: "Memos with high-severity risk come first. Pick one to read the draft and decide.",
+  auditor: "Pick a memo to read it and its audit trail.",
+};
+
+// What the overview shows, ignoring the clock, so polling re-renders only on a change.
+// Re-rendering replaces the buttons, which would swallow a click in progress.
+function boardSignature(board) {
+  if (!board) return "";
+  return JSON.stringify({
+    tiles: board.tiles.map((t) => [t.key, t.unit === "seconds" ? duration(t.value) : t.value, t.tone]),
+    sections: board.sections,
+  });
+}
+
+async function loadDashboard() {
+  const before = state.dashboardError || boardSignature(state.dashboard);
+  try {
+    state.dashboard = await api("GET", "/v1/dashboard");
+    state.dashboardError = null;
+  } catch (error) {
+    if (error.status === 401) return signOut();
+    state.dashboardError = explain(error);
+  }
+  const after = state.dashboardError || boardSignature(state.dashboard);
+  if (!state.selectedId && after !== before) renderDetail();
+}
+
+async function showOverview() {
+  state.selectedId = null;
+  state.job = null;
+  renderList();
+  renderDetail();
+  await loadDashboard();
+}
+
+function duration(seconds) {
+  if (seconds === null || seconds === undefined) return "–";
+  if (seconds < 60) return "under a minute";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 48) return `${hours} h ${minutes % 60} min`;
+  return `${Math.floor(hours / 24)} days`;
+}
+
+function itemReason(item) {
+  const error = item.status === "failed" && item.code ? ERROR_TEXT[item.code] : null;
+  return error ? `${item.reason}. ${error}` : item.reason;
+}
+
+function renderDashboard() {
+  const role = state.me ? state.me.role : null;
+  const board = state.dashboard;
+  const head = el(
+    "div",
+    { class: "card" },
+    el("h1", {}, DASHBOARD_TITLE[role] || "Overview"),
+    el("p", { class: "sub" }, DASHBOARD_HINT[role] || ""),
+  );
+  if (state.dashboardError) return [head, el("div", { class: "notice bad" }, state.dashboardError)];
+  if (!board) return [head, el("div", { class: "card placeholder" }, el("span", { class: "spinner" }), "Loading…")];
+  const tiles = el(
+    "div",
+    { class: "tiles", "aria-label": "Summary" },
+    ...board.tiles.map((t) =>
+      el(
+        "div",
+        { class: `tile ${t.tone}`, title: t.detail || null },
+        el("b", {}, t.unit === "seconds" ? duration(t.value) : String(t.value ?? "–")),
+        el("span", {}, t.label),
+      ),
+    ),
+  );
+  head.append(tiles);
+  const scanned =
+    board.jobs_considered >= board.scan_limit
+      ? el("p", { class: "muted small" }, `Based on the ${board.scan_limit} most recently updated memos.`)
+      : null;
+  if (scanned) head.append(scanned);
+  const sections = board.sections.map((s) =>
+    el(
+      "div",
+      { class: "card" },
+      el("h2", {}, s.title),
+      s.items.length
+        ? el(
+            "ul",
+            { class: "board-list" },
+            ...s.items.map((item) =>
+              el(
+                "li",
+                {},
+                el(
+                  "button",
+                  { class: "board-item", type: "button", onclick: () => select(item.job_id) },
+                  el("span", { class: "job-title" }, borrower(item.package_id)),
+                  el(
+                    "span",
+                    { class: "job-meta" },
+                    pill(item.status),
+                    el("span", { class: item.tone ? `tone-${item.tone}` : "" }, itemReason(item)),
+                    el("span", {}, when(item.updated_at)),
+                  ),
+                ),
+              ),
+            ),
+          )
+        : el("p", { class: "muted" }, s.empty),
+    ),
+  );
+  return [head, ...sections];
+}
+
 // Start -----------------------------------------------------------------------------------
 
 async function poll() {
   if (state.key && state.me && !state.busy && document.visibilityState === "visible") {
     await refreshList();
     if (state.job && ACTIVE.has(state.job.status)) await loadSelected();
+    if (!state.selectedId) await loadDashboard();
   }
   window.setTimeout(poll, POLL_MS);
 }
@@ -892,6 +1018,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
   $("sign-out").addEventListener("click", signOut);
   $("request-button").addEventListener("click", requestMemo);
+  $("overview").addEventListener("click", showOverview);
 
   const saved = storage("get");
   if (saved) {

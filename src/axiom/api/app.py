@@ -19,6 +19,7 @@ from fastapi.staticfiles import StaticFiles
 
 from axiom import __version__
 from axiom.api.auth import Principal, require
+from axiom.api.dashboard import Dashboard, build_dashboard
 from axiom.api.errors import Problem, install_error_handlers, problem_response
 from axiom.api.schemas import (
     EvidenceBundle,
@@ -251,6 +252,19 @@ def create_app(settings: Settings | None = None, store: JobStore | None = None) 
             limit,
         )
         return MemoList(items=[to_summary(j) for j in jobs])
+
+    @app.get(
+        "/v1/dashboard",
+        response_model=Dashboard,
+        tags=["memos"],
+        summary="A summary for the signed-in role",
+        description="Relationship managers see their own requests; credit officers the review "
+        "queue, riskiest first; auditors integrity checks, failures and decisions.",
+    )
+    async def dashboard(
+        principal: Annotated[Principal, Depends(require("submitter", "reviewer", "auditor"))],
+    ) -> Dashboard:
+        return await build_dashboard(store, principal)
 
     @app.get("/v1/memos/{job_id}", response_model=MemoJob, tags=["memos"])
     async def get_memo(
