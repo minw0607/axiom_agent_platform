@@ -55,7 +55,7 @@ The system drafts and recommends. **A human makes every credit decision.**
 |---|---|
 | **The API is the contract** | Consumers see jobs and memos, never model, agent, or prompt names. Everything behind `/v1` can change. |
 | **LLMs reason; code calculates** | Every number in a memo is an extracted figure with a source location or a deterministic tool output, and a check verifies it. |
-| **Every claim is cited and supported** | Claims are structured objects with source references; a separate check tests whether the source supports the claim. |
+| **Every claim is cited and checked** | A memo is a list of structured claims, each with citations to document lines or retrieved passages. Code checks that every factual claim has a citation, that each citation points to a real line, that every number traces to an extracted figure or a tool output, and that a stated figure cites its own line. An AI grader, a different model from the drafter, then judges whether the cited sources support the wording. A failed check sends the draft back once; a second failure stops the job. [See one package, end to end](docs/sample-package.md). |
 | **Humans decide** | No path produces a final memo without approval from an authorized reviewer who didn't submit the job. |
 | **Evidence by default** | Each job writes to an append-only, hash-chained evidence log. |
 | **Fail closed** | A control that can't run is recorded as *not evaluated*, never as passed. |
@@ -226,6 +226,7 @@ Demo mode replays real model responses recorded from live runs, so no model API 
 ## 📚 Documentation
 
 - [Development plan](docs/dev-plan.md): scope, architecture, API, gates, schedule
+- [A sample package, end to end](docs/sample-package.md): the documents, extracted figures, computed ratios, the drafted memo, and how each claim is checked
 - [Architecture](docs/architecture.md): layers, the life of a memo job, and component status
 - [Architecture decision records](docs/adr/README.md): decisions and trade-offs as they're made
 - [AI-assisted engineering log](docs/ai-assisted-engineering.md): what was delegated to Claude Code and what review changed
