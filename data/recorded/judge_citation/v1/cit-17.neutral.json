@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_citation",
+  "prompt_version": "v1",
+  "prompt_sha256": "b80970b64fd62f7bd5ddeae6eca4893a6f36914d5a70b27f280afe3276ae7b4a",
+  "input_tokens": 538,
+  "output_tokens": 47,
+  "text": "{\"verdict\":\"not_supported\",\"reason\":\"The sources only provide revenue figures for three years and do not mention reconciliation checks or referral issues, and the revenue row does not show growth in every year.\"}"
+}

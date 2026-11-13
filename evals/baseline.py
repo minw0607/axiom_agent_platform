@@ -35,6 +35,7 @@ from axiom.guardrails import latest
 from axiom.jobs.worker import ERROR_CODES, build_context
 from axiom.mcp_clients.evidence import InMemoryEvidence
 from axiom.router.router import ModelRouter
+from axiom.router.types import Sensitivity
 from axiom.settings import REPO_ROOT, Settings
 from axiom.tools.policy import load_policy
 
@@ -249,6 +250,8 @@ async def judge_memo(
     if draft is None:
         return {"citation_support_judge": None, "key_finding_recall_judge": None}
     drafters = {c.alias for c in state.get("model_calls", []) if c.node == "drafter" and c.valid}
+    # Graded text is what the drafter saw: standard only if the documents were redacted.
+    level: Sensitivity = "standard" if state.get("pii_redacted") else "pii_unredacted"
     pid = truth["package_id"]
     verdicts = []
     for i, section in enumerate(draft.sections):
@@ -258,12 +261,14 @@ async def judge_memo(
             item = CitationItem(
                 f"{pid}-{tag}-s{i}c{j}", claim.text, cited_sources(state, claim.citations)
             )
-            verdicts.append(independent(await grade_citation(ctx, item), drafters).verdict)
+            grade = await grade_citation(ctx, item, "neutral", level)
+            verdicts.append(independent(grade, drafters).verdict)
     memo = tuple(c.text for s in draft.sections for c in s.claims)
     found = []
     for k in truth["golden"]["key_findings"]:
         finding = FindingItem(f"{pid}-{tag}-{k['id']}", k["text"], memo)
-        found.append(independent(await grade_finding(ctx, finding), drafters).verdict)
+        grade = await grade_finding(ctx, finding, "neutral", level)
+        found.append(independent(grade, drafters).verdict)
     graded = [v for v in verdicts if v is not None]
     judged = [v for v in found if v is not None]
     return {

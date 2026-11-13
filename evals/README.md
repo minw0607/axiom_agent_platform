@@ -22,6 +22,10 @@ Demo mode replays scripted recordings built from the ground truth, so its result
 
 Before the grader's numbers count, it is calibrated: [`judge/v1/calibration.json`](judge/v1/calibration.json) holds 30 items built from the live recorded drafts (20 citation items, 7 of them altered on purpose; 10 finding items, 4 paired with another package's finding). A person labels them blind on a private labelling page, and [`judge/calibrate.py`](judge/calibrate.py) reports agreement and Cohen's kappa with those labels, and how often a high-stakes note changes a verdict (dev plan 9.4: it must not).
 
+**Status: partial calibration.** The first labelling round did not produce usable labels (see the engineering log, Nov 12), so agreement with a person is not yet measured. Until it is, the grader is checked only against the 11 items whose right answer is "no" by construction and for stakes bias, and its scores on memos are reported as uncalibrated, not used as a gate.
+
+**First live run (Nov 12): [`judge/v1/calibration-live.md`](judge/v1/calibration-live.md).** All 30 items graded in both framings (60 calls, about 43,000 tokens). The grader failed all 11 items built to need a "no", and the high-stakes note changed none of its 30 verdicts. It also marks claims about the platform's own calculations (a risk flag, a ratio such as DSCR 2.52, a reconciliation result) "not supported", because the cited document lines cannot show them. That is the rule applied correctly, but it would fail real memos for the kind of claim rather than its truth; piece 4 gives the grader the tool outputs as sources. The answers are recorded under `data/recorded/judge_*`, so the run replays without a model.
+
 MLflow installs in its own dependency group (`uv sync --group evals`) and runs as an optional compose service, so it never enters the API or worker image. Port 5050, because macOS AirPlay Receiver holds port 5000.
 
 **Planned:** Weeks 6-8 of the [development plan](/docs/dev-plan.md): the golden set, the red-team gate against live models, alignment and counterfactual suites.

@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_citation",
+  "prompt_version": "v1",
+  "prompt_sha256": "58e3ceed1f928f3d64d4c4accfb4940accdd49c43cc78ed0d9208ba1e55ba308",
+  "input_tokens": 891,
+  "output_tokens": 69,
+  "text": "{\"verdict\":\"not_supported\",\"reason\":\"The cited figures support the underlying 2025 revenue, EBITDA, interest expense, current assets, current liabilities, debt, equity, and loan request values, but they do not mention any risk flags or failed reconciliation checks, so that part of the claim is unsupported.\"}"
+}

@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_finding",
+  "prompt_version": "v1",
+  "prompt_sha256": "4a837e33f7d1cbf7c04e6bf0e2c36657279b890390b5740e20a3ccaf72a958b5",
+  "input_tokens": 676,
+  "output_tokens": 44,
+  "text": "{\"verdict\":\"covered\",\"reason\":\"The memo states that the largest customer is 48% of revenue, above 40%, and that a customer-concentration sensitivity analysis is required.\"}"
+}

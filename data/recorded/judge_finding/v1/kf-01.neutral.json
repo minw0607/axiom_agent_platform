@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_finding",
+  "prompt_version": "v1",
+  "prompt_sha256": "e70464ecf1554e57290dd48da7c95a747fef97a2162ea90a842ba34b938c041e",
+  "input_tokens": 671,
+  "output_tokens": 65,
+  "text": "{\"verdict\":\"covered\",\"reason\":\"The memo explicitly states pro forma DSCR of 2.34 and pro forma leverage of 1.49, and says there are no risk flags or failed checks, which matches the finding that the thresholds are met and no policy threshold is breached.\"}"
+}

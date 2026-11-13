@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_citation",
+  "prompt_version": "v1",
+  "prompt_sha256": "0a71b5a97e438713c8874da6434cb4e244d8714d2115d357cc794bc902c72c6c",
+  "input_tokens": 592,
+  "output_tokens": 57,
+  "text": "{\"verdict\":\"not_supported\",\"reason\":\"The cited sources support 2025 revenue, EBITDA, and interest expense figures, but they do not provide 2025 ebitda_margin, revenue_growth, DSCR, or interest_coverage values.\"}"
+}

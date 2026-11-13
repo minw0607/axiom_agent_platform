@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_citation",
+  "prompt_version": "v1",
+  "prompt_sha256": "b153caf661cb198fc17e54177b7895e5dae90d650101f347903c2d42bbb7db46",
+  "input_tokens": 553,
+  "output_tokens": 72,
+  "text": "{\"verdict\":\"not_supported\",\"reason\":\"The sources show current assets and current liabilities for 2025, but they do not state a current_ratio of 1.08, a policy minimum of 1.20, CP-4.3, or that the LIQUIDITY_BELOW_MIN flag was raised.\"}"
+}

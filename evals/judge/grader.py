@@ -20,9 +20,9 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
-from axiom.agents.base import AgentContext, AgentOutputError, call_structured
+from axiom.agents.base import AgentContext, AgentOutputError, call_structured, sensitivity
 from axiom.agents.prompts import load_prompt
-from axiom.router.types import FailClosed, ProviderError
+from axiom.router.types import FailClosed, ProviderError, Sensitivity
 
 PROMPTS = Path(__file__).parent / "prompts"
 VERSIONS = {"judge_citation": "v1", "judge_finding": "v1"}
@@ -86,18 +86,22 @@ async def _ask(
     stakes: Stakes,
     payload: dict[str, Any],
     schema: type[CitationVerdict] | type[FindingVerdict],
+    level: Sensitivity,
 ) -> Grade:
     prompt = _prompt(prompt_id)
     try:
-        out, calls = await call_structured(
-            ctx,
-            node="judge",
-            route="judge",
-            prompt=prompt,
-            payload={"context": CONTEXT[stakes], **payload},
-            schema=schema,
-            recording_key=f"{prompt_id}/{prompt.version}/{item_id}.{stakes}",
-        )
+        # The caller says whether the text came from redacted documents. Text that did not
+        # stays pii_unredacted and goes only where the router's sensitivity rule allows.
+        with sensitivity(level):
+            out, calls = await call_structured(
+                ctx,
+                node="judge",
+                route="judge",
+                prompt=prompt,
+                payload={"context": CONTEXT[stakes], **payload},
+                schema=schema,
+                recording_key=f"{prompt_id}/{prompt.version}/{item_id}.{stakes}",
+            )
     except (ProviderError, FailClosed, AgentOutputError) as exc:
         return Grade(item_id, stakes, None, f"not evaluated ({type(exc).__name__})")
     return Grade(
@@ -111,7 +115,10 @@ async def _ask(
 
 
 async def grade_citation(
-    ctx: AgentContext, item: CitationItem, stakes: Stakes = "neutral"
+    ctx: AgentContext,
+    item: CitationItem,
+    stakes: Stakes = "neutral",
+    level: Sensitivity = "pii_unredacted",
 ) -> Grade:
     payload = {
         "claim": item.claim,
@@ -119,12 +126,17 @@ async def grade_citation(
             {"doc_id": s.doc_id, "locator": s.locator, "text": s.text} for s in item.sources
         ],
     }
-    return await _ask(ctx, "judge_citation", item.item_id, stakes, payload, CitationVerdict)
+    return await _ask(ctx, "judge_citation", item.item_id, stakes, payload, CitationVerdict, level)
 
 
-async def grade_finding(ctx: AgentContext, item: FindingItem, stakes: Stakes = "neutral") -> Grade:
+async def grade_finding(
+    ctx: AgentContext,
+    item: FindingItem,
+    stakes: Stakes = "neutral",
+    level: Sensitivity = "pii_unredacted",
+) -> Grade:
     payload = {"finding": item.finding, "memo": "\n".join(item.memo)}
-    return await _ask(ctx, "judge_finding", item.item_id, stakes, payload, FindingVerdict)
+    return await _ask(ctx, "judge_finding", item.item_id, stakes, payload, FindingVerdict, level)
 
 
 def independent(grade: Grade, drafter_aliases: set[str]) -> Grade:

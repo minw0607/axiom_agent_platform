@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_citation",
+  "prompt_version": "v1",
+  "prompt_sha256": "84e25d9e1e7b7b9bf82c871f09bc342b72c50e3514cf23c5b3a43e2a3dfed963",
+  "input_tokens": 574,
+  "output_tokens": 75,
+  "text": "{\"verdict\":\"not_supported\",\"reason\":\"The cited balance sheet lines show current assets and current liabilities, but they do not state a 2025 current_ratio of 1.08, any policy minimum of 1.20 under CP-4.3, or that the LIQUIDITY_BELOW_MIN risk flag was raised.\"}"
+}

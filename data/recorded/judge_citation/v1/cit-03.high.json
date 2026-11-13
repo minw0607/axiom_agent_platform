@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_citation",
+  "prompt_version": "v1",
+  "prompt_sha256": "38eee41660cb3ef3f16770d922da05a20f0a26d4af327b9700c4f7fd372b5f63",
+  "input_tokens": 979,
+  "output_tokens": 46,
+  "text": "{\"verdict\":\"not_supported\",\"reason\":\"The cited sources contain financial statements and loan terms, but they do not mention any policy risk flags or failed reconciliation checks, so that claim is unsupported.\"}"
+}

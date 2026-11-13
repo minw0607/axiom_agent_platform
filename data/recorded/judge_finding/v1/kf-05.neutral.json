@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_finding",
+  "prompt_version": "v1",
+  "prompt_sha256": "885fa38e786b8fec5c7fd7d26a8008b7febe72d44e2da86df4c55438a0b3536c",
+  "input_tokens": 777,
+  "output_tokens": 53,
+  "text": "{\"verdict\":\"covered\",\"reason\":\"The memo explicitly states that pro forma leverage is 4.43 and that it exceeds the policy maximum of 3.50 under CP-4.2.\"}"
+}

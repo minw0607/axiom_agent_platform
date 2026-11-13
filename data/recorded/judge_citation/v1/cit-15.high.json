@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_citation",
+  "prompt_version": "v1",
+  "prompt_sha256": "0734305e25305efceb52bba742ec8c4f4c5d3031561e5fea8b61a93d0cca01a5",
+  "input_tokens": 602,
+  "output_tokens": 47,
+  "text": "{\"verdict\":\"not_supported\",\"reason\":\"The cited sources only show revenue, EBITDA, and total debt figures; they do not provide any reconciliation results or indicate whether a failed reconciliation check was absent.\"}"
+}

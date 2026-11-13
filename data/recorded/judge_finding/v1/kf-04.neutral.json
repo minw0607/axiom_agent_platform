@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_finding",
+  "prompt_version": "v1",
+  "prompt_sha256": "cbe586df37b3b2ed37c4c5ff6c481aa7b11e096f0b43edadd06f5f78d576ee3b",
+  "input_tokens": 718,
+  "output_tokens": 43,
+  "text": "{\"verdict\":\"not_covered\",\"reason\":\"The memo provides only FY2025 figures and does not state that 2 fiscal years were provided or that 3 are required.\"}"
+}

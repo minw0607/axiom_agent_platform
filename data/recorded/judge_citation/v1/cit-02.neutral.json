@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_citation",
+  "prompt_version": "v1",
+  "prompt_sha256": "b43a9307392335fa9e3bde39ffc9c123e472d24cc1632f3f0250f3e3c1d1603c",
+  "input_tokens": 644,
+  "output_tokens": 73,
+  "text": "{\"verdict\":\"not_supported\",\"reason\":\"The sources support 2025 EBITDA of 2,346,204, interest expense of 130,000, and net income of 1,365,115, but they show 2025 revenue as 13,801,200, not 15,334,666.\"}"
+}

@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_finding",
+  "prompt_version": "v1",
+  "prompt_sha256": "78070d1f02a85095b599a5cdd8bb61cc446f02c270b364eee4e0097427bfc3f2",
+  "input_tokens": 694,
+  "output_tokens": 51,
+  "text": "{\"verdict\":\"covered\",\"reason\":\"The memo explicitly states that the 2025 current ratio is 1.08 and that it is below the policy minimum of 1.20 under CP-4.3.\"}"
+}

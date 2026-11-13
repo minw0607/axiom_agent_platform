@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_citation",
+  "prompt_version": "v1",
+  "prompt_sha256": "c7c7df5175b863c68814406bf1419168138cf2466f09c7edbb4ebb259928bb0f",
+  "input_tokens": 638,
+  "output_tokens": 48,
+  "text": "{\"verdict\":\"not_supported\",\"reason\":\"The cited sources show revenue for three fiscal years only and do not provide any policy risk flags or evidence that revenue grew in every year since the business was founded.\"}"
+}

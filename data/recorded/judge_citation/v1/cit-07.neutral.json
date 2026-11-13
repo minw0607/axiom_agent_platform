@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_citation",
+  "prompt_version": "v1",
+  "prompt_sha256": "f1756fd066f29939faf403f6be3939b3f85d1dbe349e70621c79ee217226bf3e",
+  "input_tokens": 650,
+  "output_tokens": 59,
+  "text": "{\"verdict\":\"not_supported\",\"reason\":\"The sources do not mention the DSCR_BELOW_MIN flag, its severity, the pro forma DSCR of 0.93, or the policy minimum of 1.25 under CP-4.1.\"}"
+}

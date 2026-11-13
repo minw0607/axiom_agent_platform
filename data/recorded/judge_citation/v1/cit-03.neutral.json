@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_citation",
+  "prompt_version": "v1",
+  "prompt_sha256": "a3dc3b71e985890a5873709357d12bb009d0db825bc6280b149183fd7e3cdc7b",
+  "input_tokens": 958,
+  "output_tokens": 36,
+  "text": "{\"verdict\":\"not_supported\",\"reason\":\"The cited sources provide financial figures only and do not report any policy risk flags or failed reconciliation checks.\"}"
+}

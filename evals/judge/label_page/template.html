@@ -75,6 +75,10 @@ textarea { font: .9rem var(--sans); width: 100%; min-height: 2.4rem; resize: ver
 .tag.yes { background: var(--yes-bg); color: var(--yes); }
 .tag.no { background: var(--no-bg); color: var(--no); }
 .reminder { font-size: .85rem; color: var(--muted); margin: 0; }
+.copy { font: 500 .85rem var(--sans); border: 1px solid var(--accent); background: var(--accent); color: var(--accent-fg); padding: 5px 12px; border-radius: 6px; cursor: pointer; }
+.export { width: 100%; display: grid; gap: 6px; }
+.export p { margin: 0; font-size: .85rem; }
+.export textarea { min-height: 7rem; font: .8rem/1.4 var(--mono); }
 @media (prefers-reduced-motion: reduce) { .meter i { transition: none; } }
 </style>
 
@@ -110,7 +114,12 @@ textarea { font: .9rem var(--sans); width: 100%; min-height: 2.4rem; resize: ver
     <button id="f-todo" data-f="todo" aria-pressed="false">To label</button>
     <button id="f-done" data-f="done" aria-pressed="false">Labelled</button>
   </div>
+  <button type="button" class="copy" id="copy">Copy all labels</button>
   <div class="status" id="status" role="status">Connecting to saved labels…</div>
+  <div class="export" id="export" hidden>
+    <p>Copy this text and paste it into the chat with Claude:</p>
+    <textarea id="export-text" readonly aria-label="Your labels as text"></textarea>
+  </div>
 </div></div>
 <main class="wrap" id="list"></main>
 
@@ -120,8 +129,12 @@ const CHOICES = {
   citation: [["supported", "Supported"], ["not_supported", "Not supported"], ["unsure", "Not sure"]],
   finding: [["covered", "Covered"], ["not_covered", "Not covered"], ["unsure", "Not sure"]],
 };
-const labels = {};          // item_id -> {verdict, note}
-let db = null, filter = "all", writable = false;
+const DRAFT_KEY = "axiom.grader-labels.v1";
+const IDS = new Set(ITEMS.map((i) => i.item_id));
+const labels = {};        // item_id -> {verdict, note}: what this page shows
+const stored = new Set(); // item_ids the shared store has confirmed, with the same verdict and note
+let db = null, filter = "all", storeState = "connecting";
+
 const $ = (id) => document.getElementById(id);
 function el(tag, props, ...kids) {
   const n = document.createElement(tag);
@@ -131,71 +144,125 @@ function el(tag, props, ...kids) {
   for (const k of kids) if (k != null) n.append(k);
   return n;
 }
-function setStatus(text, warn) { const s = $("status"); s.textContent = text; s.classList.toggle("warn", !!warn); }
+
+// A copy in this browser, so a reload or a page update cannot lose labels.
+function loadDraft() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(DRAFT_KEY) || "{}");
+    for (const [id, v] of Object.entries(raw)) if (IDS.has(id) && v && v.verdict) labels[id] = { verdict: v.verdict, note: v.note || "" };
+  } catch { /* storage unavailable: the shared store and Copy all labels still work */ }
+}
+function saveDraft() {
+  try { localStorage.setItem(DRAFT_KEY, JSON.stringify(labels)); } catch { /* see loadDraft */ }
+}
+
+function same(a, b) { return !!a && !!b && a.verdict === b.verdict && (a.note || "") === (b.note || ""); }
+
+function status() {
+  const done = ITEMS.filter((i) => labels[i.item_id]?.verdict);
+  const confirmed = done.filter((i) => stored.has(i.item_id)).length;
+  const s = $("status");
+  let text, warn = false;
+  if (storeState === "unavailable") {
+    text = `${done.length} labelled and kept in this browser. The shared store can't be reached here, so use Copy all labels to send them to Claude.`; warn = true;
+  } else if (storeState === "connecting") {
+    text = `${done.length} labelled. Connecting to the shared store…`;
+  } else if (storeState === "error") {
+    text = `${done.length} labelled and kept in this browser. The shared store stopped answering, so use Copy all labels.`; warn = true;
+  } else if (done.length && confirmed < done.length) {
+    text = `${done.length} labelled, ${confirmed} confirmed by the shared store. The rest are kept in this browser; Copy all labels sends them all.`; warn = true;
+  } else {
+    text = done.length ? `${done.length} labelled, all confirmed by the shared store.` : "Ready. Nothing labelled yet.";
+  }
+  s.textContent = text; s.classList.toggle("warn", warn);
+}
 
 function card(item, index) {
   const lab = labels[item.item_id];
   const body = item.type === "citation"
     ? [el("p", { class: "q", text: "Do these source lines support every factual part of the claim?" }),
        el("p", { class: "claim", text: item.claim }),
-       el("div", { class: "src" }, ...item.sources.map(s => el("div", {}, el("span", { class: "ref", text: `${s.doc_id} · ${s.locator}` }), el("code", { text: s.text }))))]
+       el("div", { class: "src" }, ...item.sources.map((s) => el("div", {}, el("span", { class: "ref", text: `${s.doc_id} · ${s.locator}` }), el("code", { text: s.text }))))]
     : [el("p", { class: "q", text: "Does the memo state this finding?" }),
        el("p", { class: "finding", text: item.finding }),
        el("details", {}, el("summary", { text: `Read the memo (${item.memo.length} claims)` }),
-         el("ol", { class: "memo" }, ...item.memo.map(c => el("li", { text: c }))))];
+         el("ol", { class: "memo" }, ...item.memo.map((c) => el("li", { text: c }))))];
   const choices = el("div", { class: "choices", role: "group", "aria-label": "Your label" },
-    ...CHOICES[item.type].map(([v, text]) => {
-      const b = el("button", { type: "button", "data-v": v, id: `b-${item.item_id}-${v}`, "aria-pressed": String(lab?.verdict === v), text, onclick: () => save(item.item_id, { verdict: v }) });
-      if (!writable) b.disabled = true;
-      return b;
-    }));
+    ...CHOICES[item.type].map(([v, text]) =>
+      el("button", { type: "button", "data-v": v, id: `b-${item.item_id}-${v}`, "aria-pressed": String(lab?.verdict === v), text, onclick: () => save(item.item_id, { verdict: v }) })));
   const reminder = el("p", { class: "reminder", text: item.type === "citation"
     ? "Supported only if every number and statement in the claim is in the lines above. Rounding and missing commas are fine."
     : "Covered only if the memo states the finding's substance, including its key number." });
   const note = el("textarea", { id: `n-${item.item_id}`, placeholder: "Note (optional)", "aria-label": "Note", onchange: (e) => save(item.item_id, { note: e.target.value.trim() }) });
   note.value = lab?.note || "";
-  if (!writable) note.disabled = true;
   return el("article", { class: "item" + (lab?.verdict ? " done" : ""), id: `item-${item.item_id}` },
     el("div", { class: "head" }, el("span", { class: "id", text: `${index + 1} · ${item.item_id}` }), el("span", { class: "kind", text: item.type === "citation" ? "Citation support" : "Key finding" })),
     ...body, reminder, choices, note);
 }
 
 function render() {
-  const done = ITEMS.filter(i => labels[i.item_id]?.verdict).length;
+  const done = ITEMS.filter((i) => labels[i.item_id]?.verdict).length;
   $("count").textContent = `${done} of ${ITEMS.length} labelled`;
   $("meter").style.width = `${(100 * done) / ITEMS.length}%`;
   const shown = ITEMS.map((it, i) => [it, i]).filter(([it]) => filter === "all" || (filter === "done") === !!labels[it.item_id]?.verdict);
   $("list").replaceChildren(...(shown.length ? shown.map(([it, i]) => card(it, i)) : [el("p", { class: "empty", text: filter === "todo" ? "Everything is labelled. Thank you." : "Nothing labelled yet." })]));
+  status();
 }
 
-const pending = {};
-async function save(id, patch) {
-  if (!db || !writable) return;
+const queue = {};
+function save(id, patch) {
   const next = { verdict: null, note: "", ...labels[id], ...patch };
-  if (labels[id] && labels[id].verdict === next.verdict && (labels[id].note || "") === next.note) return;
-  labels[id] = next; render();
-  pending[id] = (pending[id] || Promise.resolve()).then(() =>
-    db.doc(`labels/${id}`).set({ verdict: next.verdict, note: next.note, at: new Date().toISOString() })
-      .then(() => setStatus("Saved."))
-      .catch((e) => setStatus(`Could not save ${id}: ${e && e.message ? e.message : "try again"}.`, true)));
+  if (same(labels[id], next)) return;
+  labels[id] = next; stored.delete(id); saveDraft(); render();
+  if (!db || !next.verdict) return;
+  queue[id] = (queue[id] || Promise.resolve())
+    .then(() => db.doc(`labels/${id}`).set({ verdict: next.verdict, note: next.note, at: new Date().toISOString() }))
+    .catch(() => { storeState = "error"; status(); });
 }
 
+function exportText() {
+  const out = {};
+  for (const it of ITEMS) if (labels[it.item_id]?.verdict) out[it.item_id] = labels[it.item_id];
+  return JSON.stringify({ labels: out });
+}
+$("copy").addEventListener("click", () => {
+  const text = exportText(), n = Object.keys(JSON.parse(text).labels).length;
+  const area = $("export-text");
+  area.value = text; $("export").hidden = false; area.focus(); area.select();
+  const done = (msg) => { const s = $("status"); s.textContent = msg; s.classList.remove("warn"); };
+  try {
+    navigator.clipboard.writeText(text).then(() => done(`Copied ${n} labels. Paste them into the chat with Claude.`),
+      () => done(`Select the text in the box below (${n} labels) and copy it.`));
+  } catch { done(`Select the text in the box below (${n} labels) and copy it.`); }
+});
 for (const b of document.querySelectorAll(".filters button")) b.addEventListener("click", () => {
   filter = b.dataset.f;
   for (const o of document.querySelectorAll(".filters button")) o.setAttribute("aria-pressed", String(o === b));
   render();
 });
 
+loadDraft();
 render();
 (async () => {
   try { db = window.claude?.use ? await window.claude.use("db") : null; } catch { db = null; }
-  if (!db) { setStatus("Labels can't be saved in this view. Open the page signed in to claude.ai.", true); return; }
-  writable = true; render();
-  const timer = setTimeout(() => setStatus("Still connecting. Your earlier labels may not show yet.", true), 10000);
+  if (!db) { storeState = "unavailable"; status(); return; }
+  const timer = setTimeout(() => { if (storeState === "connecting") { storeState = "error"; status(); } }, 10000);
   db.collection("labels").onSnapshot((snap) => {
-    for (const d of snap.docs) { const v = d.data(); if (v) labels[d.id] = { verdict: v.verdict || null, note: v.note || "" }; }
-    if (!snap.metadata.fromCache) { clearTimeout(timer); setStatus(snap.empty ? "Ready. Nothing labelled yet." : "Saved labels loaded."); }
+    for (const d of snap.docs) {
+      if (!IDS.has(d.id)) continue;
+      const v = d.data(); if (!v || !v.verdict) continue;
+      const server = { verdict: v.verdict, note: v.note || "" };
+      if (!labels[d.id]) labels[d.id] = server;          // labelled elsewhere: show it
+      if (same(labels[d.id], server) && !d.metadata.hasPendingWrites && !snap.metadata.fromCache) stored.add(d.id);
+      else if (!same(labels[d.id], server)) stored.delete(d.id);
+    }
+    if (!snap.metadata.fromCache) { clearTimeout(timer); storeState = "ready"; saveDraft(); }
     render();
-  }, (e) => { clearTimeout(timer); setStatus(`Saved labels could not load (${e.code}). Reload the page later.`, true); });
+    // Send labels kept only in this browser (for example from an earlier visit) to the store.
+    if (storeState === "ready") for (const id of Object.keys(labels)) if (!stored.has(id) && labels[id].verdict && !snap.docs.some((d) => d.id === id && same(labels[id], { verdict: d.data()?.verdict, note: d.data()?.note || "" }))) {
+      const lab = labels[id];
+      queue[id] = (queue[id] || Promise.resolve()).then(() => db.doc(`labels/${id}`).set({ verdict: lab.verdict, note: lab.note, at: new Date().toISOString() })).catch(() => {});
+    }
+  }, () => { clearTimeout(timer); storeState = "error"; status(); });
 })();
 </script>

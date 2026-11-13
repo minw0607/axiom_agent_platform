@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_citation",
+  "prompt_version": "v1",
+  "prompt_sha256": "8c1402e86e62eae2b515fd746f3be974271129096acd6566a11b2c8b851fbcb0",
+  "input_tokens": 870,
+  "output_tokens": 73,
+  "text": "{\"verdict\":\"not_supported\",\"reason\":\"The sources provide the 2025 revenue, EBITDA, interest expense, current assets, current liabilities, debt, equity, and loan request figures, but they do not mention any risk flags, failed reconciliation checks, or that the ratios were computed without issues.\"}"
+}

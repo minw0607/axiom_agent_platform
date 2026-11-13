@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_finding",
+  "prompt_version": "v1",
+  "prompt_sha256": "3e62626fabf52f0023f1e448f79bc213f0ecd2c5d705ebd2996ef7e84b98e34a",
+  "input_tokens": 771,
+  "output_tokens": 60,
+  "text": "{\"verdict\":\"not_covered\",\"reason\":\"The memo states pro forma DSCR is 2.03 and pro forma leverage is 1.38, which does not match the finding\u2019s 1.89 DSCR and 1.83x leverage.\"}"
+}

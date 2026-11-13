@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_citation",
+  "prompt_version": "v1",
+  "prompt_sha256": "d3f3a417f920cf90bece932d853e93fb5206601a2032bbe64d30c6da55bf729e",
+  "input_tokens": 614,
+  "output_tokens": 76,
+  "text": "{\"verdict\":\"not_supported\",\"reason\":\"The sources show EBITDA, total debt, and the requested amount, but they do not mention a pro forma leverage of 4.43, a policy maximum of 3.50, CP-4.2, 2025, or any high-severity LEVERAGE_ABOVE_MAX flag.\"}"
+}

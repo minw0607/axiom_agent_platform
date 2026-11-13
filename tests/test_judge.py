@@ -217,3 +217,18 @@ def test_the_labelling_page_never_shows_how_an_item_was_built() -> None:
     ):
         assert kind not in html
     assert all(i["item_id"] in html for i in calibrate.load_items())
+
+
+def test_grader_calls_default_to_unredacted_and_fail_closed_without_a_permitted_model() -> None:
+    """Text of unknown origin stays pii_unredacted; the caller must say it was redacted."""
+    ctx, seen = judge_context(verdict("supported"))
+    asyncio.run(grader.grade_citation(ctx, ITEM))
+    asyncio.run(grader.grade_citation(ctx, ITEM, "neutral", "standard"))
+    assert [r.sensitivity for r in seen] == ["pii_unredacted", "standard"]
+
+
+def test_the_runner_grades_as_standard_only_when_the_documents_were_redacted() -> None:
+    state, truth = drafted(), load_ground_truth(SETTINGS.packages_dir, "pkg-01")
+    ctx, seen = judge_context(verdict("supported"))
+    asyncio.run(baseline.judge_memo(ctx, state, truth, "t"))
+    assert state["pii_redacted"] and {r.sensitivity for r in seen} == {"standard"}
