@@ -6,5 +6,5 @@
   "prompt_sha256": "82171d2b51768c46f2d861d0a8e3dea53330cac1cd33b2e24679e1de9dcb6df2",
   "input_tokens": 688,
   "output_tokens": 50,
-  "text": "{\"verdict\":\"covered\",\"reason\":\"The memo explicitly states pro forma DSCR is 1.30 and pro forma leverage is 2.50, matching the finding that both are within the stated policy limits.\"}"
+  "text": "{\"verdict\":\"covered\",\"reason\":\"The memo explicitly states pro forma DSCR is 1.30 and pro forma leverage is 2.50, and says there are no policy risk flags or failed checks.\"}"
 }

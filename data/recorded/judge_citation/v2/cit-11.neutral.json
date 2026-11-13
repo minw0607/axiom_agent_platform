@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_citation",
+  "prompt_version": "v2",
+  "prompt_sha256": "036c9e80d9371a5e17dec4cacc9cf120f9e452684224284c176f696c5bf880ce",
+  "input_tokens": 1240,
+  "output_tokens": 45,
+  "text": "{\"verdict\":\"not_supported\",\"reason\":\"No risk flags is supported, but the claim that revenue has grown in every year since founding is not supported by the provided sources or platform outputs.\"}"
+}

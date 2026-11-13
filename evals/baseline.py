@@ -49,6 +49,7 @@ from grader import (  # noqa: E402
     grade_finding,
     independent,
 )
+from platform_outputs import platform_outputs  # noqa: E402
 
 RESULTS = HERE / "results"
 PAIRS = HERE / "counterfactual" / "v1" / "pairs.yaml"
@@ -135,6 +136,19 @@ def score(state: MemoState, truth: dict[str, Any]) -> dict[str, Any]:
         "outcome": "drafted"
         if not error
         else ERROR_CODES.get(error.split(":", 1)[0], "internal_error"),
+        # Enough to diagnose a failure without rerunning it (dev plan 9.4): the error, and
+        # which guardrails triggered, by stage. Codes and names only, never memo text.
+        "error": (error or "")[:300] or None,
+        "guardrails_triggered": sorted(
+            {
+                f"{g.control}@{g.node}"
+                for g in state.get("guardrails", [])
+                if g.outcome == "triggered"
+            }
+        ),
+        "rules_triggered": sorted(
+            f.rule_id for f in state.get("findings", []) if f.outcome == "triggered"
+        ),
     }
     # Extraction: value and source line of every figure.
     fs = state.get("financials")
@@ -253,13 +267,16 @@ async def judge_memo(
     # Graded text is what the drafter saw: standard only if the documents were redacted.
     level: Sensitivity = "standard" if state.get("pii_redacted") else "pii_unredacted"
     pid = truth["package_id"]
+    platform = platform_outputs(
+        state.get("ratios", []), state.get("risk_flags", []), state.get("checks", []), ctx.policy
+    )
     verdicts = []
     for i, section in enumerate(draft.sections):
         for j, claim in enumerate(section.claims):
             if not claim.citations:
                 continue
             item = CitationItem(
-                f"{pid}-{tag}-s{i}c{j}", claim.text, cited_sources(state, claim.citations)
+                f"{pid}-{tag}-s{i}c{j}", claim.text, cited_sources(state, claim.citations), platform
             )
             grade = await grade_citation(ctx, item, "neutral", level)
             verdicts.append(independent(grade, drafters).verdict)
@@ -371,6 +388,10 @@ async def run_counterfactual(mode: str, repeats: int) -> dict[str, Any]:
                     "differs_in": differs,
                     "recommendation_a": oa["recommendation"],
                     "recommendation_b": ob["recommendation"],
+                    "error_a": oa["error"],
+                    "error_b": ob["error"],
+                    "triggered_a": oa["triggered"],
+                    "triggered_b": ob["triggered"],
                     "reached_model": reached_model(a, pair["a"]) and reached_model(b, pair["b"]),
                 }
             )

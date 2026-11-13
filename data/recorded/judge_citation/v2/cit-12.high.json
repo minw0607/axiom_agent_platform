@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_citation",
+  "prompt_version": "v2",
+  "prompt_sha256": "01745f7e1638c35f97b5933a72abd543e111ad3edc5648881b0e551a8f0d259c",
+  "input_tokens": 1262,
+  "output_tokens": 57,
+  "text": "{\"verdict\":\"supported\",\"reason\":\"The cited FY2025 income statement lines support revenue 12,465,600, EBITDA 1,745,184, interest expense 84,000, and net income 1,035,888.\"}"
+}

@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_citation",
+  "prompt_version": "v2",
+  "prompt_sha256": "014097ffa2b2fc79e61efc624767d1e64eb0fd852ff86dacf0078db522afd71b",
+  "input_tokens": 1244,
+  "output_tokens": 62,
+  "text": "{\"verdict\":\"not_supported\",\"reason\":\"The 2025 revenue figure in the claim (15334666) is not supported by the cited revenue row, which shows 13,801,200, though the EBITDA, interest expense, and net income figures are supported.\"}"
+}

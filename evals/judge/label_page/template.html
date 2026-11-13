@@ -93,7 +93,8 @@ textarea { font: .9rem var(--sans); width: 100%; min-height: 2.4rem; resize: ver
       <div class="rule">
         <h3>Citation items: are the source lines enough?</h3>
         <p>Read the claim, then only the grey source lines under it. Ignore anything you know from elsewhere.</p>
-        <p><span class="tag yes">Supported</span> every number and every statement in the claim is in those lines, or follows directly from them. A number written without commas, or rounded (13.8 million for 13,801,200), still counts. A ratio the claim says was "computed by the platform's tools" counts if the figures it rests on are among the lines; you don't need to recompute it.</p>
+        <p>Some claims are about what the platform calculated: a ratio, a risk flag, a reconciliation result. Check those against the <strong>platform outputs</strong> box instead of the document lines.</p>
+        <p><span class="tag yes">Supported</span> every number and every statement in the claim is in those lines (or, for calculated results, in the platform outputs), or follows directly from them. A number written without commas, or rounded (13.8 million for 13,801,200), still counts. A ratio the claim says was "computed by the platform's tools" counts if the figures it rests on are among the lines; you don't need to recompute it.</p>
         <p><span class="tag no">Not supported</span> any part is missing, wrong or needs another source: a number that differs, a row that isn't the one the claim talks about, or a statement the lines can't show, such as "no risk flags were raised" or "revenue grew every year".</p>
         <p class="example"><strong>Example:</strong> "FY2025 revenue was 13801200" citing the revenue row that ends 13,801,200 is supported. The same claim citing the EBITDA row is not.</p>
       </div>
@@ -182,7 +183,11 @@ function card(item, index) {
   const body = item.type === "citation"
     ? [el("p", { class: "q", text: "Do these source lines support every factual part of the claim?" }),
        el("p", { class: "claim", text: item.claim }),
-       el("div", { class: "src" }, ...item.sources.map((s) => el("div", {}, el("span", { class: "ref", text: `${s.doc_id} · ${s.locator}` }), el("code", { text: s.text }))))]
+       el("div", { class: "src" }, ...item.sources.map((s) => el("div", {}, el("span", { class: "ref", text: `${s.doc_id} · ${s.locator}` }), el("code", { text: s.text })))),
+       item.platform && item.platform.length
+         ? el("details", {}, el("summary", { text: "Platform outputs (ratios, risk flags, checks, policy thresholds)" }),
+             el("ul", { class: "memo" }, ...item.platform.map((l) => el("li", { text: l }))))
+         : null]
     : [el("p", { class: "q", text: "Does the memo state this finding?" }),
        el("p", { class: "finding", text: item.finding }),
        el("details", {}, el("summary", { text: `Read the memo (${item.memo.length} claims)` }),

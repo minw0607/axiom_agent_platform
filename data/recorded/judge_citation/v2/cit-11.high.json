@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_citation",
+  "prompt_version": "v2",
+  "prompt_sha256": "4b4964d87e320b3049d5e5e97c309f5607a283826a415c99d3f0b8e3f3be0643",
+  "input_tokens": 1261,
+  "output_tokens": 61,
+  "text": "{\"verdict\":\"not_supported\",\"reason\":\"No policy risk flags is supported, but the claim that revenue has grown in every year since the business was founded is not supported by the cited sources because they only show three years of revenue, not the full history since founding.\"}"
+}

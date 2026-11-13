@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_citation",
+  "prompt_version": "v2",
+  "prompt_sha256": "ed260c52db423bbd17732a78fa804fa6ea0c2f117a0ae188e3cf5ee5791edf20",
+  "input_tokens": 998,
+  "output_tokens": 45,
+  "text": "{\"verdict\":\"not_supported\",\"reason\":\"The source supports only FY2025 net income 355,440; revenue, EBITDA, and interest expense are not shown in the provided sources.\"}"
+}

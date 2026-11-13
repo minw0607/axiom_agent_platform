@@ -5,6 +5,6 @@
   "prompt_version": "v1",
   "prompt_sha256": "b737579e6f1dc787d31c00557500abd80a0cc9f9cbbb2ca7ba0753dd8752512e",
   "input_tokens": 715,
-  "output_tokens": 59,
-  "text": "{\"verdict\":\"covered\",\"reason\":\"The memo states that in 2024 total assets of 5,578,000 exceed total liabilities plus equity of 5,528,000 by 50,000, which means the balance sheet does not balance.\"}"
+  "output_tokens": 42,
+  "text": "{\"verdict\":\"covered\",\"reason\":\"The memo states that the 2024 balance sheet reconciliation failed because total assets differed from total liabilities plus equity by 50,000.\"}"
 }

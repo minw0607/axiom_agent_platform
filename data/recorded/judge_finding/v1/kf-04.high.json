@@ -5,6 +5,6 @@
   "prompt_version": "v1",
   "prompt_sha256": "7b7c742885c0689dcc3bd62ccc7b84133afd519b176cdb77562ef874ae227350",
   "input_tokens": 739,
-  "output_tokens": 41,
-  "text": "{\"verdict\":\"not_covered\",\"reason\":\"The memo provides only FY2025 data and does not state that two fiscal years are provided or that three are required.\"}"
+  "output_tokens": 46,
+  "text": "{\"verdict\":\"not_covered\",\"reason\":\"The memo provides only FY2025 financials and ratios, with no statement that 2 fiscal years are provided or that 3 are required.\"}"
 }

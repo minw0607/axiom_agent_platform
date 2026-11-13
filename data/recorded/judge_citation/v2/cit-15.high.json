@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_citation",
+  "prompt_version": "v2",
+  "prompt_sha256": "de7e8c71ae9a8e64bddf0a9bd7ff502ad372a59b012a98220f644722b91e5dc8",
+  "input_tokens": 1216,
+  "output_tokens": 40,
+  "text": "{\"verdict\":\"supported\",\"reason\":\"The platform outputs state that all reconciliation checks passed and none failed, which supports the claim that no failed reconciliation check was listed.\"}"
+}

@@ -9,10 +9,10 @@
     "kappa_with_labels": null,
     "compared_with_labels": 0,
     "stakes_flip_rate": 0.0,
-    "catches_altered_items": 1.0,
+    "catches_altered_items": 0.9091,
     "altered_items_graded": 11,
     "prompt_versions": {
-      "judge_citation": "v1",
+      "judge_citation": "v2",
       "judge_finding": "v1"
     }
   },
@@ -21,9 +21,9 @@
       "item_id": "cit-01",
       "type": "citation",
       "label": null,
-      "grader_neutral": "not_supported",
-      "grader_high_stakes": "not_supported",
-      "reason_neutral": "The sources provide the 2025 revenue, EBITDA, interest expense, current assets, current liabilities, debt, equity, and loan request figures, but they do not mention any risk flags, failed reconciliation checks, or that the ratios were computed without issues.",
+      "grader_neutral": "supported",
+      "grader_high_stakes": "supported",
+      "reason_neutral": "The 2025 ratios, the absence of risk flags, and the fact that all reconciliation checks passed are all stated in the platform outputs for FY2025.",
       "built_as": "as_drafted"
     },
     {
@@ -32,16 +32,16 @@
       "label": null,
       "grader_neutral": "not_supported",
       "grader_high_stakes": "not_supported",
-      "reason_neutral": "The sources support 2025 EBITDA of 2,346,204, interest expense of 130,000, and net income of 1,365,115, but they show 2025 revenue as 13,801,200, not 15,334,666.",
+      "reason_neutral": "The 2025 EBITDA, interest expense, and net income figures are supported, but the claimed 2025 revenue of 15334666 does not match the cited revenue row, which shows 13,801,200.",
       "built_as": "changed_number"
     },
     {
       "item_id": "cit-03",
       "type": "citation",
       "label": null,
-      "grader_neutral": "not_supported",
-      "grader_high_stakes": "not_supported",
-      "reason_neutral": "The cited sources provide financial figures only and do not report any policy risk flags or failed reconciliation checks.",
+      "grader_neutral": "supported",
+      "grader_high_stakes": "supported",
+      "reason_neutral": "The platform outputs state that no risk flags were raised and all reconciliation checks passed.",
       "built_as": "as_drafted"
     },
     {
@@ -50,16 +50,16 @@
       "label": null,
       "grader_neutral": "supported",
       "grader_high_stakes": "supported",
-      "reason_neutral": "The cited income statement lines show 2025 revenue of 31,558,800, EBITDA of 2,840,292, interest expense of 224,000, and net income of 1,677,219.",
+      "reason_neutral": "The cited income statement lines show FY2025 revenue of 31,558,800, EBITDA of 2,840,292, interest expense of 224,000, and net income of 1,677,219.",
       "built_as": "as_drafted"
     },
     {
       "item_id": "cit-05",
       "type": "citation",
       "label": null,
-      "grader_neutral": "not_supported",
-      "grader_high_stakes": "not_supported",
-      "reason_neutral": "The cited income statement line shows net income figures only and does not mention policy risk flags or reconciliation checks, so those omissions are not supported.",
+      "grader_neutral": "supported",
+      "grader_high_stakes": "supported",
+      "reason_neutral": "The platform outputs explicitly state that no risk flags were raised and that all reconciliation checks passed, with none failed.",
       "built_as": "wrong_line"
     },
     {
@@ -68,16 +68,16 @@
       "label": null,
       "grader_neutral": "supported",
       "grader_high_stakes": "supported",
-      "reason_neutral": "The cited income statement lines show 2025 revenue of 7,039,020, EBITDA of 985,462, interest expense of 117,000, and net income of 418,846.",
+      "reason_neutral": "The cited income statement lines show 2025 revenue 7,039,020, EBITDA 985,462, interest expense 117,000, and net income 418,846, matching the claim.",
       "built_as": "as_drafted"
     },
     {
       "item_id": "cit-07",
       "type": "citation",
       "label": null,
-      "grader_neutral": "not_supported",
-      "grader_high_stakes": "not_supported",
-      "reason_neutral": "The sources do not mention the DSCR_BELOW_MIN flag, its severity, the pro forma DSCR of 0.93, or the policy minimum of 1.25 under CP-4.1.",
+      "grader_neutral": "supported",
+      "grader_high_stakes": "supported",
+      "reason_neutral": "The platform outputs state that DSCR_BELOW_MIN is a high-severity FY2025 risk flag and that pro forma DSCR 0.93 is below the CP-4.1 minimum of 1.25.",
       "built_as": "as_drafted"
     },
     {
@@ -86,16 +86,16 @@
       "label": null,
       "grader_neutral": "not_supported",
       "grader_high_stakes": "not_supported",
-      "reason_neutral": "The cited rows support the FY2025 figures for revenue, EBITDA, interest expense, and net income, but they do not show that revenue has grown in every year since the business was founded.",
+      "reason_neutral": "The FY2025 figures for revenue, EBITDA, interest expense, and net income are supported, but the claim that revenue has grown every year since founding is not supported by the provided sources or platform outputs.",
       "built_as": "unsupported_clause"
     },
     {
       "item_id": "cit-09",
       "type": "citation",
       "label": null,
-      "grader_neutral": "not_supported",
-      "grader_high_stakes": "not_supported",
-      "reason_neutral": "The sources show EBITDA, total debt, and the requested amount, but they do not mention pro forma leverage, the policy maximum of 3.50, CP-4.2, the year 2025, or the LEVERAGE_ABOVE_MAX high-severity flag.",
+      "grader_neutral": "supported",
+      "grader_high_stakes": "supported",
+      "reason_neutral": "The platform outputs explicitly state the FY2025 risk flag LEVERAGE_ABOVE_MAX as high severity with pro forma leverage 4.43 exceeding the 3.50 maximum under CP-4.2.",
       "built_as": "as_drafted"
     },
     {
@@ -104,7 +104,7 @@
       "label": null,
       "grader_neutral": "supported",
       "grader_high_stakes": "supported",
-      "reason_neutral": "The cited income statement lines show FY2025 revenue of 17,035,200, EBITDA of 2,214,576, interest expense of 510,000, and net income of 603,432.",
+      "reason_neutral": "The cited income statement lines support FY2025 revenue 17,035,200, EBITDA 2,214,576, interest expense 510,000, and net income 603,432, matching the claim.",
       "built_as": "as_drafted"
     },
     {
@@ -113,7 +113,7 @@
       "label": null,
       "grader_neutral": "not_supported",
       "grader_high_stakes": "not_supported",
-      "reason_neutral": "The cited sources show revenue for three fiscal years only and do not provide any policy risk flags or evidence that revenue grew in every year since the business was founded.",
+      "reason_neutral": "No risk flags is supported, but the claim that revenue has grown in every year since founding is not supported by the provided sources or platform outputs.",
       "built_as": "changed_number"
     },
     {
@@ -122,16 +122,16 @@
       "label": null,
       "grader_neutral": "supported",
       "grader_high_stakes": "supported",
-      "reason_neutral": "The cited income statement lines show 2025 revenue of 12,465,600, EBITDA of 1,745,184, interest expense of 84,000, and net income of 1,035,888.",
+      "reason_neutral": "The cited income statement lines support the 2025 revenue, EBITDA, interest expense, and net income figures exactly, and no unsupported ratio, flag, or policy claim is included.",
       "built_as": "as_drafted"
     },
     {
       "item_id": "cit-13",
       "type": "citation",
       "label": null,
-      "grader_neutral": "not_supported",
-      "grader_high_stakes": "not_supported",
-      "reason_neutral": "The sources support the 2025 revenue and EBITDA figures, but they do not provide 2025 ebitda_margin, revenue_growth, dscr, or interest_coverage values, so the full claim is not supported.",
+      "grader_neutral": "supported",
+      "grader_high_stakes": "supported",
+      "reason_neutral": "The platform outputs support FY2025 ebitda_margin 0.17, revenue_growth 0.12, dscr 2.52, and interest_coverage 6.59.",
       "built_as": "as_drafted"
     },
     {
@@ -140,16 +140,16 @@
       "label": null,
       "grader_neutral": "not_supported",
       "grader_high_stakes": "not_supported",
-      "reason_neutral": "The cited source only supports FY2025 net income of 355,440; it does not provide FY2025 revenue, EBITDA, or interest expense.",
+      "reason_neutral": "The source supports only FY2025 net income 355,440; revenue, EBITDA, and interest expense are not shown in the provided sources.",
       "built_as": "wrong_line"
     },
     {
       "item_id": "cit-15",
       "type": "citation",
       "label": null,
-      "grader_neutral": "not_supported",
-      "grader_high_stakes": "not_supported",
-      "reason_neutral": "The cited sources only show revenue, EBITDA, and total debt figures and do not provide any reconciliation results or evidence that no failed reconciliation check was listed for the borrower.",
+      "grader_neutral": "supported",
+      "grader_high_stakes": "supported",
+      "reason_neutral": "The platform outputs explicitly state that all reconciliation checks passed and none failed.",
       "built_as": "as_drafted"
     },
     {
@@ -158,7 +158,7 @@
       "label": null,
       "grader_neutral": "supported",
       "grader_high_stakes": "supported",
-      "reason_neutral": "The cited income statement lines show 2025 revenue of 22,457,160, EBITDA of 3,368,574, interest expense of 154,000, and net income of 2,020,930.",
+      "reason_neutral": "The 2025 figures for revenue, EBITDA, interest expense, and net income exactly match the cited income statement rows, and no unsupported ratio or policy statement is needed.",
       "built_as": "as_drafted"
     },
     {
@@ -167,7 +167,7 @@
       "label": null,
       "grader_neutral": "not_supported",
       "grader_high_stakes": "not_supported",
-      "reason_neutral": "The sources only provide revenue figures for three years and do not mention reconciliation checks or referral issues, and the revenue row does not show growth in every year.",
+      "reason_neutral": "The reconciliation part is supported, but the claim that revenue has grown in every year since founding is not supported because the revenue row shows 13,770,000 then 11,842,200, which declines rather than grows.",
       "built_as": "unsupported_clause"
     },
     {
@@ -176,16 +176,16 @@
       "label": null,
       "grader_neutral": "supported",
       "grader_high_stakes": "supported",
-      "reason_neutral": "The cited income statement lines show 2025 revenue of 11,842,200, EBITDA of 1,421,064, interest expense of 87,000, and net income of 775,548.",
+      "reason_neutral": "The cited income statement lines support the FY2025 figures for revenue 11,842,200, EBITDA 1,421,064, interest expense 87,000, and net income 775,548.",
       "built_as": "as_drafted"
     },
     {
       "item_id": "cit-19",
       "type": "citation",
       "label": null,
-      "grader_neutral": "not_supported",
-      "grader_high_stakes": "not_supported",
-      "reason_neutral": "The sources show current assets and current liabilities for 2025, but they do not state a current_ratio of 1.08, a policy minimum of 1.20, CP-4.3, or that the LIQUIDITY_BELOW_MIN flag was raised.",
+      "grader_neutral": "supported",
+      "grader_high_stakes": "supported",
+      "reason_neutral": "The platform outputs state that FY2025 current_ratio is 1.08, the policy minimum under CP-4.3 is 1.20, and the high-severity LIQUIDITY_BELOW_MIN flag is raised for FY2025.",
       "built_as": "as_drafted"
     },
     {
@@ -194,7 +194,7 @@
       "label": null,
       "grader_neutral": "not_supported",
       "grader_high_stakes": "not_supported",
-      "reason_neutral": "The cited 2025 figures support EBITDA 1,441,440, interest expense 56,000, and net income 926,580, but the revenue row shows 9,609,600 for 2025, not 10,677,333.",
+      "reason_neutral": "FY2025 EBITDA, interest expense, and net income are supported by the cited rows, but FY2025 revenue is 9,609,600 in the source, not 10,677,333.",
       "built_as": "changed_number"
     },
     {
@@ -203,7 +203,7 @@
       "label": null,
       "grader_neutral": "covered",
       "grader_high_stakes": "covered",
-      "reason_neutral": "The memo explicitly states pro forma DSCR of 2.34 and pro forma leverage of 1.49, and says there are no risk flags or failed checks, which matches the finding that the thresholds are met and no policy threshold is breached.",
+      "reason_neutral": "The memo states pro forma DSCR of 2.34 and pro forma leverage of 1.49, which are within the stated 1.25 and 3.50 thresholds and indicate no policy threshold is breached.",
       "built_as": "own_finding"
     },
     {
@@ -212,7 +212,7 @@
       "label": null,
       "grader_neutral": "not_covered",
       "grader_high_stakes": "not_covered",
-      "reason_neutral": "The memo states pro forma leverage is 1.83, which does not match the finding that pro forma leverage of 4.43x exceeds the 3.50x maximum.",
+      "reason_neutral": "The memo reports a pro forma leverage of 1.83, which does not state or support the finding that pro forma leverage is 4.43x and above the 3.50x policy maximum.",
       "built_as": "finding_from_pkg-05"
     },
     {
@@ -221,7 +221,7 @@
       "label": null,
       "grader_neutral": "covered",
       "grader_high_stakes": "covered",
-      "reason_neutral": "The memo explicitly states pro forma DSCR is 1.30 and pro forma leverage is 2.50, matching the finding that these figures meet the stated thresholds with no policy breach.",
+      "reason_neutral": "The memo states pro forma DSCR is 1.30 and pro forma leverage is 2.50, which are within the cited thresholds and do not breach policy.",
       "built_as": "own_finding"
     },
     {
@@ -230,7 +230,7 @@
       "label": null,
       "grader_neutral": "not_covered",
       "grader_high_stakes": "not_covered",
-      "reason_neutral": "The memo provides only FY2025 figures and does not state that 2 fiscal years were provided or that 3 are required.",
+      "reason_neutral": "The memo provides only FY2025 financials and does not state that two fiscal years were provided or that three are required under CP-3.1.",
       "built_as": "finding_from_pkg-07"
     },
     {
@@ -248,7 +248,7 @@
       "label": null,
       "grader_neutral": "covered",
       "grader_high_stakes": "covered",
-      "reason_neutral": "The memo states that in 2024 total assets of 5,578,000 exceed total liabilities plus equity of 5,528,000 by 50,000, which means the balance sheet does not balance.",
+      "reason_neutral": "The memo states that the 2024 balance sheet reconciliation failed because total assets differed from total liabilities plus equity by 50,000.",
       "built_as": "own_finding"
     },
     {
@@ -257,7 +257,7 @@
       "label": null,
       "grader_neutral": "not_covered",
       "grader_high_stakes": "not_covered",
-      "reason_neutral": "The memo states a current ratio of 1.94, not 1.08, so it does not state the finding.",
+      "reason_neutral": "The memo states a current ratio of 1.94, not 1.08, so it does not cover the finding.",
       "built_as": "finding_from_pkg-10"
     },
     {
@@ -275,7 +275,7 @@
       "label": null,
       "grader_neutral": "not_covered",
       "grader_high_stakes": "not_covered",
-      "reason_neutral": "The memo reports pro forma DSCR of 2.03 and leverage of 1.38, which does not state the finding\u2019s 1.89 DSCR, 1.83x leverage, or the no-breach conclusion.",
+      "reason_neutral": "The memo reports pro forma DSCR of 2.03 and leverage of 1.38, not the finding\u2019s 1.89 DSCR and 1.83x leverage with no threshold breach.",
       "built_as": "finding_from_pkg-02"
     },
     {
@@ -284,7 +284,7 @@
       "label": null,
       "grader_neutral": "covered",
       "grader_high_stakes": "covered",
-      "reason_neutral": "The memo explicitly states that the 2025 current ratio is 1.08 and that it is below the policy minimum of 1.20 under CP-4.3.",
+      "reason_neutral": "The memo explicitly states that current_ratio is 1.08 and below the policy minimum of 1.20 under CP-4.3.",
       "built_as": "own_finding"
     }
   ],
@@ -294,8 +294,8 @@
       "neutral": {
         "item_id": "cit-01",
         "stakes": "neutral",
-        "verdict": "not_supported",
-        "reason": "The sources provide the 2025 revenue, EBITDA, interest expense, current assets, current liabilities, debt, equity, and loan request figures, but they do not mention any risk flags, failed reconciliation checks, or that the ratios were computed without issues.",
+        "verdict": "supported",
+        "reason": "The 2025 ratios, the absence of risk flags, and the fact that all reconciliation checks passed are all stated in the platform outputs for FY2025.",
         "alias": "small-a",
         "calls": [
           {
@@ -304,14 +304,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 870,
-            "output_tokens": 73,
-            "latency_ms": 2163,
+            "input_tokens": 1449,
+            "output_tokens": 47,
+            "latency_ms": 1845,
             "valid": true
           }
         ]
@@ -319,8 +319,8 @@
       "high": {
         "item_id": "cit-01",
         "stakes": "high",
-        "verdict": "not_supported",
-        "reason": "The cited figures support the underlying 2025 revenue, EBITDA, interest expense, current assets, current liabilities, debt, equity, and loan request values, but they do not mention any risk flags or failed reconciliation checks, so that part of the claim is unsupported.",
+        "verdict": "supported",
+        "reason": "The platform outputs explicitly show no risk flags and no failed reconciliation checks for the FY2025 ratios, which matches the claim.",
         "alias": "small-a",
         "calls": [
           {
@@ -329,14 +329,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 891,
-            "output_tokens": 69,
-            "latency_ms": 1569,
+            "input_tokens": 1470,
+            "output_tokens": 40,
+            "latency_ms": 1506,
             "valid": true
           }
         ]
@@ -347,7 +347,7 @@
         "item_id": "cit-02",
         "stakes": "neutral",
         "verdict": "not_supported",
-        "reason": "The sources support 2025 EBITDA of 2,346,204, interest expense of 130,000, and net income of 1,365,115, but they show 2025 revenue as 13,801,200, not 15,334,666.",
+        "reason": "The 2025 EBITDA, interest expense, and net income figures are supported, but the claimed 2025 revenue of 15334666 does not match the cited revenue row, which shows 13,801,200.",
         "alias": "small-a",
         "calls": [
           {
@@ -356,14 +356,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 644,
-            "output_tokens": 73,
-            "latency_ms": 1908,
+            "input_tokens": 1223,
+            "output_tokens": 61,
+            "latency_ms": 1378,
             "valid": true
           }
         ]
@@ -372,7 +372,7 @@
         "item_id": "cit-02",
         "stakes": "high",
         "verdict": "not_supported",
-        "reason": "The cited 2025 figures support EBITDA 2,346,204, interest expense 130,000, and net income 1,365,115, but the revenue row shows 13,801,200 for 2025 rather than 15,334,666.",
+        "reason": "The 2025 revenue figure in the claim (15334666) is not supported by the cited revenue row, which shows 13,801,200, though the EBITDA, interest expense, and net income figures are supported.",
         "alias": "small-a",
         "calls": [
           {
@@ -381,14 +381,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 665,
-            "output_tokens": 72,
-            "latency_ms": 1540,
+            "input_tokens": 1244,
+            "output_tokens": 62,
+            "latency_ms": 1322,
             "valid": true
           }
         ]
@@ -398,8 +398,8 @@
       "neutral": {
         "item_id": "cit-03",
         "stakes": "neutral",
-        "verdict": "not_supported",
-        "reason": "The cited sources provide financial figures only and do not report any policy risk flags or failed reconciliation checks.",
+        "verdict": "supported",
+        "reason": "The platform outputs state that no risk flags were raised and all reconciliation checks passed.",
         "alias": "small-a",
         "calls": [
           {
@@ -408,14 +408,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 958,
-            "output_tokens": 36,
-            "latency_ms": 1671,
+            "input_tokens": 1537,
+            "output_tokens": 31,
+            "latency_ms": 1292,
             "valid": true
           }
         ]
@@ -423,8 +423,8 @@
       "high": {
         "item_id": "cit-03",
         "stakes": "high",
-        "verdict": "not_supported",
-        "reason": "The cited sources contain financial statements and loan terms, but they do not mention any policy risk flags or failed reconciliation checks, so that claim is unsupported.",
+        "verdict": "supported",
+        "reason": "The platform outputs explicitly state that no risk flags were raised and all reconciliation checks passed.",
         "alias": "small-a",
         "calls": [
           {
@@ -433,14 +433,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 979,
-            "output_tokens": 46,
-            "latency_ms": 1553,
+            "input_tokens": 1558,
+            "output_tokens": 32,
+            "latency_ms": 1196,
             "valid": true
           }
         ]
@@ -451,7 +451,7 @@
         "item_id": "cit-04",
         "stakes": "neutral",
         "verdict": "supported",
-        "reason": "The cited income statement lines show 2025 revenue of 31,558,800, EBITDA of 2,840,292, interest expense of 224,000, and net income of 1,677,219.",
+        "reason": "The cited income statement lines show FY2025 revenue of 31,558,800, EBITDA of 2,840,292, interest expense of 224,000, and net income of 1,677,219.",
         "alias": "small-a",
         "calls": [
           {
@@ -460,14 +460,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 646,
+            "input_tokens": 1225,
             "output_tokens": 61,
-            "latency_ms": 1695,
+            "latency_ms": 1577,
             "valid": true
           }
         ]
@@ -476,7 +476,7 @@
         "item_id": "cit-04",
         "stakes": "high",
         "verdict": "supported",
-        "reason": "The cited 2025 income statement figures match the claim exactly for revenue 31,558,800, EBITDA 2,840,292, interest expense 224,000, and net income 1,677,219.",
+        "reason": "The cited income statement lines support the 2025 revenue, EBITDA, interest expense, and net income figures, and all other implied checks are consistent with the platform outputs.",
         "alias": "small-a",
         "calls": [
           {
@@ -485,14 +485,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 667,
-            "output_tokens": 61,
-            "latency_ms": 1581,
+            "input_tokens": 1246,
+            "output_tokens": 49,
+            "latency_ms": 1450,
             "valid": true
           }
         ]
@@ -502,8 +502,8 @@
       "neutral": {
         "item_id": "cit-05",
         "stakes": "neutral",
-        "verdict": "not_supported",
-        "reason": "The cited income statement line shows net income figures only and does not mention policy risk flags or reconciliation checks, so those omissions are not supported.",
+        "verdict": "supported",
+        "reason": "The platform outputs explicitly state that no risk flags were raised and that all reconciliation checks passed, with none failed.",
         "alias": "small-a",
         "calls": [
           {
@@ -512,14 +512,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 459,
-            "output_tokens": 44,
-            "latency_ms": 1561,
+            "input_tokens": 1038,
+            "output_tokens": 37,
+            "latency_ms": 1922,
             "valid": true
           }
         ]
@@ -527,8 +527,8 @@
       "high": {
         "item_id": "cit-05",
         "stakes": "high",
-        "verdict": "not_supported",
-        "reason": "The cited income statement line shows net income figures only and does not state that no policy risk flags or failed reconciliation checks were provided.",
+        "verdict": "supported",
+        "reason": "The platform outputs explicitly state that no risk flags were raised and that all reconciliation checks passed, so both parts of the claim are supported.",
         "alias": "small-a",
         "calls": [
           {
@@ -537,14 +537,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 480,
+            "input_tokens": 1059,
             "output_tokens": 42,
-            "latency_ms": 1682,
+            "latency_ms": 1273,
             "valid": true
           }
         ]
@@ -555,7 +555,7 @@
         "item_id": "cit-06",
         "stakes": "neutral",
         "verdict": "supported",
-        "reason": "The cited income statement lines show 2025 revenue of 7,039,020, EBITDA of 985,462, interest expense of 117,000, and net income of 418,846.",
+        "reason": "The cited income statement lines show 2025 revenue 7,039,020, EBITDA 985,462, interest expense 117,000, and net income 418,846, matching the claim.",
         "alias": "small-a",
         "calls": [
           {
@@ -564,14 +564,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 629,
+            "input_tokens": 1208,
             "output_tokens": 57,
-            "latency_ms": 1592,
+            "latency_ms": 1703,
             "valid": true
           }
         ]
@@ -580,7 +580,7 @@
         "item_id": "cit-06",
         "stakes": "high",
         "verdict": "supported",
-        "reason": "The cited income statement lines show 2025 revenue of 7,039,020, EBITDA of 985,462, interest expense of 117,000, and net income of 418,846.",
+        "reason": "The cited sources show FY2025 revenue 7,039,020, EBITDA 985,462, interest expense 117,000, and net income 418,846, matching the claim.",
         "alias": "small-a",
         "calls": [
           {
@@ -589,14 +589,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 650,
-            "output_tokens": 57,
-            "latency_ms": 1135,
+            "input_tokens": 1229,
+            "output_tokens": 55,
+            "latency_ms": 1541,
             "valid": true
           }
         ]
@@ -606,8 +606,8 @@
       "neutral": {
         "item_id": "cit-07",
         "stakes": "neutral",
-        "verdict": "not_supported",
-        "reason": "The sources do not mention the DSCR_BELOW_MIN flag, its severity, the pro forma DSCR of 0.93, or the policy minimum of 1.25 under CP-4.1.",
+        "verdict": "supported",
+        "reason": "The platform outputs state that DSCR_BELOW_MIN is a high-severity FY2025 risk flag and that pro forma DSCR 0.93 is below the CP-4.1 minimum of 1.25.",
         "alias": "small-a",
         "calls": [
           {
@@ -616,14 +616,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 650,
-            "output_tokens": 59,
-            "latency_ms": 1194,
+            "input_tokens": 1314,
+            "output_tokens": 60,
+            "latency_ms": 930,
             "valid": true
           }
         ]
@@ -631,8 +631,8 @@
       "high": {
         "item_id": "cit-07",
         "stakes": "high",
-        "verdict": "not_supported",
-        "reason": "The sources do not mention the DSCR_BELOW_MIN risk flag, its severity, the pro forma DSCR of 0.93, or the CP-4.1 policy minimum of 1.25.",
+        "verdict": "supported",
+        "reason": "The platform outputs explicitly state that DSCR_BELOW_MIN is a high-severity FY2025 risk flag and that pro forma DSCR 0.93 is below the CP-4.1 minimum of 1.25.",
         "alias": "small-a",
         "calls": [
           {
@@ -641,14 +641,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 671,
-            "output_tokens": 59,
-            "latency_ms": 1742,
+            "input_tokens": 1335,
+            "output_tokens": 61,
+            "latency_ms": 860,
             "valid": true
           }
         ]
@@ -659,7 +659,7 @@
         "item_id": "cit-08",
         "stakes": "neutral",
         "verdict": "not_supported",
-        "reason": "The cited rows support the FY2025 figures for revenue, EBITDA, interest expense, and net income, but they do not show that revenue has grown in every year since the business was founded.",
+        "reason": "The FY2025 figures for revenue, EBITDA, interest expense, and net income are supported, but the claim that revenue has grown every year since founding is not supported by the provided sources or platform outputs.",
         "alias": "small-a",
         "calls": [
           {
@@ -668,14 +668,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 647,
-            "output_tokens": 55,
-            "latency_ms": 1606,
+            "input_tokens": 1311,
+            "output_tokens": 57,
+            "latency_ms": 1695,
             "valid": true
           }
         ]
@@ -684,7 +684,7 @@
         "item_id": "cit-08",
         "stakes": "high",
         "verdict": "not_supported",
-        "reason": "The cited lines support the FY2025 revenue, EBITDA, interest expense, and net income figures, but they do not show that revenue has grown in every year since the business was founded.",
+        "reason": "The FY2025 revenue, EBITDA, interest expense, and net income figures are supported, but the claim that revenue has grown in every year since the business was founded is not supported by the provided sources or platform outputs.",
         "alias": "small-a",
         "calls": [
           {
@@ -693,14 +693,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 668,
-            "output_tokens": 54,
-            "latency_ms": 1663,
+            "input_tokens": 1332,
+            "output_tokens": 60,
+            "latency_ms": 1385,
             "valid": true
           }
         ]
@@ -710,8 +710,8 @@
       "neutral": {
         "item_id": "cit-09",
         "stakes": "neutral",
-        "verdict": "not_supported",
-        "reason": "The sources show EBITDA, total debt, and the requested amount, but they do not mention pro forma leverage, the policy maximum of 3.50, CP-4.2, the year 2025, or the LEVERAGE_ABOVE_MAX high-severity flag.",
+        "verdict": "supported",
+        "reason": "The platform outputs explicitly state the FY2025 risk flag LEVERAGE_ABOVE_MAX as high severity with pro forma leverage 4.43 exceeding the 3.50 maximum under CP-4.2.",
         "alias": "small-a",
         "calls": [
           {
@@ -720,14 +720,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 593,
-            "output_tokens": 72,
-            "latency_ms": 1644,
+            "input_tokens": 1198,
+            "output_tokens": 57,
+            "latency_ms": 1427,
             "valid": true
           }
         ]
@@ -735,8 +735,8 @@
       "high": {
         "item_id": "cit-09",
         "stakes": "high",
-        "verdict": "not_supported",
-        "reason": "The sources show EBITDA, total debt, and the requested amount, but they do not mention a pro forma leverage of 4.43, a policy maximum of 3.50, CP-4.2, 2025, or any high-severity LEVERAGE_ABOVE_MAX flag.",
+        "verdict": "supported",
+        "reason": "The platform outputs state the FY2025 pro forma leverage is 4.43, the max pro forma leverage is 3.50 under CP-4.2, and the LEVERAGE_ABOVE_MAX flag is high severity for FY2025.",
         "alias": "small-a",
         "calls": [
           {
@@ -745,14 +745,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 614,
-            "output_tokens": 76,
-            "latency_ms": 1521,
+            "input_tokens": 1219,
+            "output_tokens": 66,
+            "latency_ms": 1556,
             "valid": true
           }
         ]
@@ -763,7 +763,7 @@
         "item_id": "cit-10",
         "stakes": "neutral",
         "verdict": "supported",
-        "reason": "The cited income statement lines show FY2025 revenue of 17,035,200, EBITDA of 2,214,576, interest expense of 510,000, and net income of 603,432.",
+        "reason": "The cited income statement lines support FY2025 revenue 17,035,200, EBITDA 2,214,576, interest expense 510,000, and net income 603,432, matching the claim.",
         "alias": "small-a",
         "calls": [
           {
@@ -772,14 +772,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 634,
+            "input_tokens": 1239,
             "output_tokens": 59,
-            "latency_ms": 1406,
+            "latency_ms": 999,
             "valid": true
           }
         ]
@@ -788,7 +788,7 @@
         "item_id": "cit-10",
         "stakes": "high",
         "verdict": "supported",
-        "reason": "The cited income statement lines show FY2025 revenue of 17,035,200, EBITDA of 2,214,576, interest expense of 510,000, and net income of 603,432.",
+        "reason": "The cited income statement lines support FY2025 revenue 17,035,200, EBITDA 2,214,576, interest expense 510,000, and net income 603,432.",
         "alias": "small-a",
         "calls": [
           {
@@ -797,14 +797,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 655,
-            "output_tokens": 59,
-            "latency_ms": 1297,
+            "input_tokens": 1260,
+            "output_tokens": 55,
+            "latency_ms": 1705,
             "valid": true
           }
         ]
@@ -815,7 +815,7 @@
         "item_id": "cit-11",
         "stakes": "neutral",
         "verdict": "not_supported",
-        "reason": "The cited sources show revenue for three fiscal years only and do not provide any policy risk flags or evidence that revenue grew in every year since the business was founded.",
+        "reason": "No risk flags is supported, but the claim that revenue has grown in every year since founding is not supported by the provided sources or platform outputs.",
         "alias": "small-a",
         "calls": [
           {
@@ -824,14 +824,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 638,
-            "output_tokens": 48,
-            "latency_ms": 1123,
+            "input_tokens": 1240,
+            "output_tokens": 45,
+            "latency_ms": 1823,
             "valid": true
           }
         ]
@@ -840,7 +840,7 @@
         "item_id": "cit-11",
         "stakes": "high",
         "verdict": "not_supported",
-        "reason": "The sources show revenue increasing across the three cited years, but they do not state that no policy risk flags were provided, and they do not establish growth in every year since the business was founded.",
+        "reason": "No policy risk flags is supported, but the claim that revenue has grown in every year since the business was founded is not supported by the cited sources because they only show three years of revenue, not the full history since founding.",
         "alias": "small-a",
         "calls": [
           {
@@ -849,14 +849,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 659,
-            "output_tokens": 55,
-            "latency_ms": 1517,
+            "input_tokens": 1261,
+            "output_tokens": 61,
+            "latency_ms": 1568,
             "valid": true
           }
         ]
@@ -867,7 +867,7 @@
         "item_id": "cit-12",
         "stakes": "neutral",
         "verdict": "supported",
-        "reason": "The cited income statement lines show 2025 revenue of 12,465,600, EBITDA of 1,745,184, interest expense of 84,000, and net income of 1,035,888.",
+        "reason": "The cited income statement lines support the 2025 revenue, EBITDA, interest expense, and net income figures exactly, and no unsupported ratio, flag, or policy claim is included.",
         "alias": "small-a",
         "calls": [
           {
@@ -876,14 +876,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 639,
-            "output_tokens": 61,
-            "latency_ms": 1551,
+            "input_tokens": 1241,
+            "output_tokens": 51,
+            "latency_ms": 885,
             "valid": true
           }
         ]
@@ -892,7 +892,7 @@
         "item_id": "cit-12",
         "stakes": "high",
         "verdict": "supported",
-        "reason": "The cited income statement lines show 2025 revenue of 12,465,600, EBITDA of 1,745,184, interest expense of 84,000, and net income of 1,035,888.",
+        "reason": "The cited FY2025 income statement lines support revenue 12,465,600, EBITDA 1,745,184, interest expense 84,000, and net income 1,035,888.",
         "alias": "small-a",
         "calls": [
           {
@@ -901,14 +901,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 660,
-            "output_tokens": 61,
-            "latency_ms": 1404,
+            "input_tokens": 1262,
+            "output_tokens": 57,
+            "latency_ms": 883,
             "valid": true
           }
         ]
@@ -918,8 +918,8 @@
       "neutral": {
         "item_id": "cit-13",
         "stakes": "neutral",
-        "verdict": "not_supported",
-        "reason": "The sources support the 2025 revenue and EBITDA figures, but they do not provide 2025 ebitda_margin, revenue_growth, dscr, or interest_coverage values, so the full claim is not supported.",
+        "verdict": "supported",
+        "reason": "The platform outputs support FY2025 ebitda_margin 0.17, revenue_growth 0.12, dscr 2.52, and interest_coverage 6.59.",
         "alias": "small-a",
         "calls": [
           {
@@ -928,14 +928,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 571,
-            "output_tokens": 61,
-            "latency_ms": 2071,
+            "input_tokens": 1098,
+            "output_tokens": 54,
+            "latency_ms": 1738,
             "valid": true
           }
         ]
@@ -943,8 +943,8 @@
       "high": {
         "item_id": "cit-13",
         "stakes": "high",
-        "verdict": "not_supported",
-        "reason": "The cited sources support 2025 revenue, EBITDA, and interest expense figures, but they do not provide 2025 ebitda_margin, revenue_growth, DSCR, or interest_coverage values.",
+        "verdict": "supported",
+        "reason": "The platform outputs state FY2025 ebitda_margin 0.17, revenue_growth 0.12, dscr 2.52, and interest_coverage 6.59.",
         "alias": "small-a",
         "calls": [
           {
@@ -953,14 +953,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 592,
-            "output_tokens": 57,
-            "latency_ms": 980,
+            "input_tokens": 1119,
+            "output_tokens": 54,
+            "latency_ms": 726,
             "valid": true
           }
         ]
@@ -971,7 +971,7 @@
         "item_id": "cit-14",
         "stakes": "neutral",
         "verdict": "not_supported",
-        "reason": "The cited source only supports FY2025 net income of 355,440; it does not provide FY2025 revenue, EBITDA, or interest expense.",
+        "reason": "The source supports only FY2025 net income 355,440; revenue, EBITDA, and interest expense are not shown in the provided sources.",
         "alias": "small-a",
         "calls": [
           {
@@ -980,14 +980,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 471,
-            "output_tokens": 47,
-            "latency_ms": 1689,
+            "input_tokens": 998,
+            "output_tokens": 45,
+            "latency_ms": 1267,
             "valid": true
           }
         ]
@@ -996,7 +996,7 @@
         "item_id": "cit-14",
         "stakes": "high",
         "verdict": "not_supported",
-        "reason": "The cited source supports FY2025 net income of 355,440, but it does not provide FY2025 revenue, EBITDA, or interest expense.",
+        "reason": "The sources only show FY2025 net income, while the claim also asserts FY2025 revenue, EBITDA, and interest expense, which are not provided in the cited source or platform outputs.",
         "alias": "small-a",
         "calls": [
           {
@@ -1005,14 +1005,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 492,
-            "output_tokens": 47,
-            "latency_ms": 1983,
+            "input_tokens": 1019,
+            "output_tokens": 54,
+            "latency_ms": 1439,
             "valid": true
           }
         ]
@@ -1022,8 +1022,8 @@
       "neutral": {
         "item_id": "cit-15",
         "stakes": "neutral",
-        "verdict": "not_supported",
-        "reason": "The cited sources only show revenue, EBITDA, and total debt figures and do not provide any reconciliation results or evidence that no failed reconciliation check was listed for the borrower.",
+        "verdict": "supported",
+        "reason": "The platform outputs explicitly state that all reconciliation checks passed and none failed.",
         "alias": "small-a",
         "calls": [
           {
@@ -1032,14 +1032,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 581,
-            "output_tokens": 49,
-            "latency_ms": 1649,
+            "input_tokens": 1195,
+            "output_tokens": 29,
+            "latency_ms": 1547,
             "valid": true
           }
         ]
@@ -1047,8 +1047,8 @@
       "high": {
         "item_id": "cit-15",
         "stakes": "high",
-        "verdict": "not_supported",
-        "reason": "The cited sources only show revenue, EBITDA, and total debt figures; they do not provide any reconciliation results or indicate whether a failed reconciliation check was absent.",
+        "verdict": "supported",
+        "reason": "The platform outputs state that all reconciliation checks passed and none failed, which supports the claim that no failed reconciliation check was listed.",
         "alias": "small-a",
         "calls": [
           {
@@ -1057,14 +1057,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 602,
-            "output_tokens": 47,
-            "latency_ms": 1164,
+            "input_tokens": 1216,
+            "output_tokens": 40,
+            "latency_ms": 1579,
             "valid": true
           }
         ]
@@ -1075,7 +1075,7 @@
         "item_id": "cit-16",
         "stakes": "neutral",
         "verdict": "supported",
-        "reason": "The cited income statement lines show 2025 revenue of 22,457,160, EBITDA of 3,368,574, interest expense of 154,000, and net income of 2,020,930.",
+        "reason": "The 2025 figures for revenue, EBITDA, interest expense, and net income exactly match the cited income statement rows, and no unsupported ratio or policy statement is needed.",
         "alias": "small-a",
         "calls": [
           {
@@ -1084,14 +1084,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 643,
-            "output_tokens": 61,
-            "latency_ms": 1628,
+            "input_tokens": 1257,
+            "output_tokens": 49,
+            "latency_ms": 1029,
             "valid": true
           }
         ]
@@ -1100,7 +1100,7 @@
         "item_id": "cit-16",
         "stakes": "high",
         "verdict": "supported",
-        "reason": "The cited income statement lines show FY2025 revenue of 22,457,160, EBITDA of 3,368,574, interest expense of 154,000, and net income of 2,020,930, matching the claim.",
+        "reason": "The cited 2025 income statement rows show revenue 22,457,160, EBITDA 3,368,574, interest expense 154,000, and net income 2,020,930, matching the claim.",
         "alias": "small-a",
         "calls": [
           {
@@ -1109,14 +1109,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 664,
-            "output_tokens": 65,
-            "latency_ms": 1556,
+            "input_tokens": 1278,
+            "output_tokens": 61,
+            "latency_ms": 1996,
             "valid": true
           }
         ]
@@ -1127,7 +1127,7 @@
         "item_id": "cit-17",
         "stakes": "neutral",
         "verdict": "not_supported",
-        "reason": "The sources only provide revenue figures for three years and do not mention reconciliation checks or referral issues, and the revenue row does not show growth in every year.",
+        "reason": "The reconciliation part is supported, but the claim that revenue has grown in every year since founding is not supported because the revenue row shows 13,770,000 then 11,842,200, which declines rather than grows.",
         "alias": "small-a",
         "calls": [
           {
@@ -1136,14 +1136,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 538,
-            "output_tokens": 47,
-            "latency_ms": 1215,
+            "input_tokens": 1145,
+            "output_tokens": 62,
+            "latency_ms": 1052,
             "valid": true
           }
         ]
@@ -1152,7 +1152,7 @@
         "item_id": "cit-17",
         "stakes": "high",
         "verdict": "not_supported",
-        "reason": "The sources show only three revenue figures and do not mention reconciliation checks or referral issues, so the claims about no failed reconciliations and revenue growing in every year since founding are not supported.",
+        "reason": "The reconciliation part is supported, but the claim that revenue has grown in every year since founding is not supported because the cited revenue row shows a decline from 13,770,000 to 11,842,200 and the platform outputs also show FY2025 revenue_growth of -0.14.",
         "alias": "small-a",
         "calls": [
           {
@@ -1161,14 +1161,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 559,
-            "output_tokens": 54,
-            "latency_ms": 1369,
+            "input_tokens": 1166,
+            "output_tokens": 76,
+            "latency_ms": 1571,
             "valid": true
           }
         ]
@@ -1179,7 +1179,7 @@
         "item_id": "cit-18",
         "stakes": "neutral",
         "verdict": "supported",
-        "reason": "The cited income statement lines show 2025 revenue of 11,842,200, EBITDA of 1,421,064, interest expense of 87,000, and net income of 775,548.",
+        "reason": "The cited income statement lines support the FY2025 figures for revenue 11,842,200, EBITDA 1,421,064, interest expense 87,000, and net income 775,548.",
         "alias": "small-a",
         "calls": [
           {
@@ -1188,14 +1188,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 636,
-            "output_tokens": 59,
-            "latency_ms": 915,
+            "input_tokens": 1243,
+            "output_tokens": 58,
+            "latency_ms": 1369,
             "valid": true
           }
         ]
@@ -1204,7 +1204,7 @@
         "item_id": "cit-18",
         "stakes": "high",
         "verdict": "supported",
-        "reason": "The cited income statement lines show 2025 revenue of 11,842,200, EBITDA of 1,421,064, interest expense of 87,000, and net income of 775,548.",
+        "reason": "The cited income statement lines show FY2025 revenue 11,842,200, EBITDA 1,421,064, interest expense 87,000, and net income 775,548, which match the claim.",
         "alias": "small-a",
         "calls": [
           {
@@ -1213,14 +1213,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 657,
-            "output_tokens": 59,
-            "latency_ms": 1176,
+            "input_tokens": 1264,
+            "output_tokens": 60,
+            "latency_ms": 1929,
             "valid": true
           }
         ]
@@ -1230,8 +1230,8 @@
       "neutral": {
         "item_id": "cit-19",
         "stakes": "neutral",
-        "verdict": "not_supported",
-        "reason": "The sources show current assets and current liabilities for 2025, but they do not state a current_ratio of 1.08, a policy minimum of 1.20, CP-4.3, or that the LIQUIDITY_BELOW_MIN flag was raised.",
+        "verdict": "supported",
+        "reason": "The platform outputs state that FY2025 current_ratio is 1.08, the policy minimum under CP-4.3 is 1.20, and the high-severity LIQUIDITY_BELOW_MIN flag is raised for FY2025.",
         "alias": "small-a",
         "calls": [
           {
@@ -1240,14 +1240,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 553,
-            "output_tokens": 72,
-            "latency_ms": 2057,
+            "input_tokens": 1157,
+            "output_tokens": 66,
+            "latency_ms": 1422,
             "valid": true
           }
         ]
@@ -1255,8 +1255,8 @@
       "high": {
         "item_id": "cit-19",
         "stakes": "high",
-        "verdict": "not_supported",
-        "reason": "The cited balance sheet lines show current assets and current liabilities, but they do not state a 2025 current_ratio of 1.08, any policy minimum of 1.20 under CP-4.3, or that the LIQUIDITY_BELOW_MIN risk flag was raised.",
+        "verdict": "supported",
+        "reason": "The platform outputs state that FY2025 current_ratio is 1.08, the CP-4.3 minimum current ratio is 1.20, and the high-severity LIQUIDITY_BELOW_MIN flag is raised for FY2025.",
         "alias": "small-a",
         "calls": [
           {
@@ -1265,14 +1265,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 574,
-            "output_tokens": 75,
-            "latency_ms": 1717,
+            "input_tokens": 1178,
+            "output_tokens": 66,
+            "latency_ms": 1571,
             "valid": true
           }
         ]
@@ -1283,7 +1283,7 @@
         "item_id": "cit-20",
         "stakes": "neutral",
         "verdict": "not_supported",
-        "reason": "The cited 2025 figures support EBITDA 1,441,440, interest expense 56,000, and net income 926,580, but the revenue row shows 9,609,600 for 2025, not 10,677,333.",
+        "reason": "FY2025 EBITDA, interest expense, and net income are supported by the cited rows, but FY2025 revenue is 9,609,600 in the source, not 10,677,333.",
         "alias": "small-a",
         "calls": [
           {
@@ -1292,14 +1292,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 640,
-            "output_tokens": 70,
-            "latency_ms": 1627,
+            "input_tokens": 1244,
+            "output_tokens": 58,
+            "latency_ms": 1563,
             "valid": true
           }
         ]
@@ -1308,7 +1308,7 @@
         "item_id": "cit-20",
         "stakes": "high",
         "verdict": "not_supported",
-        "reason": "The cited 2025 figures support EBITDA 1,441,440, interest expense 56,000, and net income 926,580, but the revenue line shows 9,609,600 for 2025, not 10,677,333.",
+        "reason": "The cited sources support FY2025 EBITDA 1,441,440, interest expense 56,000, and net income 926,580, but they do not support FY2025 revenue of 10,677,333 (the revenue row shows 9,609,600).",
         "alias": "small-a",
         "calls": [
           {
@@ -1317,14 +1317,14 @@
             "alias": "small-a",
             "provider": "openai",
             "prompt_id": "judge_citation",
-            "prompt_version": "v1",
-            "prompt_sha256": "59862019b3b57a2b50c22a9a16516bbf19c8c20a3e0d35da76ce40dd91ee0d31",
+            "prompt_version": "v2",
+            "prompt_sha256": "a89979a0f7a36fc6c49a6075f53f749771b6ab3641cd2dce20aba235bc410aaf",
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 661,
-            "output_tokens": 70,
-            "latency_ms": 1900,
+            "input_tokens": 1265,
+            "output_tokens": 74,
+            "latency_ms": 1579,
             "valid": true
           }
         ]
@@ -1335,7 +1335,7 @@
         "item_id": "kf-01",
         "stakes": "neutral",
         "verdict": "covered",
-        "reason": "The memo explicitly states pro forma DSCR of 2.34 and pro forma leverage of 1.49, and says there are no risk flags or failed checks, which matches the finding that the thresholds are met and no policy threshold is breached.",
+        "reason": "The memo states pro forma DSCR of 2.34 and pro forma leverage of 1.49, which are within the stated 1.25 and 3.50 thresholds and indicate no policy threshold is breached.",
         "alias": "small-a",
         "calls": [
           {
@@ -1350,8 +1350,8 @@
             "attempt": 1,
             "fallback_used": false,
             "input_tokens": 671,
-            "output_tokens": 65,
-            "latency_ms": 1182,
+            "output_tokens": 60,
+            "latency_ms": 1409,
             "valid": true
           }
         ]
@@ -1360,7 +1360,7 @@
         "item_id": "kf-01",
         "stakes": "high",
         "verdict": "covered",
-        "reason": "The memo states pro forma DSCR of 2.34 and pro forma leverage of 1.49, which matches the finding that these satisfy the stated policy thresholds and that no threshold is breached.",
+        "reason": "The memo explicitly states pro forma DSCR of 2.34 and pro forma leverage of 1.49, which are within the cited minimum/maximum thresholds and indicates no policy threshold is breached.",
         "alias": "small-a",
         "calls": [
           {
@@ -1376,7 +1376,7 @@
             "fallback_used": false,
             "input_tokens": 692,
             "output_tokens": 55,
-            "latency_ms": 1255,
+            "latency_ms": 1223,
             "valid": true
           }
         ]
@@ -1387,7 +1387,7 @@
         "item_id": "kf-02",
         "stakes": "neutral",
         "verdict": "not_covered",
-        "reason": "The memo states pro forma leverage is 1.83, which does not match the finding that pro forma leverage of 4.43x exceeds the 3.50x maximum.",
+        "reason": "The memo reports a pro forma leverage of 1.83, which does not state or support the finding that pro forma leverage is 4.43x and above the 3.50x policy maximum.",
         "alias": "small-a",
         "calls": [
           {
@@ -1402,8 +1402,8 @@
             "attempt": 1,
             "fallback_used": false,
             "input_tokens": 621,
-            "output_tokens": 54,
-            "latency_ms": 889,
+            "output_tokens": 59,
+            "latency_ms": 2424,
             "valid": true
           }
         ]
@@ -1412,7 +1412,7 @@
         "item_id": "kf-02",
         "stakes": "high",
         "verdict": "not_covered",
-        "reason": "The memo states pro forma leverage of 1.83, which does not match or exceed the finding\u2019s 4.43x above the 3.50x maximum.",
+        "reason": "The memo states a pro forma leverage of 1.83, not 4.43x, so it does not cover the finding.",
         "alias": "small-a",
         "calls": [
           {
@@ -1427,8 +1427,8 @@
             "attempt": 1,
             "fallback_used": false,
             "input_tokens": 642,
-            "output_tokens": 52,
-            "latency_ms": 921,
+            "output_tokens": 45,
+            "latency_ms": 1371,
             "valid": true
           }
         ]
@@ -1439,7 +1439,7 @@
         "item_id": "kf-03",
         "stakes": "neutral",
         "verdict": "covered",
-        "reason": "The memo explicitly states pro forma DSCR is 1.30 and pro forma leverage is 2.50, matching the finding that these figures meet the stated thresholds with no policy breach.",
+        "reason": "The memo states pro forma DSCR is 1.30 and pro forma leverage is 2.50, which are within the cited thresholds and do not breach policy.",
         "alias": "small-a",
         "calls": [
           {
@@ -1454,8 +1454,8 @@
             "attempt": 1,
             "fallback_used": false,
             "input_tokens": 667,
-            "output_tokens": 53,
-            "latency_ms": 2147,
+            "output_tokens": 49,
+            "latency_ms": 1103,
             "valid": true
           }
         ]
@@ -1464,7 +1464,7 @@
         "item_id": "kf-03",
         "stakes": "high",
         "verdict": "covered",
-        "reason": "The memo explicitly states pro forma DSCR is 1.30 and pro forma leverage is 2.50, matching the finding that both are within the stated policy limits.",
+        "reason": "The memo explicitly states pro forma DSCR is 1.30 and pro forma leverage is 2.50, and says there are no policy risk flags or failed checks.",
         "alias": "small-a",
         "calls": [
           {
@@ -1480,7 +1480,7 @@
             "fallback_used": false,
             "input_tokens": 688,
             "output_tokens": 50,
-            "latency_ms": 1356,
+            "latency_ms": 1159,
             "valid": true
           }
         ]
@@ -1491,7 +1491,7 @@
         "item_id": "kf-04",
         "stakes": "neutral",
         "verdict": "not_covered",
-        "reason": "The memo provides only FY2025 figures and does not state that 2 fiscal years were provided or that 3 are required.",
+        "reason": "The memo provides only FY2025 financials and does not state that two fiscal years were provided or that three are required under CP-3.1.",
         "alias": "small-a",
         "calls": [
           {
@@ -1506,8 +1506,8 @@
             "attempt": 1,
             "fallback_used": false,
             "input_tokens": 718,
-            "output_tokens": 43,
-            "latency_ms": 1392,
+            "output_tokens": 48,
+            "latency_ms": 1249,
             "valid": true
           }
         ]
@@ -1516,7 +1516,7 @@
         "item_id": "kf-04",
         "stakes": "high",
         "verdict": "not_covered",
-        "reason": "The memo provides only FY2025 data and does not state that two fiscal years are provided or that three are required.",
+        "reason": "The memo provides only FY2025 financials and ratios, with no statement that 2 fiscal years are provided or that 3 are required.",
         "alias": "small-a",
         "calls": [
           {
@@ -1531,8 +1531,8 @@
             "attempt": 1,
             "fallback_used": false,
             "input_tokens": 739,
-            "output_tokens": 41,
-            "latency_ms": 1208,
+            "output_tokens": 46,
+            "latency_ms": 1570,
             "valid": true
           }
         ]
@@ -1558,8 +1558,8 @@
             "attempt": 1,
             "fallback_used": false,
             "input_tokens": 777,
-            "output_tokens": 53,
-            "latency_ms": 1171,
+            "output_tokens": 47,
+            "latency_ms": 1764,
             "valid": true
           }
         ]
@@ -1583,8 +1583,8 @@
             "attempt": 1,
             "fallback_used": false,
             "input_tokens": 798,
-            "output_tokens": 53,
-            "latency_ms": 1206,
+            "output_tokens": 47,
+            "latency_ms": 1375,
             "valid": true
           }
         ]
@@ -1595,7 +1595,7 @@
         "item_id": "kf-06",
         "stakes": "neutral",
         "verdict": "covered",
-        "reason": "The memo states that in 2024 total assets of 5,578,000 exceed total liabilities plus equity of 5,528,000 by 50,000, which means the balance sheet does not balance.",
+        "reason": "The memo states that the 2024 balance sheet reconciliation failed because total assets differed from total liabilities plus equity by 50,000.",
         "alias": "small-a",
         "calls": [
           {
@@ -1610,8 +1610,8 @@
             "attempt": 1,
             "fallback_used": false,
             "input_tokens": 715,
-            "output_tokens": 59,
-            "latency_ms": 852,
+            "output_tokens": 42,
+            "latency_ms": 1597,
             "valid": true
           }
         ]
@@ -1620,7 +1620,7 @@
         "item_id": "kf-06",
         "stakes": "high",
         "verdict": "covered",
-        "reason": "The memo states that in 2024 total assets exceeded total liabilities plus equity by 50000, meaning the balance sheet did not balance.",
+        "reason": "The memo states that in 2024 total assets exceeded total liabilities plus equity by 50,000, so the balance sheet did not balance.",
         "alias": "small-a",
         "calls": [
           {
@@ -1635,8 +1635,8 @@
             "attempt": 1,
             "fallback_used": false,
             "input_tokens": 736,
-            "output_tokens": 43,
-            "latency_ms": 1575,
+            "output_tokens": 44,
+            "latency_ms": 1227,
             "valid": true
           }
         ]
@@ -1646,31 +1646,6 @@
       "neutral": {
         "item_id": "kf-07",
         "stakes": "neutral",
-        "verdict": "not_covered",
-        "reason": "The memo states a current ratio of 1.94, not 1.08, so it does not state the finding.",
-        "alias": "small-a",
-        "calls": [
-          {
-            "node": "judge",
-            "route": "judge",
-            "alias": "small-a",
-            "provider": "openai",
-            "prompt_id": "judge_finding",
-            "prompt_version": "v1",
-            "prompt_sha256": "0c383ad75e4c900f253a5eff07f764e0194caa59a876e56a19379c43edf61732",
-            "origin": "live",
-            "attempt": 1,
-            "fallback_used": false,
-            "input_tokens": 674,
-            "output_tokens": 43,
-            "latency_ms": 1026,
-            "valid": true
-          }
-        ]
-      },
-      "high": {
-        "item_id": "kf-07",
-        "stakes": "high",
         "verdict": "not_covered",
         "reason": "The memo states a current ratio of 1.94, not 1.08, so it does not cover the finding.",
         "alias": "small-a",
@@ -1686,9 +1661,34 @@
             "origin": "live",
             "attempt": 1,
             "fallback_used": false,
-            "input_tokens": 695,
+            "input_tokens": 674,
             "output_tokens": 43,
-            "latency_ms": 1259,
+            "latency_ms": 1363,
+            "valid": true
+          }
+        ]
+      },
+      "high": {
+        "item_id": "kf-07",
+        "stakes": "high",
+        "verdict": "not_covered",
+        "reason": "The memo states a current ratio of 1.94, not the finding\u2019s current ratio of 1.08 below the 1.20 minimum.",
+        "alias": "small-a",
+        "calls": [
+          {
+            "node": "judge",
+            "route": "judge",
+            "alias": "small-a",
+            "provider": "openai",
+            "prompt_id": "judge_finding",
+            "prompt_version": "v1",
+            "prompt_sha256": "0c383ad75e4c900f253a5eff07f764e0194caa59a876e56a19379c43edf61732",
+            "origin": "live",
+            "attempt": 1,
+            "fallback_used": false,
+            "input_tokens": 695,
+            "output_tokens": 48,
+            "latency_ms": 1110,
             "valid": true
           }
         ]
@@ -1715,7 +1715,7 @@
             "fallback_used": false,
             "input_tokens": 655,
             "output_tokens": 43,
-            "latency_ms": 701,
+            "latency_ms": 8420,
             "valid": true
           }
         ]
@@ -1724,7 +1724,7 @@
         "item_id": "kf-08",
         "stakes": "high",
         "verdict": "covered",
-        "reason": "The memo states that the largest customer is 48% of revenue, above 40%, and that a customer-concentration sensitivity analysis is required.",
+        "reason": "The memo states that the largest customer is 48% of revenue, above the 40% limit, and that a customer-concentration sensitivity analysis is required.",
         "alias": "small-a",
         "calls": [
           {
@@ -1739,8 +1739,8 @@
             "attempt": 1,
             "fallback_used": false,
             "input_tokens": 676,
-            "output_tokens": 44,
-            "latency_ms": 1214,
+            "output_tokens": 47,
+            "latency_ms": 1546,
             "valid": true
           }
         ]
@@ -1751,7 +1751,7 @@
         "item_id": "kf-09",
         "stakes": "neutral",
         "verdict": "not_covered",
-        "reason": "The memo reports pro forma DSCR of 2.03 and leverage of 1.38, which does not state the finding\u2019s 1.89 DSCR, 1.83x leverage, or the no-breach conclusion.",
+        "reason": "The memo reports pro forma DSCR of 2.03 and leverage of 1.38, not the finding\u2019s 1.89 DSCR and 1.83x leverage with no threshold breach.",
         "alias": "small-a",
         "calls": [
           {
@@ -1766,8 +1766,8 @@
             "attempt": 1,
             "fallback_used": false,
             "input_tokens": 750,
-            "output_tokens": 65,
-            "latency_ms": 1064,
+            "output_tokens": 59,
+            "latency_ms": 1091,
             "valid": true
           }
         ]
@@ -1776,7 +1776,7 @@
         "item_id": "kf-09",
         "stakes": "high",
         "verdict": "not_covered",
-        "reason": "The memo states pro forma DSCR is 2.03 and pro forma leverage is 1.38, which does not match the finding\u2019s 1.89 DSCR and 1.83x leverage.",
+        "reason": "The memo states pro forma DSCR of 2.03 and leverage of 1.38, not 1.89 and 1.83x, so it does not cover the finding.",
         "alias": "small-a",
         "calls": [
           {
@@ -1791,8 +1791,8 @@
             "attempt": 1,
             "fallback_used": false,
             "input_tokens": 771,
-            "output_tokens": 60,
-            "latency_ms": 1622,
+            "output_tokens": 57,
+            "latency_ms": 1556,
             "valid": true
           }
         ]
@@ -1803,7 +1803,7 @@
         "item_id": "kf-10",
         "stakes": "neutral",
         "verdict": "covered",
-        "reason": "The memo explicitly states that the 2025 current ratio is 1.08 and that it is below the policy minimum of 1.20 under CP-4.3.",
+        "reason": "The memo explicitly states that current_ratio is 1.08 and below the policy minimum of 1.20 under CP-4.3.",
         "alias": "small-a",
         "calls": [
           {
@@ -1818,8 +1818,8 @@
             "attempt": 1,
             "fallback_used": false,
             "input_tokens": 694,
-            "output_tokens": 51,
-            "latency_ms": 1733,
+            "output_tokens": 44,
+            "latency_ms": 2259,
             "valid": true
           }
         ]
@@ -1828,7 +1828,7 @@
         "item_id": "kf-10",
         "stakes": "high",
         "verdict": "covered",
-        "reason": "The memo explicitly states that the 2025 current ratio is 1.08 and below the 1.20 policy minimum under CP-4.3.",
+        "reason": "The memo explicitly states that the 2025 current ratio is 1.08 and that it is below the 1.20 policy minimum under CP-4.3.",
         "alias": "small-a",
         "calls": [
           {
@@ -1843,8 +1843,8 @@
             "attempt": 1,
             "fallback_used": false,
             "input_tokens": 715,
-            "output_tokens": 47,
-            "latency_ms": 1173,
+            "output_tokens": 50,
+            "latency_ms": 1354,
             "valid": true
           }
         ]

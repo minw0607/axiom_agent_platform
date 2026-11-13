@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_citation",
+  "prompt_version": "v2",
+  "prompt_sha256": "87c5f6faf2d66a877ce7dcb624ccf25d5d564be7c1108bd7f3dccc358c23cfc9",
+  "input_tokens": 1449,
+  "output_tokens": 47,
+  "text": "{\"verdict\":\"supported\",\"reason\":\"The 2025 ratios, the absence of risk flags, and the fact that all reconciliation checks passed are all stated in the platform outputs for FY2025.\"}"
+}

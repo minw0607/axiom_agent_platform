@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_citation",
+  "prompt_version": "v2",
+  "prompt_sha256": "12ca569adebc58f4eb399862af5734e522860470051ee4b80f97c366265d3611",
+  "input_tokens": 1246,
+  "output_tokens": 49,
+  "text": "{\"verdict\":\"supported\",\"reason\":\"The cited income statement lines support the 2025 revenue, EBITDA, interest expense, and net income figures, and all other implied checks are consistent with the platform outputs.\"}"
+}

@@ -97,7 +97,9 @@ def _protected(line: str, borrower_name: str) -> list[tuple[int, int]]:
     return spans
 
 
-def redact_line(line: str, borrower_name: str = "") -> Redacted:
+def redact_line(line: str, borrower_name: str = "", figures: set[str] | None = None) -> Redacted:
+    """Mask identifiers of people in one line. `figures`: numbers known to be the borrower's
+    own figures (plain digits, no separators), which are never taken for an identifier."""
     if not line.strip() or line.lstrip().startswith(("|", "#")):
         # Blank lines, table rows (the statements) and headings (titles) are never edited.
         return Redacted(line)
@@ -109,6 +111,8 @@ def redact_line(line: str, borrower_name: str = "") -> Redacted:
     for r in sorted(found, key=lambda r: (-r.score, r.start)):
         if r.entity_type == "PHONE_NUMBER" and line[r.start : r.end].isdigit():
             continue  # a bare digit run such as 342657 is an amount, not a phone number
+        if figures and line[r.start : r.end].replace(",", "") in figures:
+            continue
         if any(r.start < e and s < r.end for s, e in protected):
             continue
         if r.entity_type == "PERSON" and not FULL_NAME.fullmatch(line[r.start : r.end]):

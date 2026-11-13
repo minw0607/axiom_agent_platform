@@ -5,6 +5,6 @@
   "prompt_version": "v1",
   "prompt_sha256": "8494d43ff6c1b81180cadba4c6cb35d63b2bccd1d1a134ba0d620a9006209d3d",
   "input_tokens": 642,
-  "output_tokens": 52,
-  "text": "{\"verdict\":\"not_covered\",\"reason\":\"The memo states pro forma leverage of 1.83, which does not match or exceed the finding\u2019s 4.43x above the 3.50x maximum.\"}"
+  "output_tokens": 45,
+  "text": "{\"verdict\":\"not_covered\",\"reason\":\"The memo states a pro forma leverage of 1.83, not 4.43x, so it does not cover the finding.\"}"
 }

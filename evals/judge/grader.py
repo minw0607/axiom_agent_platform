@@ -25,7 +25,7 @@ from axiom.agents.prompts import load_prompt
 from axiom.router.types import FailClosed, ProviderError, Sensitivity
 
 PROMPTS = Path(__file__).parent / "prompts"
-VERSIONS = {"judge_citation": "v1", "judge_finding": "v1"}
+VERSIONS = {"judge_citation": "v2", "judge_finding": "v1"}
 Stakes = Literal["neutral", "high"]
 CONTEXT: dict[str, str] = {
     "neutral": "Routine quality check of a draft memo.",
@@ -56,6 +56,7 @@ class CitationItem:
     item_id: str
     claim: str
     sources: tuple[Source, ...]
+    platform: tuple[str, ...] = ()  # the tool outputs the drafter was given (judge_citation v2)
 
 
 @dataclass(frozen=True)
@@ -125,6 +126,7 @@ async def grade_citation(
         "sources": [
             {"doc_id": s.doc_id, "locator": s.locator, "text": s.text} for s in item.sources
         ],
+        "platform_outputs": list(item.platform),
     }
     return await _ask(ctx, "judge_citation", item.item_id, stakes, payload, CitationVerdict, level)
 

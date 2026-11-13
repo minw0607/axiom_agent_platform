@@ -87,7 +87,10 @@ async def grade(ctx: AgentContext, item: dict[str, Any], stakes: Stakes) -> Grad
         return await grade_citation(
             ctx,
             CitationItem(
-                item["item_id"], item["claim"], tuple(Source(**s) for s in item["sources"])
+                item["item_id"],
+                item["claim"],
+                tuple(Source(**s) for s in item["sources"]),
+                tuple(item.get("platform", ())),
             ),
             stakes,
             "standard",

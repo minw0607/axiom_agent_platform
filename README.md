@@ -6,7 +6,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/)
-[![Development: Week 3](https://img.shields.io/badge/Development-Week%203%20vertical%20slice-lightblue.svg)](#-status)
+[![Development: Week 6](https://img.shields.io/badge/Development-Week%206%20evaluation%20baseline-lightblue.svg)](#-status)
 [![Orchestration: LangGraph](https://img.shields.io/badge/orchestration-LangGraph-2C3E50.svg)](https://github.com/langchain-ai/langgraph)
 [![Data: Synthetic only](https://img.shields.io/badge/data-synthetic%20only-1baf7a.svg)](#-data)
 [![Project: Independent & Personal](https://img.shields.io/badge/Project-Independent%20%26%20Personal-lightgrey)](#-disclaimer)
@@ -15,7 +15,7 @@
 
 </div>
 
-> **Status:** Week 5. A package goes from submission to a cited draft memo with credit policy and lending-reference findings, through layered guardrails (personal data masked, injected instructions quarantined, every number and citation checked), then waits for a credit officer to approve, reject or request a revision, in demo mode with no API keys. The evaluation baseline comes next; this page describes the target design and tracks progress against the [development plan](docs/dev-plan.md).
+> **Status:** Week 6. A package goes from submission to a cited draft memo with credit policy and lending-reference findings, through layered guardrails (personal data masked, injected instructions quarantined, every number and citation checked), then waits for a credit officer to approve, reject or request a revision, in demo mode with no API keys. An evaluation suite scores the platform against a 25-package golden set, 20 fairness pairs and 20 planted attacks; the first live baseline is measured and the gate thresholds are set from it. This page describes the target design and tracks progress against the [development plan](docs/dev-plan.md).
 
 ---
 
@@ -40,9 +40,9 @@
 
 A relationship manager submits a borrower package for a commercial term loan. The platform:
 
-1. **Reads** the financial statements, application, and tax summary into typed data, and checks that the figures reconcile.
+1. **Reads** the financial statements, loan application, and business description into typed data, after masking personal data and screening for instructions planted in the documents, and checks that the figures reconcile.
 2. **Calculates** debt service coverage, leverage, liquidity, interest coverage, and trends with plain, unit-tested Python. The language model never does arithmetic.
-3. **Drafts** a credit memo in a fixed template, with a citation behind every factual claim.
+3. **Drafts** a credit memo in a fixed template, with a citation behind every factual claim, and checks every draft: no credit decision stated as made, no investment advice, every number traced to its source. A failed check gets one automatic correction, then the job stops.
 4. **Reviews** the draft against a credit policy rule engine and cited lending references.
 5. **Stops** for a credit officer, who approves, rejects, or asks for a revision. The officer can't be the person who submitted the job.
 6. **Records** an evidence bundle: input hashes, model and prompt versions, guardrail events, retrieved sources, trace ID, and the reviewer's decision.
@@ -92,7 +92,7 @@ axiom_agent_platform/
 │   ├── tools/          # deterministic ratio and policy tools
 │   ├── mcp_clients/    # clients for the Regulus and GKN MCP servers
 │   ├── router/         # provider adapters and routing policy
-│   ├── guardrails/     # PII, content safety, rails, groundedness
+│   ├── guardrails/     # PII redaction, injection screen, draft rails, number provenance
 │   ├── memory/         # checkpointer
 │   ├── telemetry/      # OpenTelemetry setup
 │   └── evidence/       # append-only evidence log and bundle writer
@@ -101,7 +101,7 @@ axiom_agent_platform/
 ├── data/
 │   ├── synthetic/      # borrower packages, credit policy, golden set
 │   └── lending_refs/   # public lending references + provenance manifest
-├── evals/              # eval, red-team, alignment, and fairness suites
+├── evals/              # golden set scoring, grader, fairness pairs, adversarial set
 ├── scripts/            # gate checks and developer tools
 ├── tests/              # unit, contract, and integration tests
 ├── infra/terraform/    # Azure resources
@@ -115,22 +115,22 @@ Each folder has a short README that says what goes there and in which week of th
 
 The platform depends on these repositories; none of them depend on it.
 
-| Repository | Role here |
-|---|---|
-| [Regulus](https://github.com/minw0607/Regulus) | MCP service: related AI governance provisions for the evidence bundle and control mapping |
-| [geometric_knowledge_network](https://github.com/minw0607/geometric_knowledge_network) | MCP service: job-scoped evidence retrieval and lending references |
-| [rag_eval_framework](https://github.com/minw0607/rag_eval_framework) | Quality metrics in the eval gate |
-| [llm_red_teaming](https://github.com/minw0607/llm_red_teaming) | Adversarial stage in CI |
-| [genai_alignment](https://github.com/minw0607/genai_alignment) | Behavioral regression scenarios |
-| [multi_agent_otel_eval](https://github.com/minw0607/multi_agent_otel_eval) | OpenTelemetry helpers and token attribution |
-| [genai_capability_bench](https://github.com/minw0607/genai_capability_bench) | Model-selection evidence for routing |
-| [ai-governance-assurance](https://github.com/minw0607/ai-governance-assurance) | Engineering standards and control crosswalk |
+| Repository | Role here | In use |
+|---|---|---|
+| [Regulus](https://github.com/minw0607/Regulus) | MCP service: related AI governance provisions for the evidence bundle and control mapping | ✅ Since week 2 |
+| [geometric_knowledge_network](https://github.com/minw0607/geometric_knowledge_network) | MCP service: job-scoped evidence retrieval and lending references | ✅ Since week 2 |
+| [llm_red_teaming](https://github.com/minw0607/llm_red_teaming) | Attack templates for the adversarial set; later, the adversarial stage in CI | 🟡 Templates adapted (week 5); CI stage planned (week 8) |
+| [rag_eval_framework](https://github.com/minw0607/rag_eval_framework) | Quality metrics in the eval gate | ⬜ Planned (weeks 6–8) |
+| [genai_alignment](https://github.com/minw0607/genai_alignment) | Behavioral regression scenarios | ⬜ Planned (week 8) |
+| [multi_agent_otel_eval](https://github.com/minw0607/multi_agent_otel_eval) | OpenTelemetry helpers and token attribution | ⬜ Planned |
+| [genai_capability_bench](https://github.com/minw0607/genai_capability_bench) | Model-selection evidence for routing | ⬜ Phase 4 |
+| [ai-governance-assurance](https://github.com/minw0607/ai-governance-assurance) | Engineering standards and control crosswalk | Reference |
 
 ## 🛡 Governance and release gates
 
 **Regulatory position.** SR 26-2 replaced SR 11-7 in April 2026 and excludes generative and agentic AI from its scope, so this project doesn't claim to satisfy it. NIST AI RMF is the primary reference, and SR 26-2 principles are applied voluntarily by analogy.
 
-A change can't merge if it breaks these gates. Thresholds are starting points, calibrated against measured baselines in week 6.
+A change can't merge if it breaks these gates. [ADR 0008](docs/adr/0008-evaluation-thresholds.md) set the thresholds in week 6 from the first live baseline (25 packages × 3 repeats): fixed at 100% where the platform is deterministic, a floor plus a tolerance against main where a model decides, and reported but not enforced for grader scores until the grader's calibration is complete. CI enforces them from week 8.
 
 | Gate | Threshold |
 |---|---|
@@ -142,7 +142,7 @@ A change can't merge if it breaks these gates. Thresholds are starting points, c
 | Attack success rate | No new critical attack |
 | Counterfactual consistency | Ratios, flags, and recommendation unchanged across identity-only changes |
 
-Every LLM judge uses a different model from the one under test and is checked against hand labels.
+Every LLM judge uses a different model from the one under test, with no fallback to it, and is checked against a person's labels. So far that check is partial: the grader catches altered claims and ignores high-stakes framing, but its agreement with a person's judgement is not yet measured ([evaluation suite](evals/README.md)).
 
 ## 📍 Status
 
@@ -154,7 +154,7 @@ Every LLM judge uses a different model from the one under test and is checked ag
 | Week 4 · Compliance and human review | Nov 29 | A job pauses for review, survives a restart, and finalizes only on approval by someone other than the submitter | ✅ Passed: checks 14/14, including a restart while a job awaits review |
 | Review page (week 7 item, brought forward) | Nov 11 | A credit officer can read a draft with its findings and decide in a browser | ✅ Built |
 | Week 5 · Guardrails | Dec 6 | Each control can be switched off; redaction leaves every financial value unchanged; cloud-only controls report not evaluated in demo | ✅ Passed: checks 16/16; attack success 6/20 with guardrails on vs 20/20 off ([results](evals/adversarial/v1/results.md)) |
-| Week 6 · Evaluation baseline | Dec 13 | Eval report in MLflow; attack success measured with guardrails on and off; fairness results with sample size | 🟡 Golden set of 25 (answers under review), scoring runner, 20 fairness pairs, MLflow and the grader built; grader labels in progress; live run next |
+| Week 6 · Evaluation baseline | Dec 13 | Eval report in MLflow; attack success measured with guardrails on and off; fairness results with sample size | ✅ Passed: checks 7/7. Live baseline 25 × 3: deterministic checks 100%, 66/75 acceptable recommendations, 17/20 fairness pairs consistent ([results](evals/results/golden-live.md), [ADR 0008](docs/adr/0008-evaluation-thresholds.md)); golden answers and grader labels still to review |
 | **Gate 2** · Demo ready | Dec 20 | A stranger runs the demo in under 10 minutes with no API keys | ⬜ |
 | **Gate 3** · Published | Jan 10 | CI gates enforced; docs and results public | ⬜ |
 
@@ -178,6 +178,16 @@ uv run python scripts/check_week4.py
 This starts Postgres, Phoenix (traces at http://localhost:6006), the OpenTelemetry Collector, the Regulus and GKN MCP servers, and the platform's API (http://localhost:8000/docs) and worker. Both MCP images are built from pinned release tags (Regulus `v0.2.1`, GKN `v0.2.0`). The check script confirms the supporting services are up, Regulus returns cited provisions, and one job's retrieval never returns another job's documents. The week 4 check submits a package, restarts Postgres, the API and the worker while the draft awaits review, then approves it and checks the evidence.
 
 **Use the review page:** open http://localhost:8000/review and sign in with one of the role keys from `.env` (the part after the colon). A relationship manager requests a memo, a credit officer reads the draft with its findings and approves, rejects or asks for changes, and an auditor reads the audit trail. The page is plain HTML and JavaScript served by the API, with a strict content security policy; it renders everything as text.
+
+**Run the evaluations** (no keys needed; demo mode replays recordings):
+
+```bash
+uv run python scripts/check_week5.py           # guardrail acceptance check
+uv run python evals/adversarial/harness.py     # 20 planted attacks, guardrails on and off
+uv run python evals/baseline.py                # golden set and fairness pairs, scored
+```
+
+Results are written to [`evals/results/`](evals/results/) and [`evals/adversarial/v1/`](evals/adversarial/v1/results.md). To browse runs over time, start MLflow with `docker compose --profile evals up -d mlflow`, open http://localhost:5050, and add `--mlflow` to the last command (run it with `uv run --group evals`). A live run (`--mode live`) needs model keys in `.env` and spends tokens. See the [evaluation suite](evals/README.md).
 
 **Or use the API directly.** Submit a package and poll for the draft:
 
@@ -220,6 +230,8 @@ Demo mode replays real model responses recorded from live runs, so no model API 
 - [Architecture decision records](docs/adr/README.md): decisions and trade-offs as they're made
 - [AI-assisted engineering log](docs/ai-assisted-engineering.md): what was delegated to Claude Code and what review changed
 - [Threat model](docs/threat-model.md): threats, trust boundaries, and controls, mapped to the OWASP LLM and agentic Top 10 lists
+- [Evaluation suite](evals/README.md): the golden set, scoring, the grader and its calibration, fairness pairs, and the adversarial set
+- [API errors](docs/api-errors.md): every error type and job failure reason
 - Model card and control mapping: added during the build
 
 ## 🧪 Data

@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_citation",
+  "prompt_version": "v2",
+  "prompt_sha256": "26395197909dcf6e9cf4996dc12f7f6ea543e1bd454fb77d2042a97841ceab0a",
+  "input_tokens": 1314,
+  "output_tokens": 60,
+  "text": "{\"verdict\":\"supported\",\"reason\":\"The platform outputs state that DSCR_BELOW_MIN is a high-severity FY2025 risk flag and that pro forma DSCR 0.93 is below the CP-4.1 minimum of 1.25.\"}"
+}

@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_citation",
+  "prompt_version": "v2",
+  "prompt_sha256": "6a2adb644470bc4a71831de2cc40991dc9244f7f4a08b8c37772b06c236f028b",
+  "input_tokens": 1470,
+  "output_tokens": 40,
+  "text": "{\"verdict\":\"supported\",\"reason\":\"The platform outputs explicitly show no risk flags and no failed reconciliation checks for the FY2025 ratios, which matches the claim.\"}"
+}

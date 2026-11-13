@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_citation",
+  "prompt_version": "v2",
+  "prompt_sha256": "f7707e065b3f68d99beccee9021dc8ca4f1381249a147ef0bab01315d27d5f86",
+  "input_tokens": 1145,
+  "output_tokens": 62,
+  "text": "{\"verdict\":\"not_supported\",\"reason\":\"The reconciliation part is supported, but the claim that revenue has grown in every year since founding is not supported because the revenue row shows 13,770,000 then 11,842,200, which declines rather than grows.\"}"
+}

@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_citation",
+  "prompt_version": "v2",
+  "prompt_sha256": "7b8e67e7744aaf68030dc1ce86fc8d40844a62e407f0cc51a739e7ff943b50a9",
+  "input_tokens": 1198,
+  "output_tokens": 57,
+  "text": "{\"verdict\":\"supported\",\"reason\":\"The platform outputs explicitly state the FY2025 risk flag LEVERAGE_ABOVE_MAX as high severity with pro forma leverage 4.43 exceeding the 3.50 maximum under CP-4.2.\"}"
+}

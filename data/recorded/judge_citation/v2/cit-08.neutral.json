@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_citation",
+  "prompt_version": "v2",
+  "prompt_sha256": "e58d5905f413bc297b4381dbb10d4fe7df52fb1a4f183ac179cdea0cd9c57000",
+  "input_tokens": 1311,
+  "output_tokens": 57,
+  "text": "{\"verdict\":\"not_supported\",\"reason\":\"The FY2025 figures for revenue, EBITDA, interest expense, and net income are supported, but the claim that revenue has grown every year since founding is not supported by the provided sources or platform outputs.\"}"
+}

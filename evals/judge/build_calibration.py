@@ -17,8 +17,13 @@ import re
 from pathlib import Path
 from typing import Any
 
-from axiom.catalog import load_ground_truth, load_package
+from platform_outputs import platform_outputs
+
+from axiom.catalog import ground_truth_statements, load_ground_truth, load_package
 from axiom.settings import REPO_ROOT, Settings
+from axiom.tools.policy import load_policy, risk_flags
+from axiom.tools.ratios import compute_ratios
+from axiom.tools.reconcile import reconcile
 
 OUT = Path(__file__).parent / "v1" / "calibration.json"
 LIVE = REPO_ROOT / "data" / "recorded" / "drafter" / "v3"
@@ -57,6 +62,13 @@ def line_cited_claims(package_id: str) -> list[dict[str, Any]]:
         "Borrower and request", []
     )
     return judgement[:1] + figures[:1]
+
+
+def platform(package_id: str) -> list[str]:
+    """The tool outputs the drafter was given, computed from the package's true figures."""
+    fs = ground_truth_statements(load_ground_truth(SETTINGS.packages_dir, package_id))
+    ratios, policy = compute_ratios(fs), load_policy(SETTINGS.config_dir / "policy_thresholds.yaml")
+    return list(platform_outputs(ratios, risk_flags(fs, ratios, policy), reconcile(fs), policy))
 
 
 def sources(package_id: str, cites: list[dict[str, str]]) -> list[dict[str, str]]:
@@ -111,6 +123,7 @@ def citation_items() -> list[dict[str, Any]]:
                     "package_id": pid,
                     "claim": text,
                     "sources": sources(pid, cites),
+                    "platform": platform(pid),
                     "built_as": kind,
                 }
             )

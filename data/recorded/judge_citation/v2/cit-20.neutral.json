@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_citation",
+  "prompt_version": "v2",
+  "prompt_sha256": "959b1ccefb9a40102bc69eaecbad13102b83e93c6165ec596418b8d67bc9a67f",
+  "input_tokens": 1244,
+  "output_tokens": 58,
+  "text": "{\"verdict\":\"not_supported\",\"reason\":\"FY2025 EBITDA, interest expense, and net income are supported by the cited rows, but FY2025 revenue is 9,609,600 in the source, not 10,677,333.\"}"
+}

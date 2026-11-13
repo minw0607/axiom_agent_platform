@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_citation",
+  "prompt_version": "v2",
+  "prompt_sha256": "2ee60f693f7b5455dac2eb7369033ca8ad4d9cecd2e2525c18236bb610ace31f",
+  "input_tokens": 1157,
+  "output_tokens": 66,
+  "text": "{\"verdict\":\"supported\",\"reason\":\"The platform outputs state that FY2025 current_ratio is 1.08, the policy minimum under CP-4.3 is 1.20, and the high-severity LIQUIDITY_BELOW_MIN flag is raised for FY2025.\"}"
+}

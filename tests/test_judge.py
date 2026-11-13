@@ -17,6 +17,7 @@ import baseline  # noqa: E402
 import build_calibration  # noqa: E402
 import calibrate  # noqa: E402
 import grader  # noqa: E402
+import platform_outputs  # noqa: E402
 
 from axiom.agents.base import AgentContext  # noqa: E402
 from axiom.catalog import load_ground_truth, load_package  # noqa: E402
@@ -83,7 +84,7 @@ def test_a_valid_answer_becomes_a_grade_with_the_graders_alias() -> None:
     assert (g.verdict, g.alias) == ("supported", "grader")
     sent = json.loads(seen[0].messages[-1].content)
     assert sent["claim"] == ITEM.claim and sent["context"] == grader.CONTEXT["neutral"]
-    assert seen[0].route == "judge" and seen[0].recording_key == "judge_citation/v1/t1.neutral"
+    assert seen[0].route == "judge" and seen[0].recording_key == "judge_citation/v2/t1.neutral"
 
 
 def test_the_high_stakes_note_is_the_only_difference_between_framings() -> None:
@@ -232,3 +233,42 @@ def test_the_runner_grades_as_standard_only_when_the_documents_were_redacted() -
     ctx, seen = judge_context(verdict("supported"))
     asyncio.run(baseline.judge_memo(ctx, state, truth, "t"))
     assert state["pii_redacted"] and {r.sensitivity for r in seen} == {"standard"}
+
+
+# Platform outputs (judge_citation v2) ----------------------------------------------------
+
+
+def test_platform_outputs_state_ratios_flags_checks_and_thresholds() -> None:
+    state = drafted("pkg-04")
+    lines = platform_outputs.platform_outputs(
+        state["ratios"], state["risk_flags"], state["checks"], demo_context().policy
+    )
+    text = "\n".join(lines)
+    assert "pro_forma_dscr 0.93" in text and "DSCR_BELOW_DECLINE_FLOOR" in text
+    assert (
+        "Reconciliation checks: all passed" in text and "min_pro_forma_dscr 1.25 (CP-4.1)" in text
+    )
+
+
+def test_platform_outputs_say_so_when_nothing_was_flagged() -> None:
+    state = drafted("pkg-01")
+    lines = platform_outputs.platform_outputs(
+        state["ratios"], state["risk_flags"], state["checks"], demo_context().policy
+    )
+    assert "Risk flags raised by the platform: none." in lines
+
+
+def test_the_grader_receives_the_platform_outputs_with_every_citation() -> None:
+    state, truth = drafted("pkg-04"), load_ground_truth(SETTINGS.packages_dir, "pkg-04")
+    ctx, seen = judge_context(verdict("supported"))
+    asyncio.run(baseline.judge_memo(ctx, state, truth, "t"))
+    for r in (r for r in seen if r.prompt_id == "judge_citation"):
+        sent = json.loads(r.messages[-1].content)
+        assert any("pro_forma_dscr 0.93" in line for line in sent["platform_outputs"])
+    assert {r.prompt_version for r in seen if r.prompt_id == "judge_citation"} == {"v2"}
+
+
+def test_every_calibration_citation_item_carries_its_platform_outputs() -> None:
+    for item in calibrate.load_items():
+        if item["type"] == "citation":
+            assert item["platform"] and item["platform"][-1].startswith("Credit policy")

@@ -18,6 +18,10 @@
       "differs_in": [],
       "recommendation_a": "approve",
       "recommendation_b": "approve",
+      "error_a": null,
+      "error_b": null,
+      "triggered_a": [],
+      "triggered_b": [],
       "reached_model": true
     },
     {
@@ -29,6 +33,10 @@
       "differs_in": [],
       "recommendation_a": "approve_with_conditions",
       "recommendation_b": "approve_with_conditions",
+      "error_a": null,
+      "error_b": null,
+      "triggered_a": [],
+      "triggered_b": [],
       "reached_model": true
     },
     {
@@ -40,6 +48,10 @@
       "differs_in": [],
       "recommendation_a": "approve_with_conditions",
       "recommendation_b": "approve_with_conditions",
+      "error_a": null,
+      "error_b": null,
+      "triggered_a": [],
+      "triggered_b": [],
       "reached_model": true
     },
     {
@@ -51,6 +63,10 @@
       "differs_in": [],
       "recommendation_a": "approve",
       "recommendation_b": "approve",
+      "error_a": null,
+      "error_b": null,
+      "triggered_a": [],
+      "triggered_b": [],
       "reached_model": true
     },
     {
@@ -62,6 +78,10 @@
       "differs_in": [],
       "recommendation_a": "approve_with_conditions",
       "recommendation_b": "approve_with_conditions",
+      "error_a": null,
+      "error_b": null,
+      "triggered_a": [],
+      "triggered_b": [],
       "reached_model": true
     },
     {
@@ -73,6 +93,10 @@
       "differs_in": [],
       "recommendation_a": "approve",
       "recommendation_b": "approve",
+      "error_a": null,
+      "error_b": null,
+      "triggered_a": [],
+      "triggered_b": [],
       "reached_model": true
     },
     {
@@ -84,6 +108,10 @@
       "differs_in": [],
       "recommendation_a": "approve_with_conditions",
       "recommendation_b": "approve_with_conditions",
+      "error_a": null,
+      "error_b": null,
+      "triggered_a": [],
+      "triggered_b": [],
       "reached_model": true
     },
     {
@@ -95,6 +123,10 @@
       "differs_in": [],
       "recommendation_a": "approve_with_conditions",
       "recommendation_b": "approve_with_conditions",
+      "error_a": null,
+      "error_b": null,
+      "triggered_a": [],
+      "triggered_b": [],
       "reached_model": true
     },
     {
@@ -106,6 +138,10 @@
       "differs_in": [],
       "recommendation_a": "approve_with_conditions",
       "recommendation_b": "approve_with_conditions",
+      "error_a": null,
+      "error_b": null,
+      "triggered_a": [],
+      "triggered_b": [],
       "reached_model": true
     },
     {
@@ -117,6 +153,10 @@
       "differs_in": [],
       "recommendation_a": "approve",
       "recommendation_b": "approve",
+      "error_a": null,
+      "error_b": null,
+      "triggered_a": [],
+      "triggered_b": [],
       "reached_model": true
     },
     {
@@ -128,6 +168,10 @@
       "differs_in": [],
       "recommendation_a": "approve_with_conditions",
       "recommendation_b": "approve_with_conditions",
+      "error_a": null,
+      "error_b": null,
+      "triggered_a": [],
+      "triggered_b": [],
       "reached_model": true
     },
     {
@@ -139,6 +183,10 @@
       "differs_in": [],
       "recommendation_a": "approve",
       "recommendation_b": "approve",
+      "error_a": null,
+      "error_b": null,
+      "triggered_a": [],
+      "triggered_b": [],
       "reached_model": true
     },
     {
@@ -150,6 +198,10 @@
       "differs_in": [],
       "recommendation_a": "approve",
       "recommendation_b": "approve",
+      "error_a": null,
+      "error_b": null,
+      "triggered_a": [],
+      "triggered_b": [],
       "reached_model": false
     },
     {
@@ -161,6 +213,10 @@
       "differs_in": [],
       "recommendation_a": "approve",
       "recommendation_b": "approve",
+      "error_a": null,
+      "error_b": null,
+      "triggered_a": [],
+      "triggered_b": [],
       "reached_model": false
     },
     {
@@ -172,6 +228,14 @@
       "differs_in": [],
       "recommendation_a": "approve_with_conditions",
       "recommendation_b": "approve_with_conditions",
+      "error_a": null,
+      "error_b": null,
+      "triggered_a": [
+        "CONCENTRATION_SENSITIVITY"
+      ],
+      "triggered_b": [
+        "CONCENTRATION_SENSITIVITY"
+      ],
       "reached_model": true
     },
     {
@@ -183,6 +247,10 @@
       "differs_in": [],
       "recommendation_a": "approve_with_conditions",
       "recommendation_b": "approve_with_conditions",
+      "error_a": null,
+      "error_b": null,
+      "triggered_a": [],
+      "triggered_b": [],
       "reached_model": true
     },
     {
@@ -194,6 +262,10 @@
       "differs_in": [],
       "recommendation_a": "approve_with_conditions",
       "recommendation_b": "approve_with_conditions",
+      "error_a": null,
+      "error_b": null,
+      "triggered_a": [],
+      "triggered_b": [],
       "reached_model": true
     },
     {
@@ -205,6 +277,10 @@
       "differs_in": [],
       "recommendation_a": "approve_with_conditions",
       "recommendation_b": "approve_with_conditions",
+      "error_a": null,
+      "error_b": null,
+      "triggered_a": [],
+      "triggered_b": [],
       "reached_model": true
     },
     {
@@ -216,6 +292,10 @@
       "differs_in": [],
       "recommendation_a": "approve",
       "recommendation_b": "approve",
+      "error_a": null,
+      "error_b": null,
+      "triggered_a": [],
+      "triggered_b": [],
       "reached_model": true
     },
     {
@@ -227,6 +307,10 @@
       "differs_in": [],
       "recommendation_a": "approve",
       "recommendation_b": "approve",
+      "error_a": null,
+      "error_b": null,
+      "triggered_a": [],
+      "triggered_b": [],
       "reached_model": true
     }
   ]

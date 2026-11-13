@@ -544,7 +544,9 @@ Ten weeks at 8 to 10 hours per week, starting November 2, 2026, give about 80 ho
 #### Week 7 (Dec 14–20): MVP hardening and demo
 
 - Evidence endpoint with hash-chain verification; Regulus provisions attached
-- Minimal review UI (Streamlit or static page)
+- Minimal review UI (Streamlit or static page). Built early, in week 4, as a static page at `/review`
+- Role summaries on the review page: requests by status for a relationship manager; the review queue, oldest wait and high-severity count for a credit officer; recent decisions, chain status, failed jobs and triggered guardrails for an auditor. The credit officer's summary leads with risk, not throughput, so it does not reward rubber-stamping (threat model T-08)
+- "Explain this" on the review page, with no model call: any figure, ratio, flag or finding opens where it came from (the source line, the ratio formula and inputs, the policy clause, the guardrail result)
 - Recorded demo responses, prebuilt images, compose profiles
 - README quickstart, architecture diagram, 2-minute demo GIF
 - Clean-machine test with no API keys
@@ -596,6 +598,7 @@ Ten weeks at 8 to 10 hours per week, starting November 2, 2026, give about 80 ho
 - Long-term memory, after the controls in section 7.3 are in place
 - Bedrock route
 - Optional: vLLM serving of an open model; Kafka-based document ingestion
+- "Ask about this memo" assistant on the review page, if "Explain this" leaves real questions unanswered. Controls before it ships: answers grounded only in that job's records, with citations; role- and job-scoped; never recommends a decision (the decision-language rail applies); borrower text treated as untrusted (input guardrails apply); every question and answer written to the evidence chain; its own evaluation set and threat-model entry. Demo mode cannot answer free-form questions, so it is a local- and cloud-mode feature. Decision recorded in ADR 0013
 
 ## 13. ADR backlog
 
@@ -613,6 +616,7 @@ Ten weeks at 8 to 10 hours per week, starting November 2, 2026, give about 80 ho
 | 0010 | Infrastructure as code | Terraform, Bicep |
 | 0011 | Workflow control | Rule-based pipeline, LLM supervisor, hybrid |
 | 0012 | Regulatory position and compliance knowledge sources | Regulus for memo review, lending references plus rule engine, rule engine only |
+| 0013 | Question answering on the review page (phase 4) | Deterministic "explain this" only, a memo-scoped grounded assistant, a general chatbot |
 
 ## 14. Working with Claude Code
 

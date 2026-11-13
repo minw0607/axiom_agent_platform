@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_citation",
+  "prompt_version": "v2",
+  "prompt_sha256": "caf821967ad1288fa773210068768fcf91e9a9cdf2d1a531d9832b18b5b65a5f",
+  "input_tokens": 1219,
+  "output_tokens": 66,
+  "text": "{\"verdict\":\"supported\",\"reason\":\"The platform outputs state the FY2025 pro forma leverage is 4.43, the max pro forma leverage is 3.50 under CP-4.2, and the LEVERAGE_ABOVE_MAX flag is high severity for FY2025.\"}"
+}

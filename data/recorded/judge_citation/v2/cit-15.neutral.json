@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_citation",
+  "prompt_version": "v2",
+  "prompt_sha256": "07c0ef7e8c225cfaa97a156ce5bcd39eaa03a42043d5ab632970430f9d7ec7fb",
+  "input_tokens": 1195,
+  "output_tokens": 29,
+  "text": "{\"verdict\":\"supported\",\"reason\":\"The platform outputs explicitly state that all reconciliation checks passed and none failed.\"}"
+}

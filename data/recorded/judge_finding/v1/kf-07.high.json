@@ -5,6 +5,6 @@
   "prompt_version": "v1",
   "prompt_sha256": "c397796247115433f0c26887eda13c9a9e84149d7598e2cb0de777c05854096f",
   "input_tokens": 695,
-  "output_tokens": 43,
-  "text": "{\"verdict\":\"not_covered\",\"reason\":\"The memo states a current ratio of 1.94, not 1.08, so it does not cover the finding.\"}"
+  "output_tokens": 48,
+  "text": "{\"verdict\":\"not_covered\",\"reason\":\"The memo states a current ratio of 1.94, not the finding\u2019s current ratio of 1.08 below the 1.20 minimum.\"}"
 }

@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_citation",
+  "prompt_version": "v2",
+  "prompt_sha256": "7665591fc86fc8d546f153d5053fb29bcc8b8dedeff35c51d9b440f092aac9d3",
+  "input_tokens": 1038,
+  "output_tokens": 37,
+  "text": "{\"verdict\":\"supported\",\"reason\":\"The platform outputs explicitly state that no risk flags were raised and that all reconciliation checks passed, with none failed.\"}"
+}

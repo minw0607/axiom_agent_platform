@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "judge",
+  "prompt_id": "judge_citation",
+  "prompt_version": "v2",
+  "prompt_sha256": "42297a160d591cf0e42f6049365697434c3e9035de90f5f4ff748c57193ebdc1",
+  "input_tokens": 1119,
+  "output_tokens": 54,
+  "text": "{\"verdict\":\"supported\",\"reason\":\"The platform outputs state FY2025 ebitda_margin 0.17, revenue_growth 0.12, dscr 2.52, and interest_coverage 6.59.\"}"
+}
