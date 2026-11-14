@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "narrative",
+  "prompt_id": "analyst",
+  "prompt_version": "v1",
+  "prompt_sha256": "d58dba9726ea8f6d1327948edcacc216b3a3486fce28e86c8de9b2fdd2afb55f",
+  "input_tokens": 1141,
+  "output_tokens": 412,
+  "text": "{\"paragraphs\":[\"Synthetic Borrower 22 (auto body repair) reported stable profitability, with EBITDA margin at 0.17 in 2023, 0.17 in 2024, and 0.17 in 2025. Revenue growth was 0.06 in 2024 and 0.05 in 2025.\",\"Coverage strengthened over the period, with DSCR moving from 1.33 in 2023 to 1.48 in 2024 and 1.63 in 2025, while interest coverage increased from 3.13 to 4.23 and 5.94. Leverage declined from 2.99 in 2023 to 2.29 in 2024 and 1.68 in 2025, and debt to equity declined from 1.62 to 0.99 and 0.61.\",\"Liquidity was consistent, with the current ratio at 2.00 in 2023, 2.00 in 2024, and 2.00 in 2025. For 2025, proposed annual debt service is 170321.76, pro forma DSCR is 1.32 with the note that it assumes existing debt service continues alongside the requested loan, and pro forma leverage is 2.27.\",\"No policy risk flags were provided. The reconciliation check balance_sheet_balances triggered for 2025: total assets 6484049 differs from total liabilities + equity 6484046 by 3.\"]}"
+}

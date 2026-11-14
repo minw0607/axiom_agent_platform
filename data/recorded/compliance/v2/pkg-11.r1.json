@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "compliance",
+  "prompt_id": "compliance",
+  "prompt_version": "v2",
+  "prompt_sha256": "ee7307f9194d1a56ba1a761236c0682c2b283cb1c0652436cee1576e3dba4887",
+  "input_tokens": 1942,
+  "output_tokens": 728,
+  "text": "{\"assessments\":[{\"rule_id\":\"REF_PROHIBITED_BASIS\",\"outcome\":\"passed\",\"message\":\"No claim mentions, relies on, or hints at a prohibited-basis characteristic of the applicant's owners, principals, or guarantors.\",\"claim_ids\":[\"s1.c1\",\"s1.c2\",\"s2.c1\",\"s2.c2\",\"s2.c3\",\"s2.c4\",\"s3.c1\",\"s3.c2\",\"s4.c1\"],\"reference_chunk_ids\":[\"regulation_b_chunk_2\",\"regulation_b_chunk_5\"]},{\"rule_id\":\"REF_REPAYMENT_CAPACITY\",\"outcome\":\"passed\",\"message\":\"The draft includes business cash-flow repayment metrics, including DSCR and pro forma DSCR, and balance-sheet metrics, including leverage and liquidity/current ratio.\",\"claim_ids\":[\"s2.c1\",\"s2.c2\",\"s2.c3\",\"s2.c4\"],\"reference_chunk_ids\":[\"occ_rating_credit_risk_chunk_3\",\"occ_rating_credit_risk_chunk_4\",\"occ_rating_credit_risk_chunk_6\"]}]}"
+}

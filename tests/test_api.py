@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Iterator
 from dataclasses import replace
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -293,13 +294,25 @@ def test_docs_page_offers_api_key_authorization(client: TestClient) -> None:
     assert "security" not in spec["paths"]["/v1/health"]["get"]
 
 
-def test_demo_mode_offers_only_packages_it_can_replay(store: InMemoryJobStore) -> None:
-    """The live recordings cover pkg-01 to pkg-10; the golden-set additions have none yet."""
+def test_demo_mode_offers_every_package_with_live_recordings(store: InMemoryJobStore) -> None:
+    """The live recordings cover the whole catalog, so the keyless demo offers all 25."""
     live = replace(SETTINGS_WITH_KEYS, recordings_override=SETTINGS.data_dir / "recorded")
     with TestClient(create_app(live, store)) as c:
         h = {"X-API-Key": KEYS["submitter"]}
         listed = [p["package_id"] for p in c.get("/v1/packages", headers=h).json()]
-        assert listed == [f"pkg-{i:02d}" for i in range(1, 11)]
+        assert listed == [f"pkg-{i:02d}" for i in range(1, 26)]
+
+
+def test_demo_mode_offers_only_packages_it_can_replay(
+    store: InMemoryJobStore, tmp_path: Path
+) -> None:
+    """A package with no recorded run is neither listed nor accepted in demo mode."""
+    (tmp_path / "intake" / "v2" / "pkg-10").mkdir(parents=True)
+    partial = replace(SETTINGS_WITH_KEYS, recordings_override=tmp_path)
+    with TestClient(create_app(partial, store)) as c:
+        h = {"X-API-Key": KEYS["submitter"]}
+        listed = [p["package_id"] for p in c.get("/v1/packages", headers=h).json()]
+        assert listed == ["pkg-10"]
         r = c.post(
             "/v1/memos", json={"package_id": "pkg-11"}, headers={**h, "Idempotency-Key": "k-11"}
         )

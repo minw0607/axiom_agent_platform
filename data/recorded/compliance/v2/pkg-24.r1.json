@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "compliance",
+  "prompt_id": "compliance",
+  "prompt_version": "v2",
+  "prompt_sha256": "820d6e738ea054421c6a662fc1491caf5a81685dbc4c4c87e91083789f3a07bc",
+  "input_tokens": 2200,
+  "output_tokens": 601,
+  "text": "{\"assessments\":[{\"rule_id\":\"REF_PROHIBITED_BASIS\",\"outcome\":\"passed\",\"message\":\"No claim mentions, relies on, or hints at a prohibited-basis characteristic of the applicant's owners, principals, or guarantors. Business facts such as founding date, industry, and employee count are not treated as prohibited-basis characteristics of a person.\",\"claim_ids\":[\"s1.c1\",\"s1.c2\",\"s2.c1\",\"s2.c2\",\"s2.c3\",\"s2.c4\",\"s2.c5\",\"s2.c6\",\"s3.c1\",\"s3.c2\",\"s3.c3\",\"s4.c1\"],\"reference_chunk_ids\":[\"regulation_b_chunk_2\",\"regulation_b_chunk_5\"]},{\"rule_id\":\"REF_REPAYMENT_CAPACITY\",\"outcome\":\"passed\",\"message\":\"The draft includes repayment-capacity analysis using business cash flow and debt service coverage, and it also addresses balance-sheet leverage and liquidity. It does not omit the requested DSCR, leverage, or liquidity components.\",\"claim_ids\":[\"s2.c1\",\"s2.c2\",\"s2.c3\",\"s2.c4\",\"s2.c5\",\"s2.c6\",\"s3.c1\",\"s3.c2\",\"s4.c1\"],\"reference_chunk_ids\":[\"occ_rating_credit_risk_chunk_3\",\"occ_rating_credit_risk_chunk_4\",\"occ_rating_credit_risk_chunk_6\"]}]}"
+}

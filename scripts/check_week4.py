@@ -11,8 +11,8 @@ and finalizes only on approval by a reviewer who did not submit it.
    only after the approval, and carries related guidance from Regulus.
 
 Usage: docker compose up -d --build && uv run python scripts/check_week4.py
-Reads SUBMITTER_API_KEYS, REVIEWER_API_KEYS and AUDITOR_API_KEYS from the environment or
-.env, and uses the first key of each. Keys are never printed.
+Reads SUBMITTER_API_KEYS, REVIEWER_API_KEYS and AUDITOR_API_KEYS from the environment, .env
+or the demo's generated .demo/keys.env, and uses the first key of each. Keys are never printed.
 """
 
 from __future__ import annotations
@@ -43,11 +43,12 @@ def check(name: str, passed: bool, detail: str = "") -> None:
 
 def first_key(name: str) -> str:
     raw = os.environ.get(name, "")
-    env_file = ROOT / ".env"
-    if not raw and env_file.exists():
-        for line in env_file.read_text(encoding="utf-8").splitlines():
-            if line.startswith(f"{name}="):
-                raw = line.split("=", 1)[1].strip()
+    # .env first, then the keyless demo's generated keys.
+    for env_file in (ROOT / ".env", ROOT / ".demo" / "keys.env"):
+        if not raw and env_file.exists():
+            for line in env_file.read_text(encoding="utf-8").splitlines():
+                if line.startswith(f"{name}="):
+                    raw = line.split("=", 1)[1].strip()
     entry = raw.split(",")[0]
     return entry.split(":", 1)[1] if ":" in entry else ""
 

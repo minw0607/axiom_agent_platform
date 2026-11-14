@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "extraction",
+  "prompt_id": "intake",
+  "prompt_version": "v2",
+  "prompt_sha256": "c8b1677cc36d3f15228afe655dade18e80de749a865f79521446d2febf8a7c35",
+  "input_tokens": 471,
+  "output_tokens": 89,
+  "text": "{\"figures\":[{\"field\":\"requested_amount\",\"year\":null,\"value\":\"1480000\",\"line\":5},{\"field\":\"interest_rate_pct\",\"year\":null,\"value\":\"8.00\",\"line\":6},{\"field\":\"term_years\",\"year\":null,\"value\":\"5\",\"line\":7},{\"field\":\"amortization_years\",\"year\":null,\"value\":\"5\",\"line\":8}]}"
+}

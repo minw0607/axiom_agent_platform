@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "narrative",
+  "prompt_id": "analyst",
+  "prompt_version": "v1",
+  "prompt_sha256": "5bb38c352858225d1b77fb281310f7d296e33d0205d4d528971f41a340109518",
+  "input_tokens": 1084,
+  "output_tokens": 375,
+  "text": "{\"paragraphs\":[\"Synthetic Borrower 11 (dental laboratory) reported stable EBITDA margin of 0.17 in 2023, 0.17 in 2024, and 0.17 in 2025. Revenue growth was 0.06 in 2024 and 0.05 in 2025, indicating continued growth at a slightly lower pace.\",\"Coverage strengthened across the period, with interest coverage increasing from 3.87 in 2023 to 5.19 in 2024 and 7.25 in 2025, and DSCR improving from 1.51 to 1.69 and 1.87. Leverage declined from 2.61 in 2023 to 2.00 in 2024 and 1.47 in 2025, while debt to equity declined from 1.51 to 0.93 and 0.58. The 2025 proposed annual debt service is 360108.72, with pro forma DSCR of 1.25 assuming existing debt service continues alongside the requested loan, and pro forma leverage of 2.55.\",\"Liquidity was consistent, with the current ratio at 2.00 in 2023, 2.00 in 2024, and 2.00 in 2025.\",\"No policy risk flags or reconciliation issues were provided.\"]}"
+}

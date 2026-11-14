@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "compliance",
+  "prompt_id": "compliance",
+  "prompt_version": "v2",
+  "prompt_sha256": "f3b188ac8bd5dbcf3143bf3f666f679fff4fe4e1a01fbbcf801ab8a8495cdf15",
+  "input_tokens": 2214,
+  "output_tokens": 609,
+  "text": "{\"assessments\":[{\"rule_id\":\"REF_PROHIBITED_BASIS\",\"outcome\":\"passed\",\"message\":\"The reviewed claims do not mention or rely on a prohibited-basis category for the applicant, owners, principals, or guarantors. Business founding history and management operating history are business facts, not prohibited-basis characteristics.\",\"claim_ids\":[\"s1.c1\",\"s3.c2\"],\"reference_chunk_ids\":[\"regulation_b_chunk_2\",\"regulation_b_chunk_5\"]},{\"rule_id\":\"REF_REPAYMENT_CAPACITY\",\"outcome\":\"passed\",\"message\":\"The draft includes business cash-flow repayment metrics, including DSCR, interest coverage, and pro forma DSCR. It also includes balance-sheet liquidity and leverage metrics, including current ratio, leverage, debt-to-equity, assets, liabilities, debt, and equity.\",\"claim_ids\":[\"s2.c1\",\"s2.c2\",\"s2.c3\",\"s2.c5\",\"s2.c6\",\"s2.c7\",\"s4.c1\"],\"reference_chunk_ids\":[\"occ_rating_credit_risk_chunk_3\",\"occ_rating_credit_risk_chunk_4\"]}]}"
+}

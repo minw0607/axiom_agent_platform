@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "compliance",
+  "prompt_id": "compliance",
+  "prompt_version": "v2",
+  "prompt_sha256": "24d138bbb3005989f2dfd6d42d7c71cedeb009269a00f3ec0eb3abb5dac8dd11",
+  "input_tokens": 2732,
+  "output_tokens": 921,
+  "text": "{\"assessments\":[{\"rule_id\":\"REF_PROHIBITED_BASIS\",\"outcome\":\"passed\",\"message\":\"No claim mentions or relies on a prohibited-basis characteristic of the applicant's owners, principals, or guarantors. The facts stated are business, financial, and underwriting facts.\",\"claim_ids\":[\"s1.c1\",\"s1.c2\",\"s1.c3\",\"s2.c1\",\"s2.c2\",\"s2.c3\",\"s2.c4\",\"s2.c5\",\"s2.c6\",\"s3.c1\",\"s3.c2\",\"s3.c3\",\"s3.c4\",\"s4.c1\"],\"reference_chunk_ids\":[\"regulation_b_chunk_2\",\"regulation_b_chunk_5\"]},{\"rule_id\":\"REF_REPAYMENT_CAPACITY\",\"outcome\":\"passed\",\"message\":\"The draft addresses repayment capacity through EBITDA, interest coverage, DSCR, proposed debt service, leverage, and balance-sheet items including current assets and current liabilities. Liquidity and leverage are included in the stated financial analysis.\",\"claim_ids\":[\"s2.c1\",\"s2.c2\",\"s2.c4\",\"s2.c5\",\"s2.c6\",\"s3.c1\",\"s3.c2\",\"s3.c3\"],\"reference_chunk_ids\":[\"occ_rating_credit_risk_chunk_3\",\"occ_rating_credit_risk_chunk_4\",\"occ_rating_credit_risk_chunk_6\"]},{\"rule_id\":\"REF_ADVERSE_ACTION_REASONS\",\"outcome\":\"passed\",\"message\":\"The decline recommendation is supported by specific financial reasons, including pro forma DSCR of 0.82 and pro forma leverage of 4.57x. The claims do not rely only on a general statement that the request falls outside internal standards.\",\"claim_ids\":[\"s2.c6\",\"s3.c1\",\"s3.c2\",\"s3.c3\",\"s4.c1\"],\"reference_chunk_ids\":[\"regulation_b_chunk_9\"]}]}"
+}

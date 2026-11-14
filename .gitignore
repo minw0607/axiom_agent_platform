@@ -32,3 +32,6 @@ infra/terraform/*.tfvars
 .DS_Store
 .idea/
 .vscode/
+
+# Keyless demo: generated keys
+.demo/

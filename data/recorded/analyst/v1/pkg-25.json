@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "narrative",
+  "prompt_id": "analyst",
+  "prompt_version": "v1",
+  "prompt_sha256": "6b4c0ff90822a3e8026112517481410251afa6537e93d0dc7ce66adbe0227051",
+  "input_tokens": 1082,
+  "output_tokens": 377,
+  "text": "{\"paragraphs\":[\"Synthetic Borrower 25 (engineering consulting) maintained stable profitability, with EBITDA margin at 0.15 in 2023, 0.15 in 2024, and 0.15 in 2025. Revenue growth was 0.06 in 2024 and 0.07 in 2025.\",\"Coverage and leverage strengthened across the periods presented. Leverage improved from 0.95 in 2023 to 0.75 in 2024 and 0.56 in 2025, while debt-to-equity declined from 0.84 to 0.58 and then 0.40. Interest coverage increased from 15.08 in 2023 to 19.26 in 2024 and 25.87 in 2025, and DSCR improved from 4.53 to 5.04 and then 5.67. For 2025, proposed annual debt service is 905560.80, pro forma DSCR is 3.30 assuming existing debt service continues alongside the requested loan, and pro forma leverage is 1.26.\",\"Liquidity was consistent, with the current ratio reported at 2.00 in 2023, 2.00 in 2024, and 2.00 in 2025.\",\"No policy risk flags were provided, and no failed reconciliation checks were provided.\"]}"
+}

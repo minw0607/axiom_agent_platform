@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "compliance",
+  "prompt_id": "compliance",
+  "prompt_version": "v2",
+  "prompt_sha256": "ea3aa800478af4c2114eeeb0c44d72298bd5c6f3fb73cf84c005da9c37699746",
+  "input_tokens": 2666,
+  "output_tokens": 869,
+  "text": "{\"assessments\":[{\"rule_id\":\"REF_PROHIBITED_BASIS\",\"outcome\":\"passed\",\"message\":\"No claim mentions a prohibited-basis characteristic of the applicant's owners, principals, or guarantors. The founding date and other profile details are business facts.\",\"claim_ids\":[\"s1.c1\",\"s1.c2\",\"s1.c3\",\"s2.c1\",\"s2.c2\",\"s2.c3\",\"s2.c4\",\"s2.c5\",\"s3.c1\",\"s3.c2\",\"s3.c3\",\"s3.c4\",\"s4.c1\"],\"reference_chunk_ids\":[\"regulation_b_chunk_2\",\"regulation_b_chunk_5\"]},{\"rule_id\":\"REF_REPAYMENT_CAPACITY\",\"outcome\":\"passed\",\"message\":\"The draft addresses cash-flow repayment capacity through EBITDA, debt service, DSCR, and pro forma DSCR. It also addresses balance-sheet capacity through leverage, current ratio, assets, liabilities, debt, equity, and liquidity.\",\"claim_ids\":[\"s2.c1\",\"s2.c2\",\"s2.c4\",\"s2.c5\",\"s3.c1\",\"s3.c2\",\"s3.c3\",\"s4.c1\"],\"reference_chunk_ids\":[\"occ_rating_credit_risk_chunk_3\",\"occ_rating_credit_risk_chunk_4\",\"occ_rating_credit_risk_chunk_6\"]},{\"rule_id\":\"REF_ADVERSE_ACTION_REASONS\",\"outcome\":\"passed\",\"message\":\"The decline rationale gives specific financial reasons: low pro forma DSCR, low current ratio, and high pro forma leverage. It does not rely only on internal standards or policy labels.\",\"claim_ids\":[\"s3.c1\",\"s3.c2\",\"s3.c3\",\"s4.c1\"],\"reference_chunk_ids\":[\"regulation_b_chunk_9\"]}]}"
+}

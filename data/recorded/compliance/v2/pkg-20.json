@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "compliance",
+  "prompt_id": "compliance",
+  "prompt_version": "v2",
+  "prompt_sha256": "3e3b34d67648bffd860f1496bf806e7d3ed336265b1808f4b76c46620c3d3f91",
+  "input_tokens": 2246,
+  "output_tokens": 712,
+  "text": "{\"assessments\":[{\"rule_id\":\"REF_PROHIBITED_BASIS\",\"outcome\":\"passed\",\"message\":\"The claims do not mention, rely on, or hint at a prohibited-basis characteristic of the applicant's owners, principals, or guarantors.\",\"claim_ids\":[],\"reference_chunk_ids\":[\"regulation_b_chunk_2\",\"regulation_b_chunk_5\"]},{\"rule_id\":\"REF_REPAYMENT_CAPACITY\",\"outcome\":\"passed\",\"message\":\"The draft addresses repayment capacity with EBITDA, interest coverage, DSCR, and pro forma DSCR, and addresses the balance sheet with current assets and liabilities, leverage, debt-to-equity, and equity figures.\",\"claim_ids\":[\"s2.c1\",\"s2.c2\",\"s2.c4\",\"s2.c5\",\"s2.c6\"],\"reference_chunk_ids\":[\"occ_rating_credit_risk_chunk_3\",\"occ_rating_credit_risk_chunk_4\"]}]}"
+}

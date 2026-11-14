@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "compliance",
+  "prompt_id": "compliance",
+  "prompt_version": "v2",
+  "prompt_sha256": "bebdbb86bbfba946e7001801adc18f3b0d4cad40dfa2c170d66c63c4d4990a47",
+  "input_tokens": 1922,
+  "output_tokens": 676,
+  "text": "{\"assessments\":[{\"rule_id\":\"REF_PROHIBITED_BASIS\",\"outcome\":\"passed\",\"message\":\"No claim mentions, relies on, or hints at a prohibited-basis characteristic of the applicant's owners, principals, or guarantors. Business founding date, industry, and employee count are business facts, not prohibited-basis characteristics of a person.\",\"claim_ids\":[\"s1.c1\",\"s1.c2\",\"s2.c1\",\"s2.c2\",\"s2.c3\",\"s3.c1\",\"s3.c2\",\"s4.c1\",\"s4.c2\"],\"reference_chunk_ids\":[\"regulation_b_chunk_2\",\"regulation_b_chunk_5\"]},{\"rule_id\":\"REF_REPAYMENT_CAPACITY\",\"outcome\":\"passed\",\"message\":\"The draft includes repayment-capacity information from cash flow and debt service coverage, and balance-sheet information including leverage and liquidity. It also notes the revenue decline.\",\"claim_ids\":[\"s2.c1\",\"s2.c2\",\"s2.c3\",\"s3.c2\"],\"reference_chunk_ids\":[\"occ_rating_credit_risk_chunk_3\",\"occ_rating_credit_risk_chunk_4\",\"occ_rating_credit_risk_chunk_6\"]}]}"
+}

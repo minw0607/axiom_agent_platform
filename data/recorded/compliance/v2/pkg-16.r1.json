@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "compliance",
+  "prompt_id": "compliance",
+  "prompt_version": "v2",
+  "prompt_sha256": "10be9bb7179d997804d2374481b3287a2dc5cfc4279dc791bc076aef541d61cb",
+  "input_tokens": 2753,
+  "output_tokens": 947,
+  "text": "{\"assessments\":[{\"rule_id\":\"REF_PROHIBITED_BASIS\",\"outcome\":\"passed\",\"message\":\"No claim mentions, relies on, or hints at a prohibited-basis category of the applicant's owners, principals, or guarantors. The business's industry, founding date, employees, market, and customers are business facts, not prohibited-basis characteristics of a person.\",\"claim_ids\":[\"s1.c1\",\"s1.c2\",\"s1.c3\",\"s2.c1\",\"s2.c2\",\"s2.c3\",\"s2.c4\",\"s2.c5\",\"s2.c6\",\"s2.c7\",\"s3.c1\",\"s3.c2\",\"s3.c3\",\"s4.c1\"],\"reference_chunk_ids\":[\"regulation_b_chunk_2\",\"regulation_b_chunk_5\"]},{\"rule_id\":\"REF_REPAYMENT_CAPACITY\",\"outcome\":\"passed\",\"message\":\"The draft includes business cash-flow repayment measures, including DSCR and pro forma DSCR, and balance-sheet measures including leverage and liquidity. It also includes supporting income-statement and balance-sheet figures.\",\"claim_ids\":[\"s2.c1\",\"s2.c2\",\"s2.c3\",\"s2.c4\",\"s2.c5\",\"s2.c6\",\"s2.c7\",\"s3.c1\",\"s3.c2\",\"s3.c3\"],\"reference_chunk_ids\":[\"occ_rating_credit_risk_chunk_3\",\"occ_rating_credit_risk_chunk_4\",\"occ_rating_credit_risk_chunk_6\"]},{\"rule_id\":\"REF_ADVERSE_ACTION_REASONS\",\"outcome\":\"passed\",\"message\":\"The decline recommendation is supported by specific stated reasons, including pro forma DSCR of 0.82 and pro forma leverage of 4.57x, rather than only references to internal standards. The claims also identify which metric drove the decline recommendation.\",\"claim_ids\":[\"s2.c7\",\"s3.c1\",\"s3.c2\",\"s3.c3\",\"s4.c1\"],\"reference_chunk_ids\":[\"regulation_b_chunk_9\"]}]}"
+}

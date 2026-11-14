@@ -98,6 +98,7 @@ axiom_agent_platform/
 │   └── evidence/       # append-only evidence log and bundle writer
 ├── prompts/            # versioned prompt files
 ├── config/             # routing, guardrail, and threshold settings
+├── docker/           # start-up wrapper that hands each container the demo keys
 ├── data/
 │   ├── synthetic/      # borrower packages, credit policy, golden set
 │   └── lending_refs/   # public lending references + provenance manifest
@@ -106,7 +107,7 @@ axiom_agent_platform/
 ├── tests/              # unit, contract, and integration tests
 ├── infra/terraform/    # Azure resources
 ├── docs/               # plan, architecture, ADRs, threat model, model card
-└── docker-compose.yml  # keyless local stack
+└── docker-compose.yml  # keyless demo: docker compose up, no .env needed
 ```
 
 Each folder has a short README that says what goes there and in which week of the plan.
@@ -160,24 +161,44 @@ Every LLM judge uses a different model from the one under test, with no fallback
 
 ## 🚀 Quick start
 
-**Tests:** install [uv](https://docs.astral.sh/uv/), then:
+**Try the demo: no API keys, no setup.** You need [Docker](https://docs.docker.com/get-docker/) running and about 8 GB of free disk space. Then:
+
+```bash
+git clone https://github.com/minw0607/axiom_agent_platform.git
+cd axiom_agent_platform
+docker compose up -d --build
+docker compose logs demo-keys
+```
+
+The last command prints one sign-in key per role. Open http://localhost:8000/review, sign in with the **relationship manager** key and request a memo for any package. When the draft is ready, sign in with the **credit officer** key to read it and approve, reject or ask for changes. Then sign in with the **auditor** key to read the audit trail.
+
+The first start builds the images, which takes the longest. It starts:
+
+- Postgres
+- Phoenix, the trace viewer, at http://localhost:6006, and the OpenTelemetry Collector
+- the Regulus and GKN MCP servers, built from pinned release tags (Regulus `v0.2.1`, GKN `v0.2.0`)
+- the platform's API, at http://localhost:8000/docs, and its worker
+
+Every port is bound to your machine only. The models' answers are replayed from live recordings, so no model is called. A one-time `demo-keys` service generates the MCP shared secret and the three role keys into `.demo/keys.env`. Git ignores that file, and the keys stay the same until you delete it. Any value you set in `.env` is used instead of the generated one.
+
+**Run the tests:** install [uv](https://docs.astral.sh/uv/), then:
 
 ```bash
 uv sync
 uv run pytest
 ```
 
-**The stack:** with [Docker](https://docs.docker.com/get-docker/) running, copy `.env.example` to `.env` and set `MCP_SHARED_SECRET` and one key per role (`SUBMITTER_API_KEYS=rm-demo:<random key>`, and likewise `REVIEWER_API_KEYS` and `AUDITOR_API_KEYS`), then:
+**Check the stack:**
 
 ```bash
-docker compose up -d --build
 uv run python scripts/check_gate1.py
 uv run python scripts/check_week4.py
 ```
 
-This starts Postgres, Phoenix (traces at http://localhost:6006), the OpenTelemetry Collector, the Regulus and GKN MCP servers, and the platform's API (http://localhost:8000/docs) and worker. Both MCP images are built from pinned release tags (Regulus `v0.2.1`, GKN `v0.2.0`). The check script confirms the supporting services are up, Regulus returns cited provisions, and one job's retrieval never returns another job's documents. The week 4 check submits a package, restarts Postgres, the API and the worker while the draft awaits review, then approves it and checks the evidence.
+- **Gate 1 check:** the supporting services are up, Regulus returns cited provisions, and one job's retrieval never returns another job's documents.
+- **Week 4 check:** submits a package, restarts Postgres, the API and the worker while the draft awaits review, then approves it and checks the evidence.
 
-**Use the review page:** open http://localhost:8000/review and sign in with one of the role keys from `.env` (the part after the colon). A relationship manager requests a memo, a credit officer reads the draft with its findings and approves, rejects or asks for changes, and an auditor reads the audit trail. The page is plain HTML and JavaScript served by the API, with a strict content security policy; it renders everything as text. After signing in, each role first sees its own overview: a relationship manager their requests by stage and any failures, a credit officer the review queue with high-risk memos first, and an auditor integrity-check failures, failed jobs, safety checks that found a problem, and recent decisions. **Explain this:** click a citation to read the exact source line (with its table's header row, and whether it still matches the fingerprint recorded during the job), a ratio to see its formula and every input with its source, a flag or finding to read the credit policy clause it applies, or a safety check to see what it checks. These are lookups, not model calls.
+**Use the review page:** open http://localhost:8000/review and sign in with one of the role keys from `docker compose logs demo-keys`. If you set your own keys in `.env`, use the part after the colon. A relationship manager requests a memo, a credit officer reads the draft with its findings and approves, rejects or asks for changes, and an auditor reads the audit trail. The page is plain HTML and JavaScript served by the API, with a strict content security policy; it renders everything as text. After signing in, each role first sees its own overview: a relationship manager their requests by stage and any failures, a credit officer the review queue with high-risk memos first, and an auditor integrity-check failures, failed jobs, safety checks that found a problem, and recent decisions. **Explain this:** click a citation to read the exact source line (with its table's header row, and whether it still matches the fingerprint recorded during the job), a ratio to see its formula and every input with its source, a flag or finding to read the credit policy clause it applies, or a safety check to see what it checks. These are lookups, not model calls.
 
 **Start over:** evidence events are append-only, so there is no command that deletes memos. To clear a demo, remove the database volume, which deletes every memo and its evidence: `docker compose down -v`, then `docker compose up -d`.
 
@@ -210,7 +231,7 @@ curl -i -X POST http://localhost:8000/v1/memos/<job_id>/review -H "X-API-Key: <r
 curl http://localhost:8000/v1/memos/<job_id>/evidence -H "X-API-Key: <auditor key>"
 ```
 
-Demo mode replays real model responses recorded from live runs, so no model API key is needed ([what the recordings are](data/recorded/README.md)). The catalog has 25 fictional packages, each built to test one scenario; the demo offers the ten with live recordings, `pkg-01` to `pkg-10`, and the other fifteen, added for the golden set in week 6, run in the tests until they are recorded live.
+Demo mode replays real model responses recorded from live runs, so no model API key is needed ([what the recordings are](data/recorded/README.md)). The demo offers all 25 fictional packages, each built to test one scenario ([the list](data/synthetic/README.md)). In two of them, pkg-21 and pkg-23, the recorded draft recommends approval where the expected answer is to refer, and the credit policy rules flag the problem for the credit officer. The [recordings page](data/recorded/README.md) explains.
 
 ## 🗺 Roadmap
 

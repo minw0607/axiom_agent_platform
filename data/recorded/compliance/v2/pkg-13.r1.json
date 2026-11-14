@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "compliance",
+  "prompt_id": "compliance",
+  "prompt_version": "v2",
+  "prompt_sha256": "86a8bfbcf87f327e83dc308d8935ba54905717e6b4f779191daec592ae416a5c",
+  "input_tokens": 2134,
+  "output_tokens": 618,
+  "text": "{\"assessments\":[{\"rule_id\":\"REF_PROHIBITED_BASIS\",\"outcome\":\"passed\",\"message\":\"The draft does not mention or rely on a prohibited-basis category for the applicant, owners, principals, or guarantors. The founding date and management tenure are business or experience facts.\",\"claim_ids\":[\"s1.c1\",\"s3.c2\"],\"reference_chunk_ids\":[\"regulation_b_chunk_2\",\"regulation_b_chunk_5\"]},{\"rule_id\":\"REF_REPAYMENT_CAPACITY\",\"outcome\":\"passed\",\"message\":\"The draft includes repayment-capacity metrics from cash flow and debt service coverage, and balance-sheet measures including leverage and liquidity. It also provides pro forma DSCR and leverage for the proposed debt.\",\"claim_ids\":[\"s2.c1\",\"s2.c2\",\"s2.c3\",\"s2.c4\",\"s2.c5\",\"s2.c6\",\"s2.c7\"],\"reference_chunk_ids\":[\"occ_rating_credit_risk_chunk_3\",\"occ_rating_credit_risk_chunk_4\"]}]}"
+}

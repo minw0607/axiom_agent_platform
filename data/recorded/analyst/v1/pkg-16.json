@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "narrative",
+  "prompt_id": "analyst",
+  "prompt_version": "v1",
+  "prompt_sha256": "dd7f8e7394389724e8682182e4ac333b0563c4f22a7c9b9aa9dd7a47cf87bed9",
+  "input_tokens": 1339,
+  "output_tokens": 938,
+  "text": "{\"paragraphs\":[\"Synthetic Borrower 16 (solar installation) showed revenue_growth of 0.22 in 2024 and 0.25 in 2025. EBITDA margin was stable at 0.11 in 2023, 0.11 in 2024, and 0.11 in 2025.\",\"Coverage strengthened historically, with interest_coverage of 3.69 in 2023, 7.41 in 2024, and 15.04 in 2025, and DSCR of 2.49 in 2023, 3.20 in 2024, and 4.21 in 2025. Leverage declined from 1.52 in 2023 to 0.99 in 2024 and 0.60 in 2025, while debt_to_equity declined from 0.24 in 2023 to 0.18 in 2024 and 0.12 in 2025. For 2025, proposed_annual_debt_service is 990587.16, pro_forma_dscr is 0.82, and pro_forma_leverage is 4.57.\",\"Liquidity was consistent, with current_ratio of 2.00 in 2023, 2.00 in 2024, and 2.00 in 2025.\",\"Risk flags are high severity. DSCR_BELOW_MIN under CP-4.1 states that pro forma DSCR 0.82 is below the policy minimum of 1.25. DSCR_BELOW_DECLINE_FLOOR under CP-6.3 states that pro forma DSCR 0.82 is below 1.00: cash flow does not cover debt service, so the request is not eligible for an exception and the draft recommendation is decline. LEVERAGE_ABOVE_MAX under CP-4.2 states that pro forma leverage 4.57x exceeds the policy maximum of 3.50x. No reconciliation issues were reported.\"]}"
+}

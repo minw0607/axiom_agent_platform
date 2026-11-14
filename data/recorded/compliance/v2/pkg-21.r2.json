@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "compliance",
+  "prompt_id": "compliance",
+  "prompt_version": "v2",
+  "prompt_sha256": "b4f5757bc960c485e8a805a08b9f77e91802c4b01fa94d94d95da0a534d754ce",
+  "input_tokens": 2224,
+  "output_tokens": 1330,
+  "text": "{\"assessments\":[{\"rule_id\":\"REF_PROHIBITED_BASIS\",\"outcome\":\"passed\",\"message\":\"No claim mentions or relies on a prohibited-basis category of a person. The draft uses business and financial facts instead.\",\"claim_ids\":[\"s1.c1\",\"s1.c2\",\"s1.c3\",\"s2.c1\",\"s2.c2\",\"s2.c3\",\"s2.c4\",\"s2.c5\",\"s2.c6\",\"s2.c7\",\"s3.c1\",\"s3.c2\",\"s3.c3\",\"s4.c1\",\"s4.c2\"],\"reference_chunk_ids\":[\"regulation_b_chunk_2\",\"regulation_b_chunk_5\"]},{\"rule_id\":\"REF_REPAYMENT_CAPACITY\",\"outcome\":\"triggered\",\"message\":\"The draft covers leverage and liquidity, but debt service coverage is not computed because debt_principal_repaid is missing. The recommendation conditions action on receiving that data.\",\"claim_ids\":[\"s2.c1\",\"s2.c2\",\"s2.c3\",\"s2.c4\",\"s2.c5\",\"s2.c6\",\"s2.c7\",\"s3.c1\",\"s3.c2\",\"s4.c1\",\"s4.c2\"],\"reference_chunk_ids\":[\"occ_rating_credit_risk_chunk_3\",\"occ_rating_credit_risk_chunk_6\",\"occ_rating_credit_risk_chunk_4\"]}]}"
+}

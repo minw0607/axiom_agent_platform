@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "narrative",
+  "prompt_id": "analyst",
+  "prompt_version": "v1",
+  "prompt_sha256": "d4e115777b6f17cd91b2eb6ebd93c38139368ecf0167438134c4896d2983b0fc",
+  "input_tokens": 1235,
+  "output_tokens": 409,
+  "text": "{\"paragraphs\":[\"Synthetic Borrower 24 (hotel operation) maintained an EBITDA margin of 0.16 in 2023, 0.16 in 2024, and 0.16 in 2025. Revenue growth was 0.06 in 2024 and 0.05 in 2025.\",\"Coverage and leverage show mixed trends. DSCR improved from 2.18 in 2023 to 2.36 in 2024 and 2.52 in 2025, while interest coverage increased from 0.82 to 1.01 and 1.19. Leverage declined from 3.83 in 2023 to 3.52 in 2024 and 3.27 in 2025, and debt to equity declined from 0.78 to 0.74 and 0.70. For 2025, proposed annual debt service is 64780.32, pro forma DSCR is 2.31, and pro forma leverage is 3.61.\",\"Liquidity was stable, with the current ratio at 2.00 in 2023, 2.00 in 2024, and 2.00 in 2025.\",\"Risk flags are high severity. COVERAGE_BELOW_MIN under CP-4.4 states: Interest coverage 1.19 is below the policy minimum of 2.00. LEVERAGE_ABOVE_MAX under CP-4.2 states: Pro forma leverage 3.61x exceeds the policy maximum of 3.50x.\"]}"
+}

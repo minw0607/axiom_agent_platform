@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "narrative",
+  "prompt_id": "analyst",
+  "prompt_version": "v1",
+  "prompt_sha256": "b67abc1c6d83ae2e5ce5d4b6f882fbc3d636c04652303cadf31d3576f745c10d",
+  "input_tokens": 1086,
+  "output_tokens": 391,
+  "text": "{\"paragraphs\":[\"Synthetic Borrower 23 (tutoring services) reported steady EBITDA margin of 0.17 in 2023, 0.17 in 2024, and 0.17 in 2025. Revenue growth was 0.06 in 2024 and 0.05 in 2025.\",\"Coverage strengthened over the period, with DSCR of 4.97 in 2023, 5.54 in 2024, and 6.14 in 2025, while interest coverage increased from 4.12 to 6.66 to 10.68. Leverage declined from 0.76 in 2023 to 0.57 in 2024 and 0.41 in 2025, and debt to equity declined from 0.55 to 0.38 to 0.25.\",\"Liquidity was stable, with current ratio reported at 2.00 in 2023, 2.00 in 2024, and 2.00 in 2025. The 2025 proposed annual debt service is 75762.12, with pro forma DSCR of 3.42 assuming existing debt service continues alongside the requested loan, and pro forma leverage of 0.75.\",\"No policy risk flags were reported. No failed reconciliation checks were reported.\"]}"
+}

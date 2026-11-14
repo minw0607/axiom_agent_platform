@@ -5,7 +5,8 @@
 3. A retrieval for one job cannot return another job's documents.
 
 Usage: docker compose up -d --build && uv run python scripts/check_gate1.py
-Reads MCP_SHARED_SECRET (and optional service URLs) from the environment or .env.
+Reads MCP_SHARED_SECRET (and optional service URLs) from the environment, .env or the
+demo's generated .demo/keys.env.
 """
 
 from __future__ import annotations
@@ -45,11 +46,13 @@ def http_status(url: str, method: str = "GET") -> int:
 
 def load_secret() -> str:
     secret = os.environ.get("MCP_SHARED_SECRET", "")
-    env_file = Path(__file__).resolve().parents[1] / ".env"
-    if not secret and env_file.exists():
-        for line in env_file.read_text(encoding="utf-8").splitlines():
-            if line.startswith("MCP_SHARED_SECRET="):
-                secret = line.split("=", 1)[1].strip()
+    root = Path(__file__).resolve().parents[1]
+    # .env first, then the keyless demo's generated keys.
+    for env_file in (root / ".env", root / ".demo" / "keys.env"):
+        if not secret and env_file.exists():
+            for line in env_file.read_text(encoding="utf-8").splitlines():
+                if line.startswith("MCP_SHARED_SECRET="):
+                    secret = line.split("=", 1)[1].strip()
     return secret
 
 

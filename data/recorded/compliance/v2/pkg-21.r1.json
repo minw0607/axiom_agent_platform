@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "compliance",
+  "prompt_id": "compliance",
+  "prompt_version": "v2",
+  "prompt_sha256": "7b282942c19bb77d015d792b52cd344fae7e7f3e30697b2f888a45d3c5ce2cb4",
+  "input_tokens": 2173,
+  "output_tokens": 725,
+  "text": "{\"assessments\":[{\"rule_id\":\"REF_PROHIBITED_BASIS\",\"outcome\":\"passed\",\"message\":\"The claims do not mention, rely on, or hint at a prohibited-basis characteristic of the applicant, its owners, principals, or guarantors.\",\"claim_ids\":[],\"reference_chunk_ids\":[\"regulation_b_chunk_2\",\"regulation_b_chunk_5\"]},{\"rule_id\":\"REF_REPAYMENT_CAPACITY\",\"outcome\":\"triggered\",\"message\":\"The draft covers leverage and liquidity, but pro forma DSCR is not computed, so debt service coverage analysis is incomplete.\",\"claim_ids\":[\"s2.c1\",\"s2.c3\",\"s2.c4\",\"s2.c5\",\"s2.c6\",\"s3.c1\",\"s3.c2\",\"s4.c1\",\"s4.c2\"],\"reference_chunk_ids\":[\"occ_rating_credit_risk_chunk_3\",\"occ_rating_credit_risk_chunk_6\",\"occ_rating_credit_risk_chunk_4\"]}]}"
+}

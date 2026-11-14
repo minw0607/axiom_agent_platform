@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "narrative",
+  "prompt_id": "analyst",
+  "prompt_version": "v1",
+  "prompt_sha256": "c94c1861afb4df8723ba5a8a95264be350bfc4e626ee16f2c53c7a7c5637f322",
+  "input_tokens": 1174,
+  "output_tokens": 480,
+  "text": "{\"paragraphs\":[\"Synthetic Borrower 21 (plumbing supply) showed stable profitability across 2023, 2024, and 2025, with EBITDA margin at 0.17 in each year. Revenue growth was 0.06 in 2024 and 0.05 in 2025.\",\"Coverage and leverage improved over the period. Interest coverage increased from 6.97 in 2023 to 9.24 in 2024 and 12.78 in 2025, while leverage declined from 1.71 to 1.31 and 0.96. Debt to equity declined from 1.16 in 2023 to 0.75 in 2024 and 0.48 in 2025. DSCR was undefined in 2023, 2024, and 2025 due to missing debt_principal_repaid. Proposed annual debt service in 2025 was 219098.64; pro forma DSCR was undefined due to missing debt_principal_repaid, and pro forma leverage was 1.54.\",\"Liquidity was consistent, with the current ratio at 2.00 in 2023, 2.00 in 2024, and 2.00 in 2025.\",\"Risk flag DSCR_BELOW_MIN_UNDEFINED is high severity for 2025 under CP-4.1: Pro forma DSCR could not be computed (undefined: missing debt_principal_repaid). There were no failed reconciliation checks reported.\"]}"
+}

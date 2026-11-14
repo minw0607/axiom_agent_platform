@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "narrative",
+  "prompt_id": "analyst",
+  "prompt_version": "v1",
+  "prompt_sha256": "b95612702c940eea628ff81dc53054139c4b08b01d39fef8ebbd4ccae51fa733",
+  "input_tokens": 1312,
+  "output_tokens": 580,
+  "text": "{\"paragraphs\":[\"Synthetic Borrower 14 (metal fabrication) showed stable EBITDA margin of 0.10 in 2023, 0.10 in 2024, and 0.10 in 2025. Revenue growth was 0.02 in 2024 and 0.01 in 2025.\",\"Coverage improved across the period, with DSCR of 1.44 in 2023, 1.54 in 2024, and 1.63 in 2025, while interest coverage increased from 1.67 to 1.88 to 2.10. Leverage declined from 4.00 in 2023 to 3.59 in 2024 and 3.24 in 2025; debt to equity was -13.55 in 2023, 107.54 in 2024, and 9.12 in 2025. For 2025, proposed annual debt service is 347524.08, pro forma DSCR is 1.07, and pro forma leverage is 4.90.\",\"Liquidity remained weak, with current ratio of 0.88 in 2023, 0.88 in 2024, and 0.88 in 2025.\",\"Risk flags are high severity: DSCR_BELOW_MIN under CP-4.1 states that Pro forma DSCR 1.07 is below the policy minimum of 1.25; LIQUIDITY_BELOW_MIN under CP-4.3 states that Current ratio 0.88 is below the policy minimum of 1.20; LEVERAGE_ABOVE_MAX under CP-4.2 states that Pro forma leverage 4.90x exceeds the policy maximum of 3.50x. No reconciliation issues were reported.\"]}"
+}

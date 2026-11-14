@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "narrative",
+  "prompt_id": "analyst",
+  "prompt_version": "v1",
+  "prompt_sha256": "6e6526f89b907832baf5647903531031f4f61223c2282ae8e3f266eb1df5a419",
+  "input_tokens": 1405,
+  "output_tokens": 600,
+  "text": "{\"paragraphs\":[\"Synthetic Borrower 15 (event staffing) generated negative EBITDA margins in each period, with ebitda_margin of -0.03 in 2023, -0.03 in 2024, and -0.03 in 2025. Revenue growth was negative at -0.04 in 2024 and -0.06 in 2025, indicating continued top-line contraction.\",\"Coverage and leverage metrics are weak. DSCR was -0.78 in 2023, -0.78 in 2024, and -0.77 in 2025; interest coverage was -9.95 in 2023, -11.81 in 2024, and -14.52 in 2025. Leverage was -5.56 in 2023, -4.82 in 2024, and -4.10 in 2025, while debt_to_equity improved from 0.98 in 2023 to 0.73 in 2024 and 0.53 in 2025. Proposed_annual_debt_service is 126011.16 in 2025, with pro_forma_dscr of -0.46 and pro_forma_leverage of -7.52; the pro_forma_dscr note states that it assumes existing debt service continues alongside the requested loan.\",\"Liquidity appears stable based on current_ratio, which was 2.00 in 2023, 2.00 in 2024, and 2.00 in 2025.\",\"Risk flags are high severity. DSCR_BELOW_MIN states that pro forma DSCR -0.46 is below the policy minimum of 1.25 under CP-4.1. DSCR_BELOW_DECLINE_FLOOR states that pro forma DSCR -0.46 is below 1.00: cash flow does not cover debt service, so the request is not eligible for an exception and the draft recommendation is decline under CP-6.3. COVERAGE_BELOW_MIN states that interest coverage -14.52 is below the policy minimum of 2.00 under CP-4.4. NEGATIVE_EBITDA states that EBITDA is zero or negative, so leverage is not meaningful under CP-4.2. There are no reconciliation issues reported.\"]}"
+}

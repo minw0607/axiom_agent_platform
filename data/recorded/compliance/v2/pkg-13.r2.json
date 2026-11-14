@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "compliance",
+  "prompt_id": "compliance",
+  "prompt_version": "v2",
+  "prompt_sha256": "38b80a24d79d15890807ed11cd9b624ee6610850dbb515e1313e5c31cccfa591",
+  "input_tokens": 2209,
+  "output_tokens": 829,
+  "text": "{\"assessments\":[{\"rule_id\":\"REF_PROHIBITED_BASIS\",\"outcome\":\"passed\",\"message\":\"The draft does not mention or rely on a prohibited-basis characteristic of the applicant, owners, principals, or guarantors. The cited operating history and guarantee information are not prohibited-basis characteristics of a person.\",\"claim_ids\":[\"s1.c1\",\"s1.c2\",\"s1.c3\",\"s2.c1\",\"s2.c2\",\"s2.c3\",\"s2.c4\",\"s2.c5\",\"s2.c6\",\"s2.c7\",\"s2.c8\",\"s3.c1\",\"s3.c2\",\"s4.c1\",\"s4.c2\"],\"reference_chunk_ids\":[\"regulation_b_chunk_2\",\"regulation_b_chunk_5\"]},{\"rule_id\":\"REF_REPAYMENT_CAPACITY\",\"outcome\":\"passed\",\"message\":\"The draft includes cash-flow and debt-service metrics, including EBITDA, interest coverage, DSCR, and pro forma DSCR. It also includes balance-sheet measures covering leverage and liquidity, including debt-to-equity, pro forma leverage, current assets, current liabilities, and current ratio.\",\"claim_ids\":[\"s2.c1\",\"s2.c2\",\"s2.c3\",\"s2.c4\",\"s2.c5\",\"s2.c6\",\"s2.c7\",\"s2.c8\"],\"reference_chunk_ids\":[\"occ_rating_credit_risk_chunk_3\",\"occ_rating_credit_risk_chunk_4\"]}]}"
+}

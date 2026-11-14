@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "narrative",
+  "prompt_id": "analyst",
+  "prompt_version": "v1",
+  "prompt_sha256": "d64acccefd90dc60e52a6381152f75206107d2c09cc44ed9b4a34d9fd9488c9c",
+  "input_tokens": 1160,
+  "output_tokens": 416,
+  "text": "{\"paragraphs\":[\"Synthetic Borrower 12 (sign manufacturing) reported stable EBITDA margin of 0.17 in 2023, 0.17 in 2024, and 0.17 in 2025. Revenue growth was 0.06 in 2024 and 0.05 in 2025.\",\"Coverage improved over the historical period, with interest coverage moving from 3.87 in 2023 to 5.19 in 2024 and 7.25 in 2025, while DSCR increased from 1.51 to 1.69 and 1.87. Leverage declined from 2.61 in 2023 to 2.00 in 2024 and 1.47 in 2025, and debt to equity declined from 1.51 to 0.93 and 0.58.\",\"Liquidity was consistent, with the current ratio at 2.00 in 2023, 2.00 in 2024, and 2.00 in 2025. For 2025, proposed annual debt service is 369841.44, pro forma DSCR is 1.24, and pro forma leverage is 2.58.\",\"Risk flag DSCR_BELOW_MIN is high severity: Pro forma DSCR 1.24 is below the policy minimum of 1.25, year 2025, ratio pro_forma_dscr, policy reference CP-4.1. There are no reconciliation issues reported.\"]}"
+}

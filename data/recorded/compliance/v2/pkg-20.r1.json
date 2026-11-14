@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "compliance",
+  "prompt_id": "compliance",
+  "prompt_version": "v2",
+  "prompt_sha256": "2e4df20d4c13b3f67c309aa88f81d32f643648c91352f589e73ad4b37fa172aa",
+  "input_tokens": 2299,
+  "output_tokens": 579,
+  "text": "{\"assessments\":[{\"rule_id\":\"REF_PROHIBITED_BASIS\",\"outcome\":\"passed\",\"message\":\"The claims describe business facts and credit metrics and do not mention a prohibited-basis characteristic of a person connected to the applicant.\",\"claim_ids\":[\"s1.c1\",\"s1.c2\",\"s2.c1\",\"s2.c2\",\"s2.c3\",\"s2.c4\",\"s2.c5\",\"s2.c6\",\"s2.c7\",\"s3.c1\",\"s3.c2\",\"s4.c1\",\"s4.c2\",\"s4.c3\"],\"reference_chunk_ids\":[\"regulation_b_chunk_2\",\"regulation_b_chunk_5\"]},{\"rule_id\":\"REF_REPAYMENT_CAPACITY\",\"outcome\":\"passed\",\"message\":\"The draft includes repayment capacity through EBITDA, interest coverage, DSCR, and pro forma DSCR, and it also addresses leverage, liquidity, assets, liabilities, debt, and equity.\",\"claim_ids\":[\"s2.c1\",\"s2.c2\",\"s2.c3\",\"s2.c4\",\"s2.c5\",\"s2.c6\",\"s2.c7\"],\"reference_chunk_ids\":[\"occ_rating_credit_risk_chunk_3\",\"occ_rating_credit_risk_chunk_4\"]}]}"
+}

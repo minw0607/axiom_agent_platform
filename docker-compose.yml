@@ -1,12 +1,38 @@
-# Keyless local stack: supporting services (Gate 1) plus the API and worker (week 3).
-# Copy .env.example to .env, then set MCP_SHARED_SECRET and the role API keys.
+# The keyless demo: one command, no API keys, no .env needed.
 #
 #   docker compose up -d --build
-#   uv run python scripts/check_gate1.py
+#   docker compose logs demo-keys      # the sign-in key for each role
+#
+# On first start the demo-keys service generates the MCP shared secret and one API key per
+# role into .demo/keys.env. Every other container starts through docker/with-demo-keys.sh,
+# which fills in only what .env leaves empty, so values set in .env always win.
+#
+# Optional profiles: --profile evals (MLflow).
 
 name: axiom
 
+x-demo-keys: &demo-keys
+  - ./.demo:/run/axiom-demo:ro
+  - ./docker/with-demo-keys.sh:/usr/local/bin/with-demo-keys.sh:ro
+
+x-after-demo-keys: &after-demo-keys
+  demo-keys:
+    condition: service_completed_successfully
+
 services:
+  demo-keys:
+    image: axiom-platform:dev
+    # Root only to write into the bind-mounted .demo folder; it exits once the file exists.
+    user: "0"
+    command: ["python", "-m", "axiom.demo_keys", "/run/axiom-demo/keys.env"]
+    environment:
+      # Read only to say which roles use keys from .env; those are never printed.
+      SUBMITTER_API_KEYS: ${SUBMITTER_API_KEYS:-}
+      REVIEWER_API_KEYS: ${REVIEWER_API_KEYS:-}
+      AUDITOR_API_KEYS: ${AUDITOR_API_KEYS:-}
+    volumes:
+      - ./.demo:/run/axiom-demo
+
   postgres:
     image: postgres:17.11-alpine
     environment:
@@ -48,37 +74,46 @@ services:
     build:
       context: https://github.com/minw0607/Regulus.git#v0.2.1
     environment:
-      MCP_SHARED_SECRET: ${MCP_SHARED_SECRET:?Set MCP_SHARED_SECRET in .env}
+      MCP_SHARED_SECRET: ${MCP_SHARED_SECRET:-}
       MCP_ALLOWED_HOSTS: localhost:*,127.0.0.1:*,regulus-mcp:*
+    command: ["sh", "/usr/local/bin/with-demo-keys.sh", "python", "-m", "regulus.service"]
+    depends_on: *after-demo-keys
     ports:
       - "127.0.0.1:8001:8001"
+    volumes: *demo-keys
 
   gkn-mcp:
     image: gkn-mcp:0.2.0
     build:
       context: https://github.com/minw0607/geometric_knowledge_network.git#v0.2.0
     environment:
-      MCP_SHARED_SECRET: ${MCP_SHARED_SECRET:?Set MCP_SHARED_SECRET in .env}
+      MCP_SHARED_SECRET: ${MCP_SHARED_SECRET:-}
       MCP_ALLOWED_HOSTS: localhost:*,127.0.0.1:*,gkn-mcp:*
       GKN_REFERENCE_DIR: /references
+    command:
+      ["sh", "/usr/local/bin/with-demo-keys.sh", "python", "-m", "geometric_knowledge_network.service"]
+    depends_on: *after-demo-keys
     ports:
       - "127.0.0.1:8002:8002"
     volumes:
       - gkn-data:/data
+      - ./.demo:/run/axiom-demo:ro
+      - ./docker/with-demo-keys.sh:/usr/local/bin/with-demo-keys.sh:ro
       - ./data/synthetic/credit_policy:/references/credit_policy:ro
       - ./data/lending_refs:/references/lending_refs:ro
 
   api:
     image: axiom-platform:dev
     build: .
-    command: ["python", "-m", "axiom.api"]
+    command: ["sh", "/usr/local/bin/with-demo-keys.sh", "python", "-m", "axiom.api"]
+    volumes: *demo-keys
     environment: &platform-env
       AXIOM_MODE: ${AXIOM_MODE:-demo}
       AXIOM_API_HOST: 0.0.0.0
       DATABASE_URL: postgresql://axiom:axiom@postgres:5432/axiom
       GKN_MCP_URL: http://gkn-mcp:8002/mcp
       REGULUS_MCP_URL: http://regulus-mcp:8001/mcp
-      MCP_SHARED_SECRET: ${MCP_SHARED_SECRET:?Set MCP_SHARED_SECRET in .env}
+      MCP_SHARED_SECRET: ${MCP_SHARED_SECRET:-}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
       SUBMITTER_API_KEYS: ${SUBMITTER_API_KEYS:-}
       REVIEWER_API_KEYS: ${REVIEWER_API_KEYS:-}
@@ -88,6 +123,8 @@ services:
     ports:
       - "127.0.0.1:8000:8000"
     depends_on:
+      demo-keys:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
     healthcheck:
@@ -98,9 +135,12 @@ services:
 
   worker:
     image: axiom-platform:dev
-    command: ["python", "-m", "axiom.jobs.worker"]
+    command: ["sh", "/usr/local/bin/with-demo-keys.sh", "python", "-m", "axiom.jobs.worker"]
+    volumes: *demo-keys
     environment: *platform-env
     depends_on:
+      demo-keys:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       api:

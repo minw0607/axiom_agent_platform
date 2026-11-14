@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "narrative",
+  "prompt_id": "analyst",
+  "prompt_version": "v1",
+  "prompt_sha256": "6ff3dcc23074f6adcbccd45387a52eac8397341fef0a6ab09f838a246b270ce7",
+  "input_tokens": 1169,
+  "output_tokens": 693,
+  "text": "{\"paragraphs\":[\"Synthetic Borrower 18 (aerospace machining) showed stable operating profitability, with ebitda_margin at 0.17 in 2023, 0.17 in 2024, and 0.17 in 2025. Revenue_growth was 0.06 in 2024 and 0.05 in 2025.\",\"Coverage and leverage metrics improved across the period. Leverage was 1.18 in 2023, 0.90 in 2024, and 0.66 in 2025, while debt_to_equity was 0.88 in 2023, 0.59 in 2024, and 0.39 in 2025. Interest_coverage was 11.06 in 2023, 14.58 in 2024, and 20.06 in 2025, and dscr was 3.37 in 2023, 3.75 in 2024, and 4.15 in 2025. For 2025, proposed_annual_debt_service is 365164.44, pro_forma_dscr is 2.76 with the note that it assumes existing debt service continues alongside the requested loan, and pro_forma_leverage is 1.32.\",\"Liquidity was stable, with current_ratio at 2.00 in 2023, 2.00 in 2024, and 2.00 in 2025.\",\"Risk flag CONCENTRATION_DISCLOSURE is a warning under CP-5.1 for 2025: The largest customer is 40% of revenue, above 25%, and the memo must identify the customer's contract terms. There are no reconciliation_issues reported.\"]}"
+}

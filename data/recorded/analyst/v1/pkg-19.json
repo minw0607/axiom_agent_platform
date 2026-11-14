@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "narrative",
+  "prompt_id": "analyst",
+  "prompt_version": "v1",
+  "prompt_sha256": "f531fbd6e1a7ff80858d2ad3cd265e4a8b2e77050f85e8dfc7da385d887948bc",
+  "input_tokens": 1082,
+  "output_tokens": 374,
+  "text": "{\"paragraphs\":[\"Synthetic Borrower 19 (office furniture) reported stable EBITDA margin of 0.16 in 2023, 0.16 in 2024, and 0.16 in 2025. Revenue growth was 0.03 in 2024 and -0.10 in 2025, indicating a decline in the most recent year provided.\",\"Coverage and leverage metrics improved over the historical period. Leverage declined from 1.67 in 2023 to 1.31 in 2024 and 1.12 in 2025, while debt to equity decreased from 1.09 to 0.72 and 0.50 over the same years. Interest coverage increased from 7.21 in 2023 to 9.22 in 2024 and 10.46 in 2025, and DSCR was 2.38, 2.57, and 2.44, respectively. For 2025, proposed annual debt service is 217695.12, pro forma DSCR is 1.88, and pro forma leverage is 1.63, with the pro forma DSCR note stating that it assumes existing debt service continues alongside the requested loan.\",\"Liquidity was consistent across the period, with the current ratio reported at 2.00 in 2023, 2.00 in 2024, and 2.00 in 2025.\",\"No policy risk flags were provided, and no reconciliation issues were provided.\"]}"
+}

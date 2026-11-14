@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "compliance",
+  "prompt_id": "compliance",
+  "prompt_version": "v2",
+  "prompt_sha256": "b946f4a557d3901251b2c1e300cae93c9d31635984d3a06ca18c2de5299e02eb",
+  "input_tokens": 2072,
+  "output_tokens": 610,
+  "text": "{\"assessments\":[{\"rule_id\":\"REF_PROHIBITED_BASIS\",\"outcome\":\"passed\",\"message\":\"The claims do not mention or rely on a prohibited-basis characteristic of the applicant's owners, principals, or guarantors. The business founding date, industry, employees, region, and customers are business facts rather than prohibited-basis facts about a person.\",\"claim_ids\":[\"s1.c1\",\"s1.c2\",\"s1.c3\",\"s2.c1\",\"s2.c2\",\"s2.c3\",\"s2.c4\",\"s3.c1\",\"s3.c2\",\"s4.c1\",\"s4.c2\"],\"reference_chunk_ids\":[\"regulation_b_chunk_2\",\"regulation_b_chunk_5\"]},{\"rule_id\":\"REF_REPAYMENT_CAPACITY\",\"outcome\":\"passed\",\"message\":\"The draft addresses repayment capacity with EBITDA, interest coverage, DSCR, pro forma DSCR, and proposed debt service, and it addresses the balance sheet with current assets, current liabilities, leverage, debt-to-equity, and liquidity.\",\"claim_ids\":[\"s2.c1\",\"s2.c2\",\"s2.c3\",\"s2.c4\",\"s3.c1\",\"s4.c1\",\"s4.c2\"],\"reference_chunk_ids\":[\"occ_rating_credit_risk_chunk_3\",\"occ_rating_credit_risk_chunk_4\",\"occ_rating_credit_risk_chunk_6\"]}]}"
+}

@@ -1,0 +1,10 @@
+{
+  "origin": "recorded",
+  "route": "compliance",
+  "prompt_id": "compliance",
+  "prompt_version": "v2",
+  "prompt_sha256": "9f20ca0a9138d1f469e00bb9e7cf29bf82ffeda920ae9fb589f029b74a28e8a4",
+  "input_tokens": 2187,
+  "output_tokens": 713,
+  "text": "{\"assessments\":[{\"rule_id\":\"REF_PROHIBITED_BASIS\",\"outcome\":\"passed\",\"message\":\"The cited claims do not mention or rely on a prohibited-basis characteristic of a person; business age and operating history are business facts.\",\"claim_ids\":[\"s1.c1\",\"s3.c2\"],\"reference_chunk_ids\":[\"regulation_b_chunk_2\",\"regulation_b_chunk_5\"]},{\"rule_id\":\"REF_REPAYMENT_CAPACITY\",\"outcome\":\"passed\",\"message\":\"The draft includes business cash flow and coverage metrics, including DSCR, and balance-sheet metrics including leverage and liquidity/current ratio.\",\"claim_ids\":[\"s2.c1\",\"s2.c2\",\"s2.c3\",\"s2.c4\",\"s2.c5\",\"s2.c6\",\"s4.c1\"],\"reference_chunk_ids\":[\"occ_rating_credit_risk_chunk_3\",\"occ_rating_credit_risk_chunk_4\"]}]}"
+}
