@@ -244,6 +244,11 @@ td.na { color: var(--muted); }
   background: none; border: 0; border-radius: 7px;
   padding: 0.45rem 0.6rem; margin-bottom: 0.5rem; font-weight: 600;
 }
+.back-button {
+  align-self: flex-start; background: none; border: 0; border-radius: 7px;
+  padding: 0.35rem 0.6rem; margin-left: -0.6rem; color: var(--accent); font-weight: 600;
+}
+.back-button:hover { background: var(--surface-2); }
 .overview:hover { background: var(--surface-2); }
 .overview[aria-current="true"] { background: var(--surface-2); box-shadow: inset 3px 0 0 var(--accent); }
 .tiles {

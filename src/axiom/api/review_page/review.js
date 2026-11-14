@@ -242,6 +242,7 @@ async function signIn(key) {
 
 function signOut() {
   storage("clear");
+  if (history.state && history.state.jobId) history.replaceState(null, "");
   Object.assign(state, {
     key: null, me: null, jobs: [], selectedId: null, job: null, evidence: null,
     evidenceError: null, pending: null, decisionError: null, comments: "",
@@ -357,7 +358,13 @@ async function refreshList() {
   }
 }
 
-async function select(jobId) {
+// Opening a memo from the overview adds one browser history entry, so the browser's Back
+// returns to the overview. Moving between memos replaces it, so Back never walks memo by memo.
+async function select(jobId, fromHistory = false) {
+  if (!fromHistory) {
+    if (history.state && history.state.jobId) history.replaceState({ jobId }, "");
+    else history.pushState({ jobId }, "");
+  }
   state.selectedId = jobId;
   state.job = null;
   state.evidence = null;
@@ -417,11 +424,11 @@ function renderDetail() {
   }
   const job = state.job;
   if (!job) {
-    detail.replaceChildren(el("div", { class: "card placeholder" }, el("span", { class: "spinner" }), "Loading…"));
+    detail.replaceChildren(backButton(), el("div", { class: "card placeholder" }, el("span", { class: "spinner" }), "Loading…"));
     return;
   }
   if (job.error && !job.job_id) {
-    detail.replaceChildren(el("div", { class: "notice bad" }, job.error));
+    detail.replaceChildren(backButton(), el("div", { class: "notice bad" }, job.error));
     return;
   }
   const status = STATUS[job.status] || { text: "" };
@@ -455,7 +462,7 @@ function renderDetail() {
   }
   if (job.reviews && job.reviews.length) parts.push(renderReviews(job));
   if (state.me.role === "auditor") parts.push(renderAudit(job));
-  detail.replaceChildren(...parts);
+  detail.replaceChildren(backButton(), ...parts);
 }
 
 function renderSummary(job, memo) {
@@ -1131,6 +1138,16 @@ async function loadDashboard() {
   if (!state.selectedId && after !== before) renderDetail();
 }
 
+function backButton() {
+  return el("button", { class: "back-button", type: "button", onclick: goBack }, "← Back to overview");
+}
+
+// Back to the overview, through browser history when a memo was opened from it.
+function goBack() {
+  if (history.state && history.state.jobId) history.back();
+  else showOverview();
+}
+
 async function showOverview() {
   state.selectedId = null;
   state.job = null;
@@ -1240,14 +1257,20 @@ document.addEventListener("DOMContentLoaded", async () => {
       state.key = null;
       errorBox.textContent =
         error.status === 401
-          ? "That key wasn't recognised. Use the part after the colon on one of the *_API_KEYS lines in .env, not your OpenAI or Azure key."
+          ? "That key wasn't recognised. Use a key printed by docker compose logs demo-keys, or the part after the colon on a *_API_KEYS line in .env. Not your OpenAI or Azure key."
           : explain(error);
       errorBox.hidden = false;
     }
   });
   $("sign-out").addEventListener("click", signOut);
   $("request-button").addEventListener("click", requestMemo);
-  $("overview").addEventListener("click", showOverview);
+  $("overview").addEventListener("click", goBack);
+  window.addEventListener("popstate", (event) => {
+    if (!state.key) return;
+    const jobId = event.state && event.state.jobId;
+    if (jobId) select(jobId, true);
+    else showOverview();
+  });
 
   const saved = storage("get");
   if (saved) {

@@ -34,7 +34,9 @@
       <button class="primary" type="submit">Sign in</button>
       <details class="help">
         <summary>Where do I find a key in this demo?</summary>
-        <p>Open the <code>.env</code> file in the project. The lines
+        <p>In a terminal in the project folder, run <code>docker compose logs demo-keys</code>.
+          It prints one key for each role.</p>
+        <p>If you set your own keys in <code>.env</code>, the lines
           <code>SUBMITTER_API_KEYS</code>, <code>REVIEWER_API_KEYS</code> and
           <code>AUDITOR_API_KEYS</code> each look like <code>name:key</code>.
           Paste only the part after the colon.</p>
