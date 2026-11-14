@@ -8,6 +8,8 @@ Errors use RFC 9457 problem details (`application/problem+json`). The `type` fie
 | 401 | <a id="unauthorized"></a>`unauthorized` | The `X-API-Key` header is missing or not a valid key. |
 | 403 | <a id="forbidden"></a>`forbidden` | The key is valid, but its role cannot perform this action. Only submitter keys can submit. |
 | 404 | <a id="not-found"></a>`not-found` | No such job, or the job belongs to another submitter. The two cases look the same on purpose. |
+| 404 | <a id="source-not-found"></a>`source-not-found` | `GET /v1/memos/{id}/source`: the document or locator is not part of this job's package or the passages it retrieved. |
+| 404 | <a id="policy-clause-not-found"></a>`policy-clause-not-found` | `GET /v1/policy/{ref}`: no such clause or section in the credit policy. References outside it, such as regulations, are cited by the passages a finding lists. |
 | 405 | <a id="method-not-allowed"></a>`method-not-allowed` | The path does not accept this HTTP method. |
 | 413 | <a id="payload-too-large"></a>`payload-too-large` | The request body is over 64 KiB. |
 | 422 | <a id="invalid-request"></a>`invalid-request` | The body does not match the schema. The `errors` field lists each problem. |

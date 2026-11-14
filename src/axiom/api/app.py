@@ -21,6 +21,7 @@ from axiom import __version__
 from axiom.api.auth import Principal, require
 from axiom.api.dashboard import Dashboard, build_dashboard
 from axiom.api.errors import Problem, install_error_handlers, problem_response
+from axiom.api.explain import PolicyClause, SourceExcerpt, policy_clause, source_excerpt
 from axiom.api.schemas import (
     EvidenceBundle,
     JobAccepted,
@@ -38,7 +39,7 @@ from axiom.api.schemas import (
 )
 from axiom.catalog import UnknownPackage, has_recordings, list_packages, load_package
 from axiom.evidence.log import verify_chain
-from axiom.jobs.store import InMemoryJobStore, JobStatus, JobStore, PostgresJobStore
+from axiom.jobs.store import InMemoryJobStore, JobRecord, JobStatus, JobStore, PostgresJobStore
 from axiom.jobs.worker import run_worker
 from axiom.settings import Settings
 from axiom.telemetry.setup import setup_telemetry
@@ -266,16 +267,70 @@ def create_app(settings: Settings | None = None, store: JobStore | None = None) 
     ) -> Dashboard:
         return await build_dashboard(store, principal)
 
+    async def visible_job(job_id: str, principal: Principal) -> JobRecord:
+        job = await store.get(job_id) if len(job_id) <= 64 else None
+        # Submitters see only their own jobs; others' jobs look the same as missing ones.
+        if job is None or (principal.role == "submitter" and job.submitter != principal.name):
+            raise Problem(404, "not-found", "No such memo job")
+        return job
+
     @app.get("/v1/memos/{job_id}", response_model=MemoJob, tags=["memos"])
     async def get_memo(
         job_id: str,
         principal: Annotated[Principal, Depends(require("submitter", "reviewer", "auditor"))],
     ) -> MemoJob:
-        job = await store.get(job_id) if len(job_id) <= 64 else None
-        # Submitters see only their own jobs; others' jobs look the same as missing ones.
-        if job is None or (principal.role == "submitter" and job.submitter != principal.name):
-            raise Problem(404, "not-found", "No such memo job")
-        return to_public(job)
+        return to_public(await visible_job(job_id, principal))
+
+    @app.get(
+        "/v1/memos/{job_id}/source",
+        response_model=SourceExcerpt,
+        tags=["memos"],
+        summary="The source text behind one citation",
+        description="Resolves a citation in this memo: a line of a borrower document, or a "
+        "passage the job retrieved. Says whether the text matches the fingerprint recorded "
+        "during the job. No model is called.",
+    )
+    async def get_source(
+        job_id: str,
+        principal: Annotated[Principal, Depends(require("submitter", "reviewer", "auditor"))],
+        doc_id: Annotated[str, Query(max_length=128)],
+        locator: Annotated[str, Query(max_length=128)],
+    ) -> SourceExcerpt:
+        job = await visible_job(job_id, principal)
+        try:
+            package = load_package(settings.packages_dir, job.package_id)
+        except UnknownPackage:
+            package = None
+        excerpt = source_excerpt(package, job.result or {}, doc_id, locator) if package else None
+        if excerpt is None:
+            raise Problem(
+                404,
+                "source-not-found",
+                "No such source in this memo",
+                "The document or locator is not part of this job's package or retrieved passages.",
+            )
+        return excerpt
+
+    @app.get(
+        "/v1/policy/{ref}",
+        response_model=PolicyClause,
+        tags=["memos"],
+        summary="A credit policy clause or section, by reference (CP-4.1, CP-3)",
+    )
+    async def get_policy(
+        ref: str,
+        principal: Annotated[Principal, Depends(require("submitter", "reviewer", "auditor"))],
+    ) -> PolicyClause:
+        clause = policy_clause(settings.reference_dirs["credit_policy"], ref)
+        if clause is None:
+            raise Problem(
+                404,
+                "policy-clause-not-found",
+                "No such clause in the credit policy",
+                "References outside the bank's credit policy, such as regulations, are cited "
+                "by the passages the finding lists.",
+            )
+        return clause
 
     @app.post(
         "/v1/memos/{job_id}/review",

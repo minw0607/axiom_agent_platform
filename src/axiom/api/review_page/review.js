@@ -99,6 +99,7 @@ const state = {
   dashboard: null,
   dashboardError: null,
   listLoaded: false,
+  lookups: new Map(), // "Explain this" answers for the selected memo
 };
 
 // Helpers ---------------------------------------------------------------------------------
@@ -364,6 +365,7 @@ async function select(jobId) {
   state.pending = null;
   state.decisionError = null;
   state.comments = "";
+  state.lookups = new Map();
   renderList();
   renderDetail();
   if (window.matchMedia("(max-width: 860px)").matches) $("detail").scrollIntoView({ block: "start" });
@@ -583,17 +585,230 @@ async function submitDecision() {
 }
 
 function findingItem(f) {
-  return el(
-    "li",
-    { class: "finding" },
+  const li = el("li", { class: "finding" });
+  li.append(
     severityPill(f),
     el(
       "div",
       {},
       el("div", {}, f.message),
-      el("div", { class: "finding-ref" }, `${f.rule_id} · ${f.policy_ref}`),
+      el(
+        "div",
+        { class: "finding-ref" },
+        `${f.rule_id} · ${f.policy_ref} `,
+        whyButton(li, `finding|${f.rule_id}`, () => findingWhy(li, f), { class: "why-link" }, "Explain this"),
+      ),
     ),
   );
+  return li;
+}
+
+// Explain this ----------------------------------------------------------------------------
+// Click a citation, ratio, flag, finding or safety check to see where it comes from. Every
+// answer is looked up, never generated: a source line, a formula with its inputs, or a
+// quoted policy clause.
+
+const GUARDRAIL_DETAIL = {
+  pii_redaction: "Before any AI reads the package, personal identifiers such as names, account and phone numbers are masked. Financial figures and table rows are never masked.",
+  injection_screen: "Each document is scanned for text aimed at the AI, such as “ignore previous instructions”. A document that contains it is quarantined and no AI reads the package.",
+  injection_shield: "A cloud service's screen for text aimed at the AI. It runs only when that service is configured.",
+  decision_language: "The draft must not state a credit decision as already made. Only a credit officer decides.",
+  investment_advice: "The draft must not give investment advice.",
+  on_task: "The draft may contain only memo content: no asides to the reader, no links, and no instructions repeated from the documents.",
+  number_provenance: "Every number in the draft must match an extracted figure, a ratio the tools computed, a policy threshold or a number in the documents.",
+  citation_support: "A claim that states an extracted figure must cite that figure's own source line.",
+  pii_output: "The draft must not contain personal identifiers. The borrower's own figures are not identifiers.",
+  content_safety: "A cloud service's check for harmful content. It runs only when that service is configured.",
+};
+const FINGERPRINT = {
+  matches: { label: "Matches the fingerprint recorded during the job", tone: "good" },
+  differs: { label: "Differs from the fingerprint recorded during the job", tone: "warn" },
+  not_recorded: { label: "No fingerprint was recorded", tone: "warn" },
+};
+const CP_REF = /^CP-\d+(\.\d+)?$/;
+
+// "pkg-04-income_statement" -> "income statement"
+function docLabel(docId) {
+  return String(docId).replace(/^pkg-\d+-/, "").replaceAll("_", " ");
+}
+
+function citeLabel(c) {
+  return /^line \d+$/.test(c.locator) ? `${docLabel(c.doc_id)}, ${c.locator}` : `${docLabel(c.doc_id)}, retrieved passage`;
+}
+
+async function lookup(key, path) {
+  if (!state.lookups.has(key)) {
+    state.lookups.set(
+      key,
+      api("GET", path).catch((error) => ({ error: error.status === 404 ? null : explain(error) })),
+    );
+  }
+  return state.lookups.get(key);
+}
+
+function sourceLookup(c) {
+  const q = new URLSearchParams({ doc_id: c.doc_id, locator: c.locator });
+  return lookup(`src|${c.doc_id}|${c.locator}`, `/v1/memos/${encodeURIComponent(state.selectedId)}/source?${q}`);
+}
+
+function policyLookup(ref) {
+  return lookup(`cp|${ref}`, `/v1/policy/${encodeURIComponent(ref)}`);
+}
+
+// Opens or closes an explanation inside `host`. `build` returns nodes, or a promise of them.
+function toggleWhy(host, key, build) {
+  const open = host.querySelector(`:scope > .why[data-key="${CSS.escape(key)}"]`);
+  host.querySelectorAll(":scope > .why").forEach((n) => n.remove());
+  host.querySelectorAll(":scope .why-toggle[aria-expanded='true']").forEach((b) => b.setAttribute("aria-expanded", "false"));
+  if (open) return false;
+  const panel = el("div", { class: "why", "data-key": key }, el("span", { class: "spinner" }), "Looking it up…");
+  host.append(panel);
+  Promise.resolve(build()).then(
+    (nodes) => panel.replaceChildren(...[nodes].flat(Infinity).filter((n) => n !== null && n !== undefined && n !== false)),
+    () => panel.replaceChildren("Could not look this up."),
+  );
+  return true;
+}
+
+function whyButton(host, key, build, attrs, ...children) {
+  const button = el(
+    "button",
+    {
+      ...attrs,
+      class: `why-toggle ${(attrs && attrs.class) || ""}`.trim(),
+      type: "button",
+      "aria-expanded": "false",
+      onclick: (event) => {
+        event.stopPropagation();
+        const target = typeof host === "function" ? host() : host;
+        const opened = toggleWhy(target, key, build);
+        button.setAttribute("aria-expanded", opened ? "true" : "false");
+      },
+    },
+    ...children,
+  );
+  return button;
+}
+
+function sourceNodes(x, c) {
+  if (!x || x.error === null) return [el("p", {}, `This citation (${citeLabel(c)}) does not resolve in this memo's package.`)];
+  if (x.error) return [el("p", { class: "error" }, x.error)];
+  const fp = FINGERPRINT[x.fingerprint] || { label: x.fingerprint, tone: "" };
+  return [
+    el("div", { class: "why-title" }, x.kind === "line" ? `${x.title}, line ${x.line}` : `${x.title}, passage the platform retrieved`),
+    x.header ? el("pre", { class: "why-source header" }, x.header) : null,
+    el("pre", { class: "why-source" }, x.text),
+    el("div", { class: "why-meta" }, el("span", { class: `pill ${fp.tone}` }, fp.label), x.note ? el("span", {}, x.note) : null),
+  ];
+}
+
+function sourceWhy(c) {
+  return sourceLookup(c).then((x) => sourceNodes(x, c));
+}
+
+// A list of citation buttons; each opens its excerpt inside `host`.
+function citeButtons(host, citations) {
+  const seen = new Set();
+  return citations
+    .filter((c) => {
+      const k = `${c.doc_id}|${c.locator}`;
+      return seen.has(k) ? false : seen.add(k);
+    })
+    .map((c) =>
+      whyButton(host, `src|${c.doc_id}|${c.locator}`, () => sourceWhy(c), { class: "cite", title: "Show the source text" }, citeLabel(c)),
+    );
+}
+
+async function policyNodes(refText, intro) {
+  // "CP-4.1, CP-6.3" is two clauses; "12 CFR 1002.4(a), 1002.6(b)" is one outside reference.
+  const parts = String(refText || "").split(/,\s*/).filter(Boolean);
+  const refs = parts.every((p) => CP_REF.test(p)) ? parts : [String(refText || "")].filter(Boolean);
+  const nodes = intro ? [el("p", {}, intro)] : [];
+  const outside = [];
+  for (const ref of refs) {
+    if (!CP_REF.test(ref)) {
+      outside.push(ref);
+      continue;
+    }
+    const clause = await policyLookup(ref);
+    if (!clause || clause.error !== undefined) {
+      outside.push(ref);
+      continue;
+    }
+    nodes.push(
+      el("div", { class: "why-title" }, `Credit policy ${clause.ref} · ${clause.section} (version ${clause.policy_version})`),
+      el("blockquote", { class: "why-quote" }, clause.text),
+    );
+    if (clause.clauses && clause.clauses.length) {
+      for (const sub of clause.clauses) {
+        const c = await policyLookup(sub);
+        if (c && c.text) nodes.push(el("blockquote", { class: "why-quote" }, `${c.ref} ${c.text}`));
+      }
+    }
+  }
+  if (outside.length) {
+    nodes.push(el("p", { class: "muted" }, `${outside.join("; ")}: outside the bank's credit policy. The passages the finding cites are what it rests on.`));
+  }
+  return nodes;
+}
+
+function flagWhy(f) {
+  return policyNodes(f.policy_ref, null);
+}
+
+function findingWhy(host, f) {
+  return policyNodes(f.policy_ref, null).then((nodes) => {
+    if (f.citations && f.citations.length) {
+      const list = el("div", { class: "why-cites" }, el("span", { class: "muted" }, "Cited: "));
+      const box = el("div", {});
+      list.append(...citeButtons(box, f.citations));
+      nodes.push(list, box);
+    }
+    if (!nodes.length) nodes.push(el("p", {}, "No policy clause or passage is cited for this finding."));
+    return nodes;
+  });
+}
+
+function guardrailWhy(g) {
+  return [
+    el("p", {}, GUARDRAIL_DETAIL[g.control] || "No description is available for this check."),
+    el("p", { class: "muted" }, `Ran on: ${g.stage === "input" ? "the borrower's documents" : "the draft"}. Result: ${g.reason || g.outcome}.`),
+  ];
+}
+
+// The figure an input name refers to: an extracted figure for that year, the loan request,
+// or another ratio the tools computed.
+function inputSource(memo, name, year) {
+  const fig = (memo.figures[String(year)] || {})[name] || (memo.loan_request || {})[name];
+  if (fig) return { citation: { doc_id: fig.source.doc_id, locator: `line ${fig.source.line}` } };
+  const ratio = (memo.ratios || []).find((r) => r.name === name && r.year === year);
+  if (ratio) return { ratio };
+  return {};
+}
+
+function ratioWhy(memo, r, label, unit) {
+  const box = el("div", {});
+  const rows = Object.entries(r.inputs || {}).map(([name, value]) => {
+    const src = inputSource(memo, name, r.year);
+    const cell = el("td", {});
+    if (src.citation) cell.append(...citeButtons(box, [src.citation]));
+    else if (src.ratio) {
+      const known = RATIOS.find(([n]) => n === name);
+      cell.append(`computed by the tools: ${known ? known[1].toLowerCase() : name.replaceAll("_", " ")}, formula `, el("code", {}, src.ratio.formula));
+    }
+    else cell.append(el("span", { class: "muted" }, "policy or loan terms"));
+    return el("tr", {}, el("td", {}, name.replaceAll("_", " ")), el("td", {}, Number(value).toLocaleString("en-US")), cell);
+  });
+  return [
+    el("div", { class: "why-title" }, `${label}, ${r.year}: ${formatRatio(r.value, unit) ?? "n/a"}`),
+    el("p", {}, "Formula: ", el("code", {}, r.formula)),
+    r.note ? el("p", { class: "muted" }, r.note) : null,
+    rows.length
+      ? el("div", { class: "table-wrap" }, el("table", { class: "why-inputs" }, el("thead", {}, el("tr", {}, el("th", {}, "Input"), el("th", {}, "Value"), el("th", {}, "Source"))), el("tbody", {}, rows)))
+      : null,
+    box,
+    el("p", { class: "muted" }, "Computed by tested code, not by the AI. Rounded half-up to two decimal places."),
+  ];
 }
 
 function renderFindings(memo) {
@@ -609,14 +824,24 @@ function renderFindings(memo) {
       el(
         "ul",
         { class: "findings" },
-        flags.map((f) =>
-          el(
-            "li",
-            { class: "finding" },
+        flags.map((f) => {
+          const li = el("li", { class: "finding" });
+          li.append(
             el("span", { class: `pill ${f.severity === "high" ? "bad" : "warn"}` }, f.severity),
-            el("div", {}, el("div", {}, f.message), el("div", { class: "finding-ref" }, [f.code, f.year, f.policy_ref].filter(Boolean).join(" · "))),
-          ),
-        ),
+            el(
+              "div",
+              {},
+              el("div", {}, f.message),
+              el(
+                "div",
+                { class: "finding-ref" },
+                `${[f.code, f.year, f.policy_ref].filter(Boolean).join(" · ")} `,
+                f.policy_ref ? whyButton(li, `flag|${f.code}|${f.year}`, () => flagWhy(f), { class: "why-link" }, "Explain this") : null,
+              ),
+            ),
+          );
+          return li;
+        }),
       ),
     );
   }
@@ -650,7 +875,7 @@ function renderMemo(memo) {
     "section",
     { class: "card" },
     el("h2", {}, "Draft memo"),
-    el("p", { class: "muted" }, "Each statement shows where its figures come from in the borrower's documents."),
+    el("p", { class: "muted" }, "Each statement shows where its figures come from. Click a source to read the exact line."),
     (memo.sections || []).map((section) =>
       el(
         "div",
@@ -659,17 +884,11 @@ function renderMemo(memo) {
         el(
           "ul",
           { class: "claims" },
-          section.claims.map((claim) =>
-            el(
-              "li",
-              {},
-              claim.text,
-              [...new Set(claim.citations.map((c) => `${c.doc_id}|${c.locator}`))].map((k) => {
-                const [doc, locator] = k.split("|");
-                return el("span", { class: "cite", title: doc }, locator);
-              }),
-            ),
-          ),
+          section.claims.map((claim) => {
+            const li = el("li", {}, claim.text);
+            li.append(...citeButtons(li, claim.citations));
+            return li;
+          }),
         ),
       ),
     ),
@@ -678,6 +897,7 @@ function renderMemo(memo) {
 
 function renderRatios(memo) {
   const ratios = memo.ratios || [];
+  const slot = el("div", { class: "why-slot" });
   const years = [...new Set(ratios.map((r) => r.year))].sort();
   const byKey = new Map(ratios.map((r) => [`${r.name}|${r.year}`, r]));
   const rows = RATIOS.filter(([name]) => ratios.some((r) => r.name === name)).map(([name, label, unit]) =>
@@ -687,10 +907,13 @@ function renderRatios(memo) {
       el("td", {}, label),
       years.map((y) => {
         const r = byKey.get(`${name}|${y}`);
-        const text = r ? formatRatio(r.value, unit) : null;
-        return text === null
-          ? el("td", { class: "na", title: (r && r.note) || "" }, "n/a")
-          : el("td", { title: r.formula }, text);
+        if (!r) return el("td", { class: "na" }, "n/a");
+        const text = formatRatio(r.value, unit);
+        return el(
+          "td",
+          { class: text === null ? "na" : "" },
+          whyButton(slot, `ratio|${name}|${y}`, () => ratioWhy(memo, r, label, unit), { class: "cell-button", title: "Show the formula and inputs" }, text === null ? "n/a" : text),
+        );
       }),
     ),
   );
@@ -698,12 +921,13 @@ function renderRatios(memo) {
     "section",
     { class: "card" },
     el("h2", {}, "Key figures"),
-    el("p", { class: "muted" }, "Calculated by code from the financial statements, not by the AI."),
+    el("p", { class: "muted" }, "Calculated by code from the financial statements, not by the AI. Click a value to see its formula and inputs."),
     el(
       "div",
       { class: "table-wrap" },
       el("table", {}, el("thead", {}, el("tr", {}, el("th", {}, "Ratio"), years.map((y) => el("th", {}, String(y))))), el("tbody", {}, rows)),
     ),
+    slot,
   );
 }
 
@@ -780,17 +1004,22 @@ function renderGuardrails(job, memo) {
       checks.map((g) => {
         // Masking personal data is the control doing its job, not a problem with the memo.
         const o = g.action === "redacted" ? { label: "Masked", tone: "good" } : GUARDRAIL_OUTCOME[g.outcome] || { label: g.outcome, tone: "" };
-        return el(
-          "li",
-          { class: "finding" },
+        const li = el("li", { class: "finding" });
+        li.append(
           el("span", { class: `pill ${o.tone}` }, o.label),
           el(
             "div",
             {},
             el("div", {}, GUARDRAIL_LABEL[g.control] || g.control),
-            el("div", { class: "finding-ref" }, g.outcome === "passed" ? g.control : `${g.control} · ${g.reason}`),
+            el(
+              "div",
+              { class: "finding-ref" },
+              `${g.outcome === "passed" ? g.control : `${g.control} · ${g.reason}`} `,
+              whyButton(li, `guard|${g.control}|${g.stage}`, () => guardrailWhy(g), { class: "why-link" }, "What it checks"),
+            ),
           ),
         );
+        return li;
       }),
     ),
   );

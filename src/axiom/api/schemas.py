@@ -68,6 +68,9 @@ class RatioOut(BaseModel):
     year: int
     value: str | None
     formula: str
+    inputs: dict[str, str] = Field(
+        default_factory=dict, description="The values the formula used, so it can be recomputed"
+    )
     note: str | None = None
 
 
