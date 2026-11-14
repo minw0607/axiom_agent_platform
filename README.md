@@ -6,16 +6,20 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/)
-[![Development: Week 6](https://img.shields.io/badge/Development-Week%206%20evaluation%20baseline-lightblue.svg)](#-status)
+[![Development: Week 7](https://img.shields.io/badge/Development-Week%207%20keyless%20demo-lightblue.svg)](#-status)
 [![Orchestration: LangGraph](https://img.shields.io/badge/orchestration-LangGraph-2C3E50.svg)](https://github.com/langchain-ai/langgraph)
 [![Data: Synthetic only](https://img.shields.io/badge/data-synthetic%20only-1baf7a.svg)](#-data)
 [![Project: Independent & Personal](https://img.shields.io/badge/Project-Independent%20%26%20Personal-lightgrey)](#-disclaimer)
 
 *Submit a borrower package → get a **draft credit memo** with computed ratios, risk flags, cited policy findings, and a draft recommendation → a **credit officer decides** → every step leaves **audit evidence**.*
 
+<img src="docs/assets/demo.gif" width="90%" alt="The keyless demo in the review page. A relationship manager requests a memo for pkg-04. A credit officer sees it first in the queue because of two high-severity risk flags. Explain this shows the credit policy clause, the ratio's formula and inputs, and the source line with its fingerprint check. The credit officer approves, and an auditor reads the hash-chained audit trail."/>
+
+*The keyless demo, from `docker compose up`: request, review with "Explain this", approval, audit trail. [Try it](#-quick-start).*
+
 </div>
 
-> **Status:** Week 6. A package goes from submission to a cited draft memo with credit policy and lending-reference findings, through layered guardrails (personal data masked, injected instructions quarantined, every number and citation checked), then waits for a credit officer to approve, reject or request a revision, in demo mode with no API keys. An evaluation suite scores the platform against a 25-package golden set, 20 fairness pairs and 20 planted attacks; the first live baseline is measured and the gate thresholds are set from it. This page describes the target design and tracks progress against the [development plan](docs/dev-plan.md).
+> **Status:** Week 7, Gate 2 passed on a simulated fresh machine. The demo starts with one command and needs no API keys. A package goes from submission to a cited draft memo with credit policy and lending-reference findings, through layered guardrails (personal data masked, injected instructions quarantined, every number and citation checked), then waits for a credit officer to approve, reject or request a revision. Role overviews and "Explain this" show where every figure, ratio, flag and finding came from. An evaluation suite scores the platform against a 25-package golden set, 20 fairness pairs and 20 planted attacks, with gate thresholds set from the live baseline. This page describes the target design and tracks progress against the [development plan](docs/dev-plan.md).
 
 ---
 
@@ -78,6 +82,23 @@ flowchart LR
     E -- approve --> F[Finalize + evidence]
     E -- revise, max 2 --> C
     E -- reject --> G[Closed]
+```
+
+**What runs in the demo.** `docker compose up` starts these containers. The worker runs the workflow above. It reaches the two knowledge services over MCP. In demo mode, it replays recorded model responses instead of calling a model. The [architecture document](docs/architecture.md) follows one memo job step by step.
+
+```mermaid
+flowchart LR
+    U(["Browser or curl"]) -- "role key" --> API
+
+    subgraph stack["docker compose up (ports on 127.0.0.1 only)"]
+        K["demo-keys<br/>runs once: MCP secret<br/>and a key per role"]
+        API["API :8000<br/>/v1 and /review"] -- "jobs, decisions" --> PG[("Postgres<br/>jobs, checkpoints,<br/>evidence log")]
+        W["Worker<br/>LangGraph workflow,<br/>guardrails, ratio tools"] -- "claims jobs,<br/>appends evidence" --> PG
+        W -- "MCP" --> G["gkn-mcp :8002<br/>per-job retrieval"]
+        W -- "MCP" --> R["regulus-mcp :8001<br/>AI governance lookup"]
+        W -- "replays" --> REC[["Recorded model<br/>responses"]]
+        W -- "traces" --> P["OTel Collector and<br/>Phoenix :6006"]
+    end
 ```
 
 ## 🗂 Repository structure
@@ -156,7 +177,8 @@ Every LLM judge uses a different model from the one under test, with no fallback
 | Review page (week 7 item, brought forward) | Nov 11 | A credit officer can read a draft with its findings and decide in a browser | ✅ Built |
 | Week 5 · Guardrails | Dec 6 | Each control can be switched off; redaction leaves every financial value unchanged; cloud-only controls report not evaluated in demo | ✅ Passed: checks 16/16; attack success 6/20 with guardrails on vs 20/20 off ([results](evals/adversarial/v1/results.md)) |
 | Week 6 · Evaluation baseline | Dec 13 | Eval report in MLflow; attack success measured with guardrails on and off; fairness results with sample size | ✅ Passed: checks 7/7. Live baseline 25 × 3: deterministic checks 100%, 66/75 acceptable recommendations, 17/20 fairness pairs consistent ([results](evals/results/golden-live.md), [ADR 0008](docs/adr/0008-evaluation-thresholds.md)); golden answers and grader labels still to review |
-| **Gate 2** · Demo ready | Dec 20 | A stranger runs the demo in under 10 minutes with no API keys | ⬜ |
+| Week 7 · Demo ready | Dec 20 | Role overviews, "Explain this", the keyless demo with all 25 packages recorded live | ✅ Done |
+| **Gate 2** · Demo ready | Dec 20 | A stranger runs the demo in under 10 minutes with no API keys | ✅ Passed on a simulated fresh machine: checks 13/13. From `git clone` to a ready stack in 1.5 min, with no `.env`, the stack's images removed first and rebuilt without the build cache, on a fast connection. All 25 packages run end to end with no model call. A first run by someone new to the project is still to come |
 | **Gate 3** · Published | Jan 10 | CI gates enforced; docs and results public | ⬜ |
 
 ## 🚀 Quick start
@@ -172,7 +194,7 @@ docker compose logs demo-keys
 
 The last command prints one sign-in key per role. Open http://localhost:8000/review, sign in with the **relationship manager** key and request a memo for any package. When the draft is ready, sign in with the **credit officer** key to read it and approve, reject or ask for changes. Then sign in with the **auditor** key to read the audit trail.
 
-The first start builds the images, which takes the longest. It starts:
+The first start downloads and builds about 6 GB of images, which takes the longest: 1.5 minutes from `git clone` to ready on a fast connection, longer on a slow one. It starts:
 
 - Postgres
 - Phoenix, the trace viewer, at http://localhost:6006, and the OpenTelemetry Collector
@@ -193,10 +215,18 @@ uv run pytest
 ```bash
 uv run python scripts/check_gate1.py
 uv run python scripts/check_week4.py
+uv run python scripts/check_gate2.py
 ```
 
 - **Gate 1 check:** the supporting services are up, Regulus returns cited provisions, and one job's retrieval never returns another job's documents.
 - **Week 4 check:** submits a package, restarts Postgres, the API and the worker while the draft awaits review, then approves it and checks the evidence.
+- **Gate 2 check:**
+  - every service answers;
+  - the review page has its strict content security policy;
+  - all 25 packages go through the API end to end: a draft, two revision rounds and an approval, each with a verified evidence chain;
+  - every model response was replayed from a recording.
+
+  `--clean-run` first does what this page asks of a newcomer, and times it: clone into an empty folder with no `.env`, start the stack, and wait until it is ready.
 
 **Use the review page:** open http://localhost:8000/review and sign in with one of the role keys from `docker compose logs demo-keys`. If you set your own keys in `.env`, use the part after the colon. A relationship manager requests a memo, a credit officer reads the draft with its findings and approves, rejects or asks for changes, and an auditor reads the audit trail. The page is plain HTML and JavaScript served by the API, with a strict content security policy; it renders everything as text. After signing in, each role first sees its own overview: a relationship manager their requests by stage and any failures, a credit officer the review queue with high-risk memos first, and an auditor integrity-check failures, failed jobs, safety checks that found a problem, and recent decisions. **Explain this:** click a citation to read the exact source line (with its table's header row, and whether it still matches the fingerprint recorded during the job), a ratio to see its formula and every input with its source, a flag or finding to read the credit policy clause it applies, or a safety check to see what it checks. These are lookups, not model calls.
 

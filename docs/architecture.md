@@ -164,8 +164,11 @@ The platform sets scope arguments such as `job_id` from graph state; a model nev
 | Week 6 acceptance: `scripts/check_week6.py`, a live golden run in MLflow, attack success on and off, counterfactual results with sample size, ADR 0008 | Passing (Nov 13) |
 | Evaluation grader (`evals/judge/`): citation support and key-finding coverage on the router's `judge` route, a different model from the drafter with no fallback; 30-item calibration set labelled blind by a person; agreement, kappa and a stakes-framing check | Built (week 6); calibration awaits labels and a live run |
 | Week 5 acceptance: `scripts/check_week5.py`, every control toggled, redaction invariants, cloud-only `not_evaluated`, the adversarial set, and guardrail events in a stack job's chain | Passing (Nov 12) |
+| Role overviews on the review page (`GET /v1/dashboard`): a relationship manager's requests by stage, the credit officer's queue led by high-severity risk, the auditor's chain integrity, failures, triggered safety checks and decisions; no names | Built and tested (week 7) |
+| "Explain this", with no model call: a citation opens its source line with the table header and a fingerprint check (`GET /v1/memos/{id}/source`); a flag or finding quotes its credit policy clause (`GET /v1/policy/{ref}`); a ratio shows its formula and each input's source | Built and tested (week 7) |
+| Keyless demo: `docker compose up` with no `.env`; a one-time `demo-keys` service generates the MCP secret and role keys, and `.env` values win; all 25 packages recorded live (`scripts/record_demo.py`) | Built and tested (week 7) |
+| Gate 2 acceptance: `scripts/check_gate2.py`, with `--clean-run` timing a fresh clone to a ready stack | Passing (Nov 14): 13/13, 1.5 min |
 | Eval baseline | Week 6 |
-| Keyless demo | Week 7 |
 | CI release gates | Week 8 |
 | Cloud deployment | Week 9 |
 
