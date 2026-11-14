@@ -1,7 +1,7 @@
 """Record live model responses for the keyless demo, or check that recordings replay.
 
 Record (spends tokens): runs each package through the real workflow in local mode, with
-retrieval through the running gkn-mcp service, then two revision rounds with the demo
+retrieval through the running tool gateway and gkn-mcp, then two revision rounds with the demo
 comments. Every live response is saved to a staging folder, never straight into
 data/recorded/, so a failed run cannot leave the demo half replaced.
 
@@ -9,7 +9,7 @@ data/recorded/, so a failed run cannot leave the demo half replaced.
     uv run python scripts/record_demo.py                       # packages with no recording
     uv run python scripts/record_demo.py pkg-11 pkg-12
 
-Check (no tokens): replays a recordings folder in demo mode, through GKN, the way the stack
+Check (no tokens): replays a recordings folder in demo mode, through the gateway, the way the stack
 will, and reports each package's result.
 
     uv run python scripts/record_demo.py --check build/recordings
@@ -51,10 +51,10 @@ def load_env() -> None:
             name, sep, value = line.partition("=")
             if sep and not name.startswith("#") and not os.environ.get(name.strip()):
                 os.environ[name.strip()] = value.strip()
-    # The script runs on the host, where the services are on localhost.
-    os.environ["GKN_MCP_URL"] = os.environ.get("GKN_MCP_URL_HOST", "http://localhost:8002/mcp")
-    os.environ["REGULUS_MCP_URL"] = os.environ.get(
-        "REGULUS_MCP_URL_HOST", "http://localhost:8001/mcp"
+    # The script runs on the host, where the gateway is on localhost. Each workflow step
+    # uses its own token; cleaning up a job uses the operator token.
+    os.environ["TOOL_GATEWAY_URL"] = os.environ.get(
+        "TOOL_GATEWAY_URL_HOST", "http://localhost:8003/mcp"
     )
 
 
@@ -92,6 +92,7 @@ async def run_package(ctx: Any, package_id: str, tag: str) -> dict[str, Any]:
     from axiom.catalog import load_ground_truth, load_package
     from axiom.domain import ReviewDecision
     from axiom.graph.workflow import resume_workflow, run_workflow
+    from axiom.mcp_clients.client import acting_as
     from axiom.memory.checkpoint import serializer
     from axiom.settings import Settings
 
@@ -111,7 +112,8 @@ async def run_package(ctx: Any, package_id: str, tag: str) -> dict[str, Any]:
         final["first_recommendation"] = first["recommendation"]
         return final
     finally:
-        await ctx.evidence.delete(job_id)
+        with acting_as("operator"):
+            await ctx.evidence.delete(job_id)
 
 
 def row(package_id: str, r: dict[str, Any]) -> str:
@@ -172,8 +174,8 @@ async def main() -> int:
             return 2
     else:
         print(f"Replaying {len(packages)} packages from {args.check} in demo mode through GKN")
-    if not settings.mcp_shared_secret:
-        print("MCP_SHARED_SECRET is not set (environment, .env or .demo/keys.env).")
+    if "operator" not in settings.tool_gateway_tokens or len(settings.tool_gateway_tokens) < 5:
+        print("Tool gateway tokens are not set (environment, .env or .demo/keys.env).")
         return 2
     if args.dry_run:
         return 0

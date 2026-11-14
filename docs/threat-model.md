@@ -1,6 +1,6 @@
 # Threat model
 
-**Version:** v0.2 (Nov 12, 2026) · **Next update:** week 6, with the evaluation baseline · **Final:** week 10
+**Version:** v0.3 (Nov 14, 2026) · **Next update:** week 8, with the CI release gates · **Final:** week 10
 
 This document lists what could go wrong in the platform, who or what could cause it, and which control addresses each threat. Every control is marked **Built**, **Planned** (with the week of the [development plan](dev-plan.md) that delivers it) or **Deferred**. A planned control is a design commitment, not evidence. A threat is only closed when a test proves the control works.
 
@@ -122,9 +122,11 @@ A tampered or impersonated MCP service returns results that contain instructions
 
 | Control | Status |
 |---|---|
-| Both services require a shared bearer secret (constant-time comparison); they refuse to start without one | **Built** |
+| Both services require a bearer secret (constant-time comparison); they refuse to start without one | **Built** |
+| The platform reaches the services only through the tool gateway ([ADR 0014](adr/0014-tool-gateway.md)): each service has its own secret, held only by the gateway; the services publish no ports | **Built** W7; Gate 1 checks they are unreachable from the host |
+| Every tool call, allowed, refused or failed, is logged by the gateway (hash-chained, fingerprints only) and recorded as a `tool_call` event in the memo's evidence chain | **Built** W7 |
 | Host-header checking against an allow-list (DNS-rebinding protection) | **Built** |
-| Ports bound to 127.0.0.1 only | **Built** |
+| Ports bound to 127.0.0.1 only (only the API, the gateway and the observability tools publish one) | **Built** |
 | Images built from pinned release tags (Regulus `v0.2.1`, GKN `v0.2.0`), not branches | **Built** |
 | Regulus runs offline from committed snapshots; no network fetch at startup | **Built** |
 | Reference collections are read-only through MCP; only job collections accept writes | **Built** |
@@ -132,7 +134,7 @@ A tampered or impersonated MCP service returns results that contain instructions
 | The client checks the tool list at startup and fails if unexpected tools appear | Not yet built (was planned W3) |
 | Credit policy and lending references are hashed; hashes recorded in the evidence bundle | Partly built W4: the policy version and every retrieved passage's hash are in the bundle, and the references' file hashes are in a manifest checked by test; the file hashes are not yet in the bundle |
 
-**Residual risk:** one shared secret covers both services and every caller. Per-agent credentials are not planned for the MVP; least privilege is enforced in the platform's client (T-05).
+**Residual risk:** the gateway forwards tool results unchanged, so a compromised service can still return misleading content; the platform's own checks on retrieved text are the defence. The gateway is a single point that must itself be trusted.
 
 ### T-04 · Data exfiltration through outputs
 Sensitive data leaves through the memo, an error message, a log, a trace, or a prompt sent to a hosted model.
@@ -155,7 +157,7 @@ An agent calls tools or takes actions beyond its role: the drafter deletes a job
 | Control | Status |
 |---|---|
 | Rule-based supervisor; no LLM decides workflow transitions in the MVP | **Built** W3 |
-| Each node gets an explicit tool list (for example, only intake may ingest; only finalize or cleanup may delete) | Not yet built (was planned W3–W4); scope is fixed by code, but no per-node allowlist is enforced |
+| Each node gets an explicit tool list (only intake may ingest; only the drafter may search the job's documents; only compliance may search the lending references; only finalize may look up guidance; no step may delete) | **Built** W7: per-step tokens checked by the tool gateway against `config/tool_gateway.yaml`; a missing scope argument is refused. Gate 1 checks two refusals. Limit: the four tokens sit in one worker process, so this stops a bug or a model-steered call, not someone who controls the worker ([ADR 0014](adr/0014-tool-gateway.md)) |
 | Tool arguments that define scope (job_id, collection) are set by code, not by the model | **Built** W3 |
 | No tool can approve, finalize or send anything outside the platform | By design |
 | The human approval step is a hard stop in the graph and cannot be switched off in config | **Built** W4; `config/guardrails.yaml` has no switch for it |
@@ -347,3 +349,4 @@ Week 6 runs the set against live models and adds it to the red-team gate.
 | v0 | Nov 10, 2026 | First version: scope, assets, actors, trust boundaries, 16 threats mapped to OWASP LLM 2025 and Agentic 2026; marks controls built in week 2 |
 | v0.1 | Nov 10, 2026 | Remapped to the OWASP LLM Top 10 2026 (eight entries reordered; System Prompt Leakage broadened to Hidden Context Exposure). Threats and controls unchanged |
 | v0.2 | Nov 12, 2026 | Week 5: guardrails built and marked; statuses brought up to date for controls built in weeks 3–4, with partial and not-yet-built controls stated as such; adversarial set v1 results |
+| v0.3 | Nov 14, 2026 | Week 7: tool gateway (ADR 0014). T-03 gains a secret per service, unreachable services and a log of every tool call; T-05's per-node tool list is built, with its one-process limit stated. OWASP IDs checked against the 2026 PDF |

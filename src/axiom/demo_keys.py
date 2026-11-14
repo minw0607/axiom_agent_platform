@@ -1,10 +1,12 @@
 """Generate the keyless demo's secrets on first start, so `docker compose up` needs no setup.
 
-The `demo-keys` service runs this once before the other containers start. It writes the MCP
-shared secret and one API key per role to a file (default `.demo/keys.env` in the repo),
-which every container reads through `docker/with-demo-keys.sh`. A value set in `.env` always
-wins; generated values only fill what `.env` leaves empty. The file is kept across restarts,
-so the keys stay the same until it is deleted.
+The `demo-keys` service runs this once before the other containers start. It writes one API
+key per role, a secret for each MCP tool service, and a tool gateway token for each workflow
+step and for the operator scripts (ADR 0014) to a file (default `.demo/keys.env` in the
+repo). Each container reads only the values it needs through `docker/with-demo-keys.sh`. A
+value set in `.env` always wins; generated values only fill what `.env` leaves empty. The
+file is kept across restarts, so the keys stay the same until it is deleted; a value missing
+from an older file is added without changing the others.
 
 These are local demo keys: they open a stack bound to 127.0.0.1 and holding synthetic data.
 
@@ -27,10 +29,17 @@ ROLES = {
     "REVIEWER_API_KEYS": ("co-demo", "Credit officer"),
     "AUDITOR_API_KEYS": ("audit-demo", "Auditor"),
 }
+# The workflow steps that call tools through the gateway (config/tool_gateway.yaml).
+GATEWAY_STEPS = ("intake", "drafter", "compliance", "finalize")
+SECRETS = ("GKN_MCP_SECRET", "REGULUS_MCP_SECRET", "TOOL_GATEWAY_OPERATOR_TOKEN")
+REQUIRED = (*SECRETS, "TOOL_GATEWAY_TOKENS", *ROLES)
 
 
 def generate() -> dict[str, str]:
-    values = {"MCP_SHARED_SECRET": secrets.token_hex(32)}
+    values = {name: secrets.token_hex(32) for name in SECRETS}
+    values["TOOL_GATEWAY_TOKENS"] = ",".join(
+        f"{step}:{secrets.token_hex(24)}" for step in GATEWAY_STEPS
+    )
     for var, (name, _) in ROLES.items():
         values[var] = f"{name}:{secrets.token_hex(24)}"
     return values
@@ -56,14 +65,16 @@ def write(path: Path, values: dict[str, str]) -> None:
 
 
 def ensure(path: Path) -> tuple[dict[str, str], bool]:
-    """The keys in `path`, generating them first if the file is missing or incomplete."""
-    if path.is_file():
-        values = read(path)
-        if all(values.get(k) for k in ("MCP_SHARED_SECRET", *ROLES)):
-            return values, False
-    values = generate()
+    """The keys in `path`, generating any that are missing. `created` is True when the file
+    is new; values already in the file are never changed."""
+    values = read(path) if path.is_file() else {}
+    if all(values.get(k) for k in REQUIRED):
+        return values, False
+    created = not values
+    fresh = generate()
+    values = {**values, **{k: fresh[k] for k in REQUIRED if not values.get(k)}}
     write(path, values)
-    return values, True
+    return values, created
 
 
 def summary(values: dict[str, str], created: bool, env: dict[str, str]) -> str:

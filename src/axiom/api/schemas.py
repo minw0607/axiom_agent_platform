@@ -16,6 +16,7 @@ from axiom.domain import ComplianceFinding
 from axiom.evidence.log import ChainCheck, EvidenceEvent
 from axiom.guardrails import GuardrailResult, latest
 from axiom.jobs.store import JobRecord, JobStatus, JobSummary
+from axiom.mcp_clients.client import ToolCall
 from axiom.mcp_clients.governance import RelatedGuidance
 
 DISCLAIMER = "Draft for credit officer review. This is not a credit decision."
@@ -281,6 +282,7 @@ class EvidenceBundle(BaseModel):
     policy_version: str | None
     source_hashes: dict[str, str]
     model_calls: list[ModelCall]
+    tool_calls: list[ToolCall] = Field(default_factory=list)
     findings: list[ComplianceFinding]
     guardrails: list[GuardrailResult] = Field(default_factory=list)
     retrieved: list[RetrievedPassage]
@@ -314,6 +316,7 @@ def to_evidence(job: JobRecord, events: list[EvidenceEvent], chain: ChainCheck) 
         policy_version=r.get("policy_version"),
         source_hashes=r.get("source_hashes", {}),
         model_calls=r.get("model_calls", []),
+        tool_calls=r.get("tool_calls", []),
         findings=r.get("findings", []),
         guardrails=r.get("guardrails", []),
         retrieved=[

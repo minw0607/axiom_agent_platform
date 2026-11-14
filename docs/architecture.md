@@ -35,6 +35,7 @@ sequenceDiagram
     participant API as /v1 API
     participant DB as Postgres
     participant W as Worker + graph
+    participant TG as tool-gateway
     participant GKN as gkn-mcp
     participant M as Model router
     participant REG as regulus-mcp
@@ -44,10 +45,12 @@ sequenceDiagram
     API-->>RM: 202 Accepted, job_id
     W->>DB: claim job (running)
     W->>W: input guardrails (PII redaction, injection screen)
-    W->>GKN: ingest_documents(job_id, docs)
+    W->>TG: ingest_documents(job_id, docs), intake's token
+    TG->>GKN: allowed by the rules: forward with GKN's secret
     W->>M: intake: extract figures (structured output)
     W->>W: analyst: compute ratios in code
-    W->>GKN: retrieve_evidence(job_id, ...)
+    W->>TG: retrieve_evidence(job_id, collection job), drafter's token
+    TG->>GKN: forward
     W->>M: drafter: memo with citations
     W->>W: output guardrails (groundedness, number provenance)
     W->>M: compliance: findings vs policy rules and lending refs
@@ -56,11 +59,12 @@ sequenceDiagram
     API-->>RM: draft memo, flags, findings
     CO->>API: POST /v1/memos/{job_id}/review (approve)
     API->>DB: record decision (reviewer ≠ submitter)
-    W->>REG: lookup_provisions (related AI governance guidance)
+    W->>TG: lookup_provisions, finalize's token
+    TG->>REG: forward (related AI governance guidance)
     W->>DB: finalize memo, write evidence bundle
 ```
 
-Every step writes OpenTelemetry spans (traces go to Phoenix) and evidence-log events.
+Every step writes OpenTelemetry spans (traces go to Phoenix) and evidence-log events. Compliance also searches the lending references through the gateway (not drawn). Every tool call is logged by the gateway and recorded as a `tool_call` event in the memo's evidence chain.
 
 ## 3. The workflow
 
@@ -107,7 +111,7 @@ Each check returns `passed`, `triggered` or `not_evaluated`, emits a span and an
 
 **Deterministic tools** ([ADR 0003](adr/0003-tool-integration.md)). Ratio math and policy rules are plain Python in `src/axiom/tools/`, called in-process and unit-tested to 100% exactness.
 
-**MCP services** ([ADR 0003](adr/0003-tool-integration.md)). Two sibling repositories run as separate containers over streamable HTTP, behind a shared bearer secret, with host-header checks:
+**MCP services** ([ADR 0003](adr/0003-tool-integration.md)). Two sibling repositories run as separate containers over streamable HTTP, each with its own bearer secret and host-header checks. They publish no ports:
 
 | Service | Tools | Role |
 |---|---|---|
@@ -115,6 +119,18 @@ Each check returns `passed`, `triggered` or `not_evaluated`, emits a span and an
 | regulus-mcp (Regulus v0.2.1) | `lookup_provisions`, `recommend_mitigants` | Related AI governance provisions for the evidence bundle. Runs offline from committed snapshots |
 
 The platform sets scope arguments such as `job_id` from graph state; a model never chooses them. Regulus covers AI governance, not lending regulation, so it never reviews memo content ([ADR 0012](adr/0012-regulatory-position.md)).
+
+**Tool gateway** ([ADR 0014](adr/0014-tool-gateway.md)). The platform reaches the services only through `tool-gateway` (`src/axiom/gateway/`, port 8003). Each workflow step calls with its own token, and `config/tool_gateway.yaml` says which tools, with which scope, each step may use:
+
+| Caller | May call |
+|---|---|
+| intake | `ingest_documents` |
+| drafter | `retrieve_evidence` in the job's own documents |
+| compliance | `retrieve_evidence` in the lending references |
+| finalize | `lookup_provisions` |
+| operator (maintenance scripts, never the worker) | all four, including `delete_job` |
+
+Anything else is refused before it reaches a service. Only the gateway holds the services' secrets. It logs every call, allowed, refused or failed, in a hash-chained log with fingerprints of the arguments and result, never their text, and returns a call id that the worker records in the memo's evidence chain. All four step tokens sit in the one worker process, so the rules stop a bug or a model-steered call, not someone who controls the worker.
 
 ## 6. Data, evidence and observability
 
@@ -137,8 +153,8 @@ The platform sets scope arguments such as `job_id` from graph state; a model nev
 | Component | Status |
 |---|---|
 | Postgres, Phoenix, OTel Collector | Running in compose |
-| regulus-mcp, gkn-mcp | Running in compose; Gate 1 check passes 7/7 |
-| MCP client (`MCPToolClient`), GKN evidence client | Built and tested |
+| regulus-mcp, gkn-mcp | Running in compose, reachable only through the tool gateway; Gate 1 check passes 9/9 (Nov 14) |
+| MCP client (`MCPToolClient`, `GatewayClient`), GKN evidence client | Built and tested |
 | `/v1/memos` submit and poll, job store (Postgres), idempotency, problem+json, role keys | Built and tested (week 3) |
 | Worker, LangGraph workflow (intake → analyst → drafter), rule-based supervisor | Built and tested (week 3) |
 | Ratio, policy-flag and reconciliation tools | Built; exact against an independent reference on all 10 packages |
@@ -166,8 +182,9 @@ The platform sets scope arguments such as `job_id` from graph state; a model nev
 | Week 5 acceptance: `scripts/check_week5.py`, every control toggled, redaction invariants, cloud-only `not_evaluated`, the adversarial set, and guardrail events in a stack job's chain | Passing (Nov 12) |
 | Role overviews on the review page (`GET /v1/dashboard`): a relationship manager's requests by stage, the credit officer's queue led by high-severity risk, the auditor's chain integrity, failures, triggered safety checks and decisions; no names | Built and tested (week 7) |
 | "Explain this", with no model call: a citation opens its source line with the table header and a fingerprint check (`GET /v1/memos/{id}/source`); a flag or finding quotes its credit policy clause (`GET /v1/policy/{ref}`); a ratio shows its formula and each input's source | Built and tested (week 7) |
-| Keyless demo: `docker compose up` with no `.env`; a one-time `demo-keys` service generates the MCP secret and role keys, and `.env` values win; all 25 packages recorded live (`scripts/record_demo.py`) | Built and tested (week 7) |
-| Gate 2 acceptance: `scripts/check_gate2.py`, with `--clean-run` timing a fresh clone to a ready stack | Passing (Nov 14): 13/13, 1.5 min |
+| Keyless demo: `docker compose up` with no `.env`; a one-time `demo-keys` service generates the role keys, the services' secrets and the gateway tokens, each container gets only the values it needs, and `.env` values win; all 25 packages recorded live (`scripts/record_demo.py`) | Built and tested (week 7) |
+| Gate 2 acceptance: `scripts/check_gate2.py`, with `--clean-run` timing a fresh clone to a ready stack | Passing (Nov 14): 13/13, 1.2 min from a cold clone, with the tool gateway |
+| Tool gateway: per-step tokens, rules in `config/tool_gateway.yaml`, a secret per service, a hash-chained call log, `tool_call` events in the evidence chain and the audit trail | Built and tested (week 7): 287 tool calls across 25 packages, all from the step that owns the tool ([ADR 0014](adr/0014-tool-gateway.md)) |
 | Eval baseline | Week 6 |
 | CI release gates | Week 8 |
 | Cloud deployment | Week 9 |
@@ -185,5 +202,6 @@ The platform sets scope arguments such as `job_id` from graph state; a model nev
 | [0007](adr/0007-deterministic-computation.md) | Code computes; models extract and write; every figure checked against its source line |
 | [0011](adr/0011-workflow-control.md) | Rule-based supervisor in code; no model decides the path |
 | [0012](adr/0012-regulatory-position.md) | NIST AI RMF primary; SR 26-2 by analogy; rule engine plus cited lending references |
+| [0014](adr/0014-tool-gateway.md) | One MCP tool gateway with per-step tokens, a secret per service and one call log |
 
 The remaining ADRs (0008–0010) are written in the week each decision is made.

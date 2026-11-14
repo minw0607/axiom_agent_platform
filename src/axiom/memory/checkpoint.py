@@ -20,6 +20,7 @@ from pydantic import BaseModel
 from axiom import domain
 from axiom.agents.base import ModelCall
 from axiom.guardrails import GuardrailResult
+from axiom.mcp_clients.client import ToolCall
 from axiom.mcp_clients.evidence import EvidenceHit
 from axiom.mcp_clients.governance import RelatedGuidance, RelatedProvision
 
@@ -29,6 +30,7 @@ def allowed_types() -> list[tuple[str, str]]:
     guardrail records."""
     types: list[type[Any]] = [
         ModelCall,
+        ToolCall,
         EvidenceHit,
         RelatedGuidance,
         RelatedProvision,

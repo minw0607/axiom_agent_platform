@@ -49,6 +49,7 @@ from axiom.domain import (
 from axiom.guardrails import GuardrailResult, Subject, pii_protected
 from axiom.guardrails.base import DraftFacts
 from axiom.guardrails.output import problems
+from axiom.mcp_clients.client import ToolCall, acting_as, collect_tool_calls
 from axiom.mcp_clients.evidence import EvidenceHit
 from axiom.mcp_clients.governance import RelatedGuidance
 from axiom.memory.checkpoint import serializer
@@ -125,6 +126,7 @@ class MemoState(TypedDict, total=False):
     approved_draft_sha256: str
     related_guidance: RelatedGuidance
     model_calls: Annotated[list[ModelCall], operator.add]
+    tool_calls: Annotated[list[ToolCall], operator.add]  # through the tool gateway
     completed: Annotated[list[str], operator.add]
     error: str
     error_node: str
@@ -139,7 +141,12 @@ def _traced(name: str, fn: Node) -> Node:
             span.set_attribute("axiom.job_id", state["job_id"])
             span.set_attribute("axiom.node", name)
             level: Sensitivity = "standard" if state.get("pii_redacted") else "pii_unredacted"
-            with collect_calls() as calls, sensitivity(level):
+            with (
+                collect_calls() as calls,
+                collect_tool_calls() as tools,
+                sensitivity(level),
+                acting_as(name),
+            ):
                 try:
                     update = await fn(state)
                 except EXPECTED_ERRORS as exc:
@@ -150,10 +157,16 @@ def _traced(name: str, fn: Node) -> Node:
                         "error": f"{type(exc).__name__}: {exc}",
                         "error_node": name,
                         "model_calls": list(calls),
+                        "tool_calls": list(tools),
                         **getattr(exc, "state_update", {}),
                     }
             span.set_attribute("axiom.node.model_calls", len(calls))
-            return {**update, "model_calls": list(calls), "completed": [name]}
+            return {
+                **update,
+                "model_calls": list(calls),
+                "tool_calls": list(tools),
+                "completed": [name],
+            }
 
     return run
 
@@ -280,10 +293,13 @@ def build_workflow(ctx: AgentContext, checkpointer: BaseCheckpointSaver[Any] | N
         if last.decision != "approve":  # unreachable by routing; a hard stop all the same
             raise ReviewError("finalize needs an approval")
         draft = state["draft"]
+        with acting_as("finalize"), collect_tool_calls() as tools:
+            guidance = await related_guidance(ctx, state)
         return {
             "outcome": "approved",
             "approved_draft_sha256": hashlib.sha256(draft.model_dump_json().encode()).hexdigest(),
-            "related_guidance": await related_guidance(ctx, state),
+            "related_guidance": guidance,
+            "tool_calls": list(tools),
             "completed": ["finalize"],
         }
 
@@ -373,6 +389,7 @@ async def run_workflow(
                 "job_id": job_id,
                 "package": package,
                 "model_calls": [],
+                "tool_calls": [],
                 "completed": [],
                 "reviews": [],
                 "human_revisions": 0,

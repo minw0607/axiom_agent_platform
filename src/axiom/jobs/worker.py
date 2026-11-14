@@ -28,7 +28,7 @@ from axiom.graph.workflow import (
 )
 from axiom.guardrails import load_suite
 from axiom.jobs.store import JobRecord, JobStatus, JobStore, PostgresJobStore
-from axiom.mcp_clients.client import MCPToolClient
+from axiom.mcp_clients.client import GatewayClient, MCPToolClient
 from axiom.mcp_clients.evidence import EvidenceService, GKNEvidence, InMemoryEvidence
 from axiom.mcp_clients.governance import RegulusGovernance
 from axiom.router.router import ModelRouter
@@ -51,8 +51,15 @@ ERROR_CODES = {
 
 
 def build_context(settings: Settings) -> AgentContext:
+    """Tools go through the tool gateway when it is configured (the Docker stack), else
+    straight to the services with the shared secret (local development), else in memory."""
     evidence: EvidenceService
-    if settings.gkn_mcp_url and settings.mcp_shared_secret:
+    governance: RegulusGovernance | None = None
+    if settings.tool_gateway_url and settings.tool_gateway_tokens:
+        gateway = GatewayClient(settings.tool_gateway_url, settings.tool_gateway_tokens)
+        evidence = GKNEvidence(gateway)
+        governance = RegulusGovernance(gateway)
+    elif settings.gkn_mcp_url and settings.mcp_shared_secret:
         evidence = GKNEvidence(MCPToolClient(settings.gkn_mcp_url, settings.mcp_shared_secret))
     else:
         log.warning("GKN not configured; using in-memory evidence retrieval")
@@ -65,7 +72,8 @@ def build_context(settings: Settings) -> AgentContext:
         policy=load_policy(settings.config_dir / "policy_thresholds.yaml"),
         prompts_dir=settings.prompts_dir,
         guardrails=load_suite(settings.guardrails_file),
-        governance=(
+        governance=governance
+        or (
             RegulusGovernance(MCPToolClient(settings.regulus_mcp_url, settings.mcp_shared_secret))
             if settings.regulus_mcp_url and settings.mcp_shared_secret
             else None
@@ -101,6 +109,7 @@ def serialize_state(state: MemoState, policy_version: str) -> dict[str, Any]:
         "related_guidance",
         "approved_draft_sha256",
         "model_calls",
+        "tool_calls",
         "completed",
         "error",
         "error_node",
@@ -130,14 +139,17 @@ def run_events(
     calls_before: int = 0,
     completed_before: int = 0,
     guardrails_before: int = 0,
+    tools_before: int = 0,
 ) -> list[EventDraft]:
     """The evidence events for one segment of a run, in order: for each node, its input
     guardrails, its model calls (every attempt, valid or not), its other guardrails, then
-    the node's outcome. A resumed run passes how many calls, completed nodes and guardrail
-    results the earlier segments already logged."""
+    the node's outcome. Tool calls through the gateway come after the input guardrails.
+    A resumed run passes how many calls, completed nodes, guardrail results and tool calls
+    the earlier segments already logged."""
     events: list[EventDraft] = []
     calls = result.get("model_calls", [])[calls_before:]
     checked = result.get("guardrails", [])[guardrails_before:]
+    tools = result.get("tool_calls", [])[tools_before:]
 
     def guardrail_events(node: str, input_stage: bool) -> list[EventDraft]:
         return [
@@ -151,6 +163,8 @@ def run_events(
         nodes.append(result["error_node"])
     for node in nodes:
         events += guardrail_events(node, input_stage=True)
+        for tool in (t for t in tools if t["node"] == node):
+            events.append(EventDraft(type="tool_call", actor=WORKER, payload=tool))
         for call in (c for c in calls if c["node"] == node):
             events.append(EventDraft(type="model_call", actor=WORKER, payload=call))
         events += guardrail_events(node, input_stage=False)
@@ -262,6 +276,7 @@ async def resume_job(
                 len(before.get("model_calls", [])),
                 len(before.get("completed", [])),
                 len(before.get("guardrails", [])),
+                len(before.get("tool_calls", [])),
             ),
         )
         status = await _settle(store, job.job_id, state, result)

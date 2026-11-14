@@ -39,6 +39,7 @@ const EVENT_LABEL = {
   job_submitted: "Memo requested",
   job_started: "Platform started drafting",
   model_call: "AI step",
+  tool_call: "Tool used",
   guardrail_checked: "Safety check",
   node_completed: "Step finished",
   node_failed: "Step failed",
@@ -48,6 +49,12 @@ const EVENT_LABEL = {
   job_approved: "Memo approved",
   job_rejected: "Memo rejected",
   job_failed: "Job failed",
+};
+const TOOL_LABEL = {
+  ingest_documents: "indexed the documents",
+  retrieve_evidence: "searched for evidence",
+  lookup_provisions: "looked up governance guidance",
+  delete_job: "deleted the job's index",
 };
 const GUARDRAIL_LABEL = {
   pii_redaction: "Personal data in the documents",
@@ -1065,6 +1072,7 @@ function renderAudit(job) {
         if (p.node) label += `: ${STEP_LABEL[p.node] || p.node}`;
         if (ev.type === "review_submitted") label += `: ${p.decision}${p.comments ? ` (“${p.comments}”)` : ""}`;
         if (ev.type === "model_call" && p.attempt > 1) label += ` (attempt ${p.attempt})`;
+        if (ev.type === "tool_call") label += `, ${TOOL_LABEL[p.tool] || p.tool}${p.allowed ? "" : " (refused by the tool gateway)"}`;
         if (ev.type === "guardrail_checked") {
           const o = GUARDRAIL_OUTCOME[p.outcome] || { label: p.outcome };
           const did = { redacted: "masked", quarantined: "quarantined, job stopped" }[p.action];

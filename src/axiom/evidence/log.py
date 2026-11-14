@@ -20,6 +20,7 @@ EventType = Literal[
     "job_submitted",
     "job_started",
     "model_call",
+    "tool_call",
     "guardrail_checked",
     "node_completed",
     "node_failed",

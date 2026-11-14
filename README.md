@@ -84,18 +84,19 @@ flowchart LR
     E -- reject --> G[Closed]
 ```
 
-**What runs in the demo.** `docker compose up` starts these containers. The worker runs the workflow above. It reaches the two knowledge services over MCP. In demo mode, it replays recorded model responses instead of calling a model. The [architecture document](docs/architecture.md) follows one memo job step by step.
+**What runs in the demo.** `docker compose up` starts these containers. The worker runs the workflow above. It reaches the two knowledge services over MCP, only through the tool gateway, which lets each workflow step use only its own tools and logs every call. In demo mode, it replays recorded model responses instead of calling a model. The [architecture document](docs/architecture.md) follows one memo job step by step.
 
 ```mermaid
 flowchart LR
     U(["Browser or curl"]) -- "role key" --> API
 
     subgraph stack["docker compose up (ports on 127.0.0.1 only)"]
-        K["demo-keys<br/>runs once: MCP secret<br/>and a key per role"]
+        K["demo-keys<br/>runs once: a key per role,<br/>service secrets, step tokens"]
         API["API :8000<br/>/v1 and /review"] -- "jobs, decisions" --> PG[("Postgres<br/>jobs, checkpoints,<br/>evidence log")]
         W["Worker<br/>LangGraph workflow,<br/>guardrails, ratio tools"] -- "claims jobs,<br/>appends evidence" --> PG
-        W -- "MCP" --> G["gkn-mcp :8002<br/>per-job retrieval"]
-        W -- "MCP" --> R["regulus-mcp :8001<br/>AI governance lookup"]
+        W -- "MCP, one token<br/>per workflow step" --> TG["tool-gateway :8003<br/>rules per step,<br/>log of every call"]
+        TG -- "GKN's secret" --> G["gkn-mcp<br/>per-job retrieval"]
+        TG -- "Regulus's secret" --> R["regulus-mcp<br/>AI governance lookup"]
         W -- "replays" --> REC[["Recorded model<br/>responses"]]
         W -- "traces" --> P["OTel Collector and<br/>Phoenix :6006"]
     end
@@ -111,14 +112,15 @@ axiom_agent_platform/
 │   ├── graph/          # LangGraph state, nodes, routing, interrupts
 │   ├── agents/         # intake, analyst, drafter, compliance logic
 │   ├── tools/          # deterministic ratio and policy tools
-│   ├── mcp_clients/    # clients for the Regulus and GKN MCP servers
+│   ├── mcp_clients/    # clients for the Regulus and GKN MCP servers and the tool gateway
+│   ├── gateway/        # the MCP tool gateway: per-step tokens, rules, call log
 │   ├── router/         # provider adapters and routing policy
 │   ├── guardrails/     # PII redaction, injection screen, draft rails, number provenance
 │   ├── memory/         # checkpointer
 │   ├── telemetry/      # OpenTelemetry setup
 │   └── evidence/       # append-only evidence log and bundle writer
 ├── prompts/            # versioned prompt files
-├── config/             # routing, guardrail, and threshold settings
+├── config/             # routing, guardrail, threshold and tool gateway settings
 ├── docker/           # start-up wrapper that hands each container the demo keys
 ├── data/
 │   ├── synthetic/      # borrower packages, credit policy, golden set
@@ -177,8 +179,8 @@ Every LLM judge uses a different model from the one under test, with no fallback
 | Review page (week 7 item, brought forward) | Nov 11 | A credit officer can read a draft with its findings and decide in a browser | ✅ Built |
 | Week 5 · Guardrails | Dec 6 | Each control can be switched off; redaction leaves every financial value unchanged; cloud-only controls report not evaluated in demo | ✅ Passed: checks 16/16; attack success 6/20 with guardrails on vs 20/20 off ([results](evals/adversarial/v1/results.md)) |
 | Week 6 · Evaluation baseline | Dec 13 | Eval report in MLflow; attack success measured with guardrails on and off; fairness results with sample size | ✅ Passed: checks 7/7. Live baseline 25 × 3: deterministic checks 100%, 66/75 acceptable recommendations, 17/20 fairness pairs consistent ([results](evals/results/golden-live.md), [ADR 0008](docs/adr/0008-evaluation-thresholds.md)); golden answers and grader labels still to review |
-| Week 7 · Demo ready | Dec 20 | Role overviews, "Explain this", the keyless demo with all 25 packages recorded live | ✅ Done |
-| **Gate 2** · Demo ready | Dec 20 | A stranger runs the demo in under 10 minutes with no API keys | ✅ Passed on a simulated fresh machine: checks 13/13. From `git clone` to a ready stack in 1.5 min, with no `.env`, the stack's images removed first and rebuilt without the build cache, on a fast connection. All 25 packages run end to end with no model call. A first run by someone new to the project is still to come |
+| Week 7 · Demo ready | Dec 20 | Role overviews, "Explain this", the keyless demo with all 25 packages recorded live, and an MCP tool gateway ([ADR 0014](docs/adr/0014-tool-gateway.md)) | ✅ Done |
+| **Gate 2** · Demo ready | Dec 20 | A stranger runs the demo in under 10 minutes with no API keys | ✅ Passed on a simulated fresh machine: checks 13/13. From `git clone` to a ready stack in 1.2 min (rerun Nov 14 with the tool gateway, cloned from the local commit), with no `.env`, the stack's images removed first and rebuilt without the build cache, on a fast connection. All 25 packages run end to end with no model call. A first run by someone new to the project is still to come ([checklist](docs/first-run.md)) |
 | **Gate 3** · Published | Jan 10 | CI gates enforced; docs and results public | ⬜ |
 
 ## 🚀 Quick start
@@ -198,10 +200,10 @@ The first start downloads and builds about 6 GB of images, which takes the longe
 
 - Postgres
 - Phoenix, the trace viewer, at http://localhost:6006, and the OpenTelemetry Collector
-- the Regulus and GKN MCP servers, built from pinned release tags (Regulus `v0.2.1`, GKN `v0.2.0`)
+- the Regulus and GKN MCP servers, built from pinned release tags (Regulus `v0.2.1`, GKN `v0.2.0`), and the tool gateway in front of them
 - the platform's API, at http://localhost:8000/docs, and its worker
 
-Every port is bound to your machine only. The models' answers are replayed from live recordings, so no model is called. A one-time `demo-keys` service generates the MCP shared secret and the three role keys into `.demo/keys.env`. Git ignores that file, and the keys stay the same until you delete it. Any value you set in `.env` is used instead of the generated one.
+Every port is bound to your machine only, and the two MCP servers are reachable only through the gateway. The models' answers are replayed from live recordings, so no model is called. A one-time `demo-keys` service generates the three role keys, a secret for each MCP server and a gateway token for each workflow step into `.demo/keys.env`; each container is given only the values it needs. Git ignores that file, and the keys stay the same until you delete it. Any value you set in `.env` is used instead of the generated one.
 
 **Run the tests:** install [uv](https://docs.astral.sh/uv/), then:
 
@@ -218,15 +220,18 @@ uv run python scripts/check_week4.py
 uv run python scripts/check_gate2.py
 ```
 
-- **Gate 1 check:** the supporting services are up, Regulus returns cited provisions, and one job's retrieval never returns another job's documents.
+- **Gate 1 check:** the supporting services are up, the MCP servers are reachable only through the gateway, the gateway refuses a step's call outside its own tools, Regulus returns cited provisions, and one job's retrieval never returns another job's documents.
 - **Week 4 check:** submits a package, restarts Postgres, the API and the worker while the draft awaits review, then approves it and checks the evidence.
 - **Gate 2 check:**
   - every service answers;
   - the review page has its strict content security policy;
   - all 25 packages go through the API end to end: a draft, two revision rounds and an approval, each with a verified evidence chain;
-  - every model response was replayed from a recording.
+  - every model response was replayed from a recording;
+  - every tool call went through the gateway from the step that owns the tool.
 
   `--clean-run` first does what this page asks of a newcomer, and times it: clone into an empty folder with no `.env`, start the stack, and wait until it is ready.
+
+**Read the gateway's log:** `docker compose exec tool-gateway cat /var/lib/axiom-gateway/tool_calls.jsonl` shows every tool call: which step, which tool, allowed or refused, with fingerprints of what went in and out. The same calls appear in each memo's audit trail.
 
 **Use the review page:** open http://localhost:8000/review and sign in with one of the role keys from `docker compose logs demo-keys`. If you set your own keys in `.env`, use the part after the colon. A relationship manager requests a memo, a credit officer reads the draft with its findings and approves, rejects or asks for changes, and an auditor reads the audit trail. The page is plain HTML and JavaScript served by the API, with a strict content security policy; it renders everything as text. After signing in, each role first sees its own overview: a relationship manager their requests by stage and any failures, a credit officer the review queue with high-risk memos first, and an auditor integrity-check failures, failed jobs, safety checks that found a problem, and recent decisions. **Explain this:** click a citation to read the exact source line (with its table's header row, and whether it still matches the fingerprint recorded during the job), a ratio to see its formula and every input with its source, a flag or finding to read the credit policy clause it applies, or a safety check to see what it checks. These are lookups, not model calls.
 

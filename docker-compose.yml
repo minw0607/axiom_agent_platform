@@ -3,9 +3,13 @@
 #   docker compose up -d --build
 #   docker compose logs demo-keys      # the sign-in key for each role
 #
-# On first start the demo-keys service generates the MCP shared secret and one API key per
-# role into .demo/keys.env. Every other container starts through docker/with-demo-keys.sh,
-# which fills in only what .env leaves empty, so values set in .env always win.
+# On first start the demo-keys service generates one API key per role, a secret for each MCP
+# tool service and a tool gateway token for each workflow step into .demo/keys.env. Every
+# other container starts through docker/with-demo-keys.sh, which hands it only the values
+# named in its AXIOM_DEMO_KEYS and only where .env leaves them empty, so .env always wins.
+#
+# The platform reaches the tool services only through tool-gateway (ADR 0014). The services
+# publish no ports; the gateway alone holds their secrets.
 #
 # Optional profiles: --profile evals (MLflow).
 
@@ -74,12 +78,11 @@ services:
     build:
       context: https://github.com/minw0607/Regulus.git#v0.2.1
     environment:
-      MCP_SHARED_SECRET: ${MCP_SHARED_SECRET:-}
+      MCP_SHARED_SECRET: ${REGULUS_MCP_SECRET:-}
+      AXIOM_DEMO_KEYS: MCP_SHARED_SECRET=REGULUS_MCP_SECRET
       MCP_ALLOWED_HOSTS: localhost:*,127.0.0.1:*,regulus-mcp:*
     command: ["sh", "/usr/local/bin/with-demo-keys.sh", "python", "-m", "regulus.service"]
     depends_on: *after-demo-keys
-    ports:
-      - "127.0.0.1:8001:8001"
     volumes: *demo-keys
 
   gkn-mcp:
@@ -87,14 +90,13 @@ services:
     build:
       context: https://github.com/minw0607/geometric_knowledge_network.git#v0.2.0
     environment:
-      MCP_SHARED_SECRET: ${MCP_SHARED_SECRET:-}
+      MCP_SHARED_SECRET: ${GKN_MCP_SECRET:-}
+      AXIOM_DEMO_KEYS: MCP_SHARED_SECRET=GKN_MCP_SECRET
       MCP_ALLOWED_HOSTS: localhost:*,127.0.0.1:*,gkn-mcp:*
       GKN_REFERENCE_DIR: /references
     command:
       ["sh", "/usr/local/bin/with-demo-keys.sh", "python", "-m", "geometric_knowledge_network.service"]
     depends_on: *after-demo-keys
-    ports:
-      - "127.0.0.1:8002:8002"
     volumes:
       - gkn-data:/data
       - ./.demo:/run/axiom-demo:ro
@@ -102,24 +104,57 @@ services:
       - ./data/synthetic/credit_policy:/references/credit_policy:ro
       - ./data/lending_refs:/references/lending_refs:ro
 
+  # The only route to the tool services (ADR 0014). Each caller has its own token; every call,
+  # allowed or refused, goes to a hash-chained log in the gateway-data volume.
+  tool-gateway:
+    image: axiom-platform:dev
+    command: ["sh", "/usr/local/bin/with-demo-keys.sh", "python", "-m", "axiom.gateway.service"]
+    environment:
+      AXIOM_DEMO_KEYS: TOOL_GATEWAY_TOKENS TOOL_GATEWAY_OPERATOR_TOKEN GKN_MCP_SECRET REGULUS_MCP_SECRET
+      TOOL_GATEWAY_TOKENS: ${TOOL_GATEWAY_TOKENS:-}
+      TOOL_GATEWAY_OPERATOR_TOKEN: ${TOOL_GATEWAY_OPERATOR_TOKEN:-}
+      GKN_MCP_URL: http://gkn-mcp:8002/mcp
+      GKN_MCP_SECRET: ${GKN_MCP_SECRET:-}
+      REGULUS_MCP_URL: http://regulus-mcp:8001/mcp
+      REGULUS_MCP_SECRET: ${REGULUS_MCP_SECRET:-}
+      MCP_ALLOWED_HOSTS: localhost:*,127.0.0.1:*,tool-gateway:*
+    depends_on:
+      demo-keys:
+        condition: service_completed_successfully
+      gkn-mcp:
+        condition: service_started
+      regulus-mcp:
+        condition: service_started
+    ports:
+      - "127.0.0.1:8003:8003"
+    volumes:
+      - gateway-data:/var/lib/axiom-gateway
+      - ./.demo:/run/axiom-demo:ro
+      - ./docker/with-demo-keys.sh:/usr/local/bin/with-demo-keys.sh:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8003/healthz')"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
   api:
     image: axiom-platform:dev
     build: .
     command: ["sh", "/usr/local/bin/with-demo-keys.sh", "python", "-m", "axiom.api"]
     volumes: *demo-keys
-    environment: &platform-env
-      AXIOM_MODE: ${AXIOM_MODE:-demo}
-      AXIOM_API_HOST: 0.0.0.0
-      DATABASE_URL: postgresql://axiom:axiom@postgres:5432/axiom
-      GKN_MCP_URL: http://gkn-mcp:8002/mcp
-      REGULUS_MCP_URL: http://regulus-mcp:8001/mcp
-      MCP_SHARED_SECRET: ${MCP_SHARED_SECRET:-}
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+    environment:
+      <<: &platform-env
+        AXIOM_MODE: ${AXIOM_MODE:-demo}
+        AXIOM_API_HOST: 0.0.0.0
+        DATABASE_URL: postgresql://axiom:axiom@postgres:5432/axiom
+        TOOL_GATEWAY_URL: http://tool-gateway:8003/mcp
+        OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+        MODEL_ALIAS_MAP: ${MODEL_ALIAS_MAP:-}
+        OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      AXIOM_DEMO_KEYS: SUBMITTER_API_KEYS REVIEWER_API_KEYS AUDITOR_API_KEYS
       SUBMITTER_API_KEYS: ${SUBMITTER_API_KEYS:-}
       REVIEWER_API_KEYS: ${REVIEWER_API_KEYS:-}
       AUDITOR_API_KEYS: ${AUDITOR_API_KEYS:-}
-      MODEL_ALIAS_MAP: ${MODEL_ALIAS_MAP:-}
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
     ports:
       - "127.0.0.1:8000:8000"
     depends_on:
@@ -137,7 +172,11 @@ services:
     image: axiom-platform:dev
     command: ["sh", "/usr/local/bin/with-demo-keys.sh", "python", "-m", "axiom.jobs.worker"]
     volumes: *demo-keys
-    environment: *platform-env
+    environment:
+      <<: *platform-env
+      # The workflow steps' gateway tokens only: never the operator token or a service secret.
+      AXIOM_DEMO_KEYS: TOOL_GATEWAY_TOKENS
+      TOOL_GATEWAY_TOKENS: ${TOOL_GATEWAY_TOKENS:-}
     depends_on:
       demo-keys:
         condition: service_completed_successfully
@@ -145,7 +184,7 @@ services:
         condition: service_healthy
       api:
         condition: service_started
-      gkn-mcp:
+      tool-gateway:
         condition: service_started
 
   # Evaluation runs (week 6). Optional: docker compose --profile evals up -d mlflow
@@ -171,4 +210,5 @@ volumes:
   postgres-data:
   phoenix-data:
   gkn-data:
+  gateway-data:
   mlflow-data:

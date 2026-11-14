@@ -1,6 +1,6 @@
 # ADR 0003: Tool integration
 
-**Status:** Accepted (week 2)
+**Status:** Accepted (week 2). The shared secret is replaced by a tool gateway with per-caller tokens and a secret per service in [ADR 0014](0014-tool-gateway.md) (week 7).
 
 ## Context
 

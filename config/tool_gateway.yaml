@@ -1,0 +1,33 @@
+# Which caller may call which tool through the tool gateway (ADR 0014).
+#
+# Each caller has its own token. A call is allowed only if its tool is listed under the
+# caller, and every argument named under the tool takes one of the listed values. Anything
+# else is refused and logged. Tools not listed anywhere are not offered at all.
+version: 1
+
+tools:
+  ingest_documents: gkn
+  retrieve_evidence: gkn
+  delete_job: gkn
+  lookup_provisions: regulus
+
+callers:
+  # Workflow steps, used by the worker.
+  intake:
+    ingest_documents: {}
+  drafter:
+    retrieve_evidence:
+      collection: [job]
+  compliance:
+    retrieve_evidence:
+      collection: [lending_refs]
+  finalize:
+    lookup_provisions: {}
+  # Maintenance scripts on the host (acceptance checks, recording). The worker never holds
+  # this token.
+  operator:
+    ingest_documents: {}
+    retrieve_evidence:
+      collection: [job, credit_policy, lending_refs]
+    delete_job: {}
+    lookup_provisions: {}

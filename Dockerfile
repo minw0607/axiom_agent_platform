@@ -22,7 +22,8 @@ COPY config ./config
 COPY prompts ./prompts
 COPY data/synthetic ./data/synthetic
 COPY data/recorded ./data/recorded
-RUN useradd --create-home --uid 10001 axiom
+RUN useradd --create-home --uid 10001 axiom \
+    && mkdir -p /var/lib/axiom-gateway && chown axiom /var/lib/axiom-gateway
 USER axiom
 
 EXPOSE 8000

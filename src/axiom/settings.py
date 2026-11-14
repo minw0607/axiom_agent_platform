@@ -31,6 +31,18 @@ def _keys(name: str) -> dict[str, str]:
     return out
 
 
+def _gateway_tokens() -> dict[str, str]:
+    """TOOL_GATEWAY_TOKENS ('step:token,...') plus TOOL_GATEWAY_OPERATOR_TOKEN, if set."""
+    out: dict[str, str] = {}
+    for item in os.environ.get("TOOL_GATEWAY_TOKENS", "").split(","):
+        caller, sep, token = item.strip().partition(":")
+        if sep and caller and token:
+            out[caller] = token
+    if os.environ.get("TOOL_GATEWAY_OPERATOR_TOKEN"):
+        out["operator"] = os.environ["TOOL_GATEWAY_OPERATOR_TOKEN"]
+    return out
+
+
 @dataclass(frozen=True)
 class Settings:
     mode: str = "demo"
@@ -41,6 +53,8 @@ class Settings:
     gkn_mcp_url: str | None = None
     regulus_mcp_url: str | None = None
     mcp_shared_secret: str | None = None
+    tool_gateway_url: str | None = None
+    tool_gateway_tokens: dict[str, str] = field(default_factory=dict)
     otel_endpoint: str | None = None
     submitter_keys: dict[str, str] = field(default_factory=dict)
     reviewer_keys: dict[str, str] = field(default_factory=dict)
@@ -59,6 +73,8 @@ class Settings:
             gkn_mcp_url=os.environ.get("GKN_MCP_URL") or None,
             regulus_mcp_url=os.environ.get("REGULUS_MCP_URL") or None,
             mcp_shared_secret=os.environ.get("MCP_SHARED_SECRET") or None,
+            tool_gateway_url=os.environ.get("TOOL_GATEWAY_URL") or None,
+            tool_gateway_tokens=_gateway_tokens(),
             otel_endpoint=os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT") or None,
             submitter_keys=_keys("SUBMITTER_API_KEYS"),
             reviewer_keys=_keys("REVIEWER_API_KEYS"),
