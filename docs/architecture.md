@@ -186,7 +186,7 @@ Anything else is refused before it reaches a service. Only the gateway holds the
 | Gate 2 acceptance: `scripts/check_gate2.py`, with `--clean-run` timing a fresh clone to a ready stack | Passing (Nov 14): 13/13, 1.2 min from a cold clone, with the tool gateway |
 | Tool gateway: per-step tokens, rules in `config/tool_gateway.yaml`, a secret per service, a hash-chained call log, `tool_call` events in the evidence chain and the audit trail | Built and tested (week 7): 287 tool calls across 25 packages, all from the step that owns the tool ([ADR 0014](adr/0014-tool-gateway.md)) |
 | Eval baseline | Week 6 |
-| CI release gates | Week 8 |
+| CI release gates | Week 8: the ADR 0008 thresholds enforced on every push, in-process and through a freshly built stack (piece 1, Nov 15); contract tests, live smoke and alignment gates to come |
 | Cloud deployment | Week 9 |
 
 ## 8. Decisions

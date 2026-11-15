@@ -8,7 +8,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/)
-[![Development: Week 7](https://img.shields.io/badge/Development-Week%207%20keyless%20demo-lightblue.svg)](docs/status.md)
+[![Development: Week 8](https://img.shields.io/badge/Development-Week%208%20CI%20gates-lightblue.svg)](docs/status.md)
 [![Orchestration: LangGraph](https://img.shields.io/badge/orchestration-LangGraph-2C3E50.svg)](https://github.com/langchain-ai/langgraph)
 [![Data: Synthetic only](https://img.shields.io/badge/data-synthetic%20only-1baf7a.svg)](#-data)
 [![Project: Independent & Personal](https://img.shields.io/badge/Project-Independent%20%26%20Personal-lightgrey)](#-disclaimer)
@@ -161,7 +161,7 @@ The platform depends on these repositories; none of them depend on it.
 |---|---|---|
 | [Regulus](https://github.com/minw0607/Regulus) | MCP service: related AI governance provisions for the evidence bundle and control mapping | ✅ Since week 2 |
 | [geometric_knowledge_network](https://github.com/minw0607/geometric_knowledge_network) | MCP service: job-scoped evidence retrieval and lending references | ✅ Since week 2 |
-| [llm_red_teaming](https://github.com/minw0607/llm_red_teaming) | Attack templates for the adversarial set; later, the adversarial stage in CI | 🟡 Templates adapted (week 5); CI stage planned (week 8) |
+| [llm_red_teaming](https://github.com/minw0607/llm_red_teaming) | Attack templates for the adversarial set; later, the adversarial stage in CI | 🟡 Templates adapted (week 5); demo-mode attack set gated in CI (week 8); live red-team stage planned |
 | [rag_eval_framework](https://github.com/minw0607/rag_eval_framework) | Quality metrics in the eval gate | ⬜ Planned (weeks 6–8) |
 | [genai_alignment](https://github.com/minw0607/genai_alignment) | Behavioral regression scenarios | ⬜ Planned (week 8) |
 | [multi_agent_otel_eval](https://github.com/minw0607/multi_agent_otel_eval) | OpenTelemetry helpers and token attribution | ⬜ Planned |
@@ -172,7 +172,7 @@ The platform depends on these repositories; none of them depend on it.
 
 **Regulatory position.** SR 26-2 replaced SR 11-7 in April 2026 and excludes generative and agentic AI from its scope, so this project doesn't claim to satisfy it. NIST AI RMF is the primary reference, and SR 26-2 principles are applied voluntarily by analogy.
 
-A change can't merge if it breaks these gates. [ADR 0008](docs/adr/0008-evaluation-thresholds.md) set the thresholds in week 6 from the first live baseline (25 packages × 3 repeats): fixed at 100% where the platform is deterministic, a floor plus a tolerance against main where a model decides, and reported but not enforced for grader scores until the grader's calibration is complete. CI enforces them from week 8.
+CI fails a change that breaks these gates; blocking the merge itself needs branch protection on `main`, still to be switched on. [ADR 0008](docs/adr/0008-evaluation-thresholds.md) set the thresholds in week 6 from the first live baseline (25 packages × 3 repeats): fixed at 100% where the platform is deterministic, a floor plus a tolerance against main where a model decides, and reported but not enforced for grader scores until the grader's calibration is complete. Since week 8, CI enforces them on every push and pull request: `evals/gate.py` checks the thresholds in `config/eval_gates.yaml` on the golden set, the fairness pairs and the attack set (with the guardrails as configured, so switching one off fails the build), and again on the 25 live recordings through a freshly built stack.
 
 | Gate | Threshold |
 |---|---|
@@ -223,6 +223,7 @@ uv run pytest
 uv run python scripts/check_gate1.py
 uv run python scripts/check_week4.py
 uv run python scripts/check_gate2.py
+uv run python evals/gate.py --stack
 ```
 
 - **Gate 1 check:** the supporting services are up, the MCP servers are reachable only through the gateway, the gateway refuses a step's call outside its own tools, Regulus returns cited provisions, and one job's retrieval never returns another job's documents.
@@ -235,6 +236,8 @@ uv run python scripts/check_gate2.py
   - every tool call went through the gateway from the step that owns the tool.
 
   `--clean-run` first does what this page asks of a newcomer, and times it: clone into an empty folder with no `.env`, start the stack, and wait until it is ready.
+
+**Release gates (no keys, no stack):** `uv run python evals/gate.py` runs the golden set, the fairness pairs and the attack set and fails if any [threshold](config/eval_gates.yaml) is missed; `--stack` replays the 25 live recordings through the running stack instead. CI runs both.
 
 **Read the gateway's log:** `docker compose exec tool-gateway cat /var/lib/axiom-gateway/tool_calls.jsonl` shows every tool call: which step, which tool, allowed or refused, with fingerprints of what went in and out. The same calls appear in each memo's audit trail.
 

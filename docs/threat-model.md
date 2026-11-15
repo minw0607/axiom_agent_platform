@@ -1,6 +1,6 @@
 # Threat model
 
-**Version:** v0.3 (Nov 14, 2026) · **Next update:** week 8, with the CI release gates · **Final:** week 10
+**Version:** v0.4 (Nov 15, 2026) · **Next update:** later in week 8, with the remaining CI gates · **Final:** week 10
 
 This document lists what could go wrong in the platform, who or what could cause it, and which control addresses each threat. Every control is marked **Built**, **Planned** (with the week of the [development plan](dev-plan.md) that delivers it) or **Deferred**. A planned control is a design commitment, not evidence. A threat is only closed when a test proves the control works.
 
@@ -255,7 +255,7 @@ Keys or real deployment names end up in the repo, logs, traces or published resu
 | `.env` git-ignored; `.env.example` holds placeholders only | **Built** |
 | Key Vault and managed identity in the cloud | Planned W9 |
 | Logical model aliases; real names only in environment settings | **Built** W3 |
-| Config changes go through PRs; the red-team gate fails if a guardrail is switched off | Planned W8 |
+| Config changes go through PRs; the red-team gate fails if a guardrail is switched off | Partly built W8: CI runs the attack set with the guardrails as configured and fails if a case the committed results show stopped gets through; changes still go straight to main until branch protection is set |
 | Human approval cannot be switched off in config | **Built** W4 |
 
 ### T-14 · Memory and context poisoning
@@ -350,3 +350,4 @@ Week 6 runs the set against live models and adds it to the red-team gate.
 | v0.1 | Nov 10, 2026 | Remapped to the OWASP LLM Top 10 2026 (eight entries reordered; System Prompt Leakage broadened to Hidden Context Exposure). Threats and controls unchanged |
 | v0.2 | Nov 12, 2026 | Week 5: guardrails built and marked; statuses brought up to date for controls built in weeks 3–4, with partial and not-yet-built controls stated as such; adversarial set v1 results |
 | v0.3 | Nov 14, 2026 | Week 7: tool gateway (ADR 0014). T-03 gains a secret per service, unreachable services and a log of every tool call; T-05's per-node tool list is built, with its one-process limit stated. OWASP IDs checked against the 2026 PDF |
+| v0.4 | Nov 15, 2026 | Week 8 piece 1: the red-team gate runs in CI with the guardrails as configured (the T-13 configuration control is partly built) |

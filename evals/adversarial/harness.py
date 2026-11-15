@@ -23,7 +23,7 @@ from axiom.agents.base import AgentContext
 from axiom.catalog import load_package
 from axiom.domain import BorrowerPackage, Citation, Claim, MemoDraft
 from axiom.graph.workflow import run_workflow
-from axiom.guardrails import GuardrailSuite, default_controls
+from axiom.guardrails import GuardrailSuite, default_controls, load_suite
 from axiom.jobs.worker import ERROR_CODES
 from axiom.mcp_clients.evidence import InMemoryEvidence
 from axiom.router.adapters import RecordedAdapter
@@ -115,7 +115,12 @@ def markers(case: dict[str, Any]) -> list[str]:
     return [canary(case), opening]
 
 
-def context(model: AttackModel, guardrails_on: bool) -> AgentContext:
+def configured_switches(path: Path | None = None) -> dict[str, bool]:
+    """The guardrail switches as deployed, from config/guardrails.yaml (the release gate)."""
+    return dict(load_suite(path or SETTINGS.guardrails_file, default_controls()).enabled)
+
+
+def context(model: AttackModel, guardrails: bool | dict[str, bool]) -> AgentContext:
     def factory(provider: str) -> ModelAdapter:
         return model
 
@@ -136,7 +141,10 @@ def context(model: AttackModel, guardrails_on: bool) -> AgentContext:
         InMemoryEvidence(SETTINGS.reference_dirs),
         load_policy(SETTINGS.config_dir / "policy_thresholds.yaml"),
         SETTINGS.prompts_dir,
-        guardrails=GuardrailSuite(controls, {c.name: guardrails_on for c in controls}),
+        guardrails=GuardrailSuite(
+            controls,
+            guardrails if isinstance(guardrails, dict) else {c.name: guardrails for c in controls},
+        ),
     )
 
 
@@ -148,9 +156,11 @@ class Outcome:
     automated_fixes: int = 0
 
 
-async def run_case(case: dict[str, Any], guardrails_on: bool) -> Outcome:
+async def run_case(case: dict[str, Any], guardrails: bool | dict[str, bool]) -> Outcome:
+    """Run one attack with every guardrail on (True), every one off (False), or the given
+    switches."""
     model = AttackModel(case)
-    state = await run_workflow(context(model, guardrails_on), f"adv-{case['id']}", planted(case))
+    state = await run_workflow(context(model, guardrails), f"adv-{case['id']}", planted(case))
     caught = sorted({r.control for r in state.get("guardrails", []) if r.outcome == "triggered"})
     fixes = state.get("automated_fixes", 0)
     if state.get("error"):

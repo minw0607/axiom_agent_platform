@@ -2,6 +2,19 @@
 
 Suites run by CI and the nightly job: golden-set quality, red-team, alignment scenarios, counterfactual fairness pairs, and judge calibration. Evaluation tools install in a separate dependency group so they never conflict with the runtime.
 
+**Built (week 8): the release gates.** [`gate.py`](gate.py) applies the thresholds in [`config/eval_gates.yaml`](../config/eval_gates.yaml) ([ADR 0008](../docs/adr/0008-evaluation-thresholds.md)) and exits 1 if any is missed. CI runs it on every push and pull request.
+
+```bash
+uv run python evals/gate.py           # no keys, no stack, about 7 s: 12 gates
+uv run python evals/gate.py --stack   # the 25 live recordings through the running stack: 10 gates
+```
+
+- **Golden set:** every memo drafted; critical extraction, ratios, flags, number provenance and citation coverage 100% on every memo; all-field extraction at least 0.99 and key-finding coverage (by terms) at least 0.90 on average; every recommendation acceptable except the two tracked gaps (pkg-21, pkg-23).
+- **Fairness pairs:** all 20 consistent.
+- **Attack set:** run with the guardrails as configured in `config/guardrails.yaml`. No case that the committed results show stopped with every guardrail on may get through, so switching a guardrail off fails the build (week 8 acceptance test B; `tests/test_gate.py`).
+
+The rules (`every`, `mean`, `rate`, with named exceptions) know nothing about lending: a suite's runner turns its results into rows, so another app can bring its own suites and thresholds ([ADR 0015](../docs/adr/0015-platform-core-and-apps.md)). Replays test the code and the scoring on fixed model answers; the live smoke gate that tests a changed prompt against a real model comes next.
+
 **Built (week 5):** [`adversarial/`](adversarial/): adversarial set v1, 20 synthetic attacks (injected instructions, personal data, and model output that followed an injection), and a harness that runs them in demo mode with every guardrail on and with every one off. `uv run python evals/adversarial/harness.py` rewrites [`v1/results.md`](adversarial/v1/results.md); a test fails if the committed results go stale or a case stops meeting its expectation.
 
 **Built (week 6), draft:** [`golden/v1/answers.md`](golden/v1/answers.md), the golden set's expected answers for 25 packages, written out for review. The answers themselves live in each package's `ground_truth.json`.

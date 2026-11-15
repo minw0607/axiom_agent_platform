@@ -1,6 +1,6 @@
 # ADR 0008: Evaluation thresholds and gating policy
 
-**Status:** Accepted (week 6)
+**Status:** Accepted (week 6). Enforced in CI since week 8 (Nov 15, 2026): `evals/gate.py`, with the thresholds in `config/eval_gates.yaml`.
 
 ## Context
 
