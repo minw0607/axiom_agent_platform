@@ -221,7 +221,8 @@ async def _reviewer(
     sections = [
         DashboardSection(
             title="Review queue, riskiest first",
-            empty="Nothing is waiting for review.",
+            empty="Nothing is waiting for review. A memo appears here once a relationship "
+            "manager requests one and its draft is ready.",
             items=items,
         )
     ]
@@ -301,7 +302,8 @@ async def _auditor(store: JobStore) -> tuple[list[Tile], list[DashboardSection],
         ),
         DashboardSection(
             title="Recent decisions",
-            empty="No memo has been decided yet.",
+            empty="No memo has been decided yet. Decisions appear here once a credit officer "
+            "approves or rejects a memo.",
             items=decided[:MAX_ITEMS],
         ),
     ]

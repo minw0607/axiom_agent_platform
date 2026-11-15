@@ -341,7 +341,7 @@ function renderList() {
     state.me && state.me.role === "submitter" && state.jobs.length === 0
       ? "No memos yet. Request one above."
       : state.tab === "review"
-        ? "Nothing is waiting for review."
+        ? "Nothing is waiting for review. A memo appears here once a relationship manager requests one."
         : "No memos here.";
 }
 

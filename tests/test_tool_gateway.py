@@ -23,7 +23,6 @@ import yaml
 from langgraph.checkpoint.memory import InMemorySaver
 from mcp.server.mcpserver import MCPServer
 from starlette.types import ASGIApp, Receive, Scope, Send
-from tests.conftest import SETTINGS, demo_context
 
 from axiom.catalog import load_package
 from axiom.demo_keys import GATEWAY_STEPS
@@ -42,6 +41,7 @@ from axiom.mcp_clients.client import (
 from axiom.mcp_clients.evidence import GKNEvidence, InMemoryEvidence
 from axiom.mcp_clients.governance import RegulusGovernance
 from axiom.memory.checkpoint import serializer
+from conftest import SETTINGS, demo_context
 
 POLICY_FILE = SETTINGS.config_dir / "tool_gateway.yaml"
 TOKENS = {name: f"token-{name}" for name in (*GATEWAY_STEPS, "operator")}
