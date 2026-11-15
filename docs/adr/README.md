@@ -18,3 +18,4 @@ Each ADR records one decision, the options considered, and the trade-offs. Files
 | [0012](0012-regulatory-position.md) | Regulatory position and compliance knowledge sources | Regulus for memo review, lending references plus rule engine, rule engine only | Week 1 | Accepted |
 | 0013 | Question answering on the review page | Deterministic "explain this" only, a memo-scoped grounded assistant, a general chatbot | Phase 4 | Proposed |
 | [0014](0014-tool-gateway.md) | MCP tool gateway | Client-side limits only, a secret per service, an MCP gateway, a process per step | Week 7 | Accepted |
+| [0015](0015-platform-core-and-apps.md) | A platform core with apps on top | Stay a single app, record the direction and split when a second app is real, restructure now | Week 7 | Accepted as the direction; restructure in phase 4 |

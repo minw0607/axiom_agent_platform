@@ -280,7 +280,7 @@ Demo mode replays real model responses recorded from live runs, so no model API 
 | 1 · Foundations | 1–2 | Scaffold, threat model, Regulus and GKN as MCP services |
 | 2 · Flagship MVP | 3–7 | API, agents, human review, guardrails, eval baseline, keyless demo |
 | 3 · Ship and publish | 8–10 | CI release gates, Azure deployment, documentation |
-| 4 · Extend | from Jan 11 | Canary and shadow routing, Helm, webhooks, long-term memory |
+| 4 · Extend | from Jan 11 | A platform core that hosts more agentic apps, with the credit memo as the first ([ADR 0015](docs/adr/0015-platform-core-and-apps.md)); canary and shadow routing, Helm, webhooks, long-term memory |
 
 Progress on each milestone, with its result, is on the [status page](docs/status.md).
 
