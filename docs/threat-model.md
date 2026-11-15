@@ -218,7 +218,7 @@ Events are edited, deleted or never written, so the audit record cannot be trust
 | Control | Status |
 |---|---|
 | Append-only log with a SHA-256 hash chain | **Built** W4 |
-| Chain verification in the evidence endpoint | Planned W7 |
+| Chain verification in the evidence endpoint | **Built** W7: the audit trail reports whether the chain is intact |
 | A control that cannot run records `not_evaluated`; nothing defaults to pass | **Built** W5: a control switched off, failing, or without its cloud service records `not_evaluated` with the reason |
 | The worker's database role cannot update or delete evidence rows | Partly built W4: database triggers refuse UPDATE, DELETE and TRUNCATE on the evidence table; a separate database role is not yet set up |
 

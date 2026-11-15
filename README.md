@@ -8,7 +8,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/)
-[![Development: Week 7](https://img.shields.io/badge/Development-Week%207%20keyless%20demo-lightblue.svg)](#-status)
+[![Development: Week 7](https://img.shields.io/badge/Development-Week%207%20keyless%20demo-lightblue.svg)](docs/status.md)
 [![Orchestration: LangGraph](https://img.shields.io/badge/orchestration-LangGraph-2C3E50.svg)](https://github.com/langchain-ai/langgraph)
 [![Data: Synthetic only](https://img.shields.io/badge/data-synthetic%20only-1baf7a.svg)](#-data)
 [![Project: Independent & Personal](https://img.shields.io/badge/Project-Independent%20%26%20Personal-lightgrey)](#-disclaimer)
@@ -21,19 +21,17 @@
 
 </div>
 
-> **Status:** Week 7, Gate 2 passed on a simulated fresh machine. The demo starts with one command and needs no API keys. A package goes from submission to a cited draft memo with credit policy and lending-reference findings, through layered guardrails (personal data masked, injected instructions quarantined, every number and citation checked), then waits for a credit officer to approve, reject or request a revision. Role overviews and "Explain this" show where every figure, ratio, flag and finding came from. An evaluation suite scores the platform against a 25-package golden set, 20 fairness pairs and 20 planted attacks, with gate thresholds set from the live baseline. This page describes the target design and tracks progress against the [development plan](docs/dev-plan.md).
-
 ---
 
 ## Contents
 
 - [What it does](#-what-it-does)
 - [Design principles](#-design-principles)
+- [AI security by design](#-ai-security-by-design)
 - [How it works](#-how-it-works)
 - [Repository structure](#-repository-structure)
 - [Built on](#-built-on)
 - [Governance and release gates](#-governance-and-release-gates)
-- [Status](#-status)
 - [Quick start](#-quick-start)
 - [Roadmap](#-roadmap)
 - [Documentation](#-documentation)
@@ -66,6 +64,23 @@ The system drafts and recommends. **A human makes every credit decision.**
 | **Evidence by default** | Each job writes to an append-only, hash-chained evidence log. |
 | **Fail closed** | A control that can't run is recorded as *not evaluated*, never as passed. |
 | **Configuration over code** | Routing, thresholds, and guardrail switches live in `config/`. |
+
+## 🔐 AI security by design
+
+An agent that reads untrusted documents and calls tools has to be contained, not just prompted well. The main controls, and how each is tested:
+
+| Concern | Control | How it's tested |
+|---|---|---|
+| **Identity and separation of duties** (ASI03, ASI09) | Each role has its own API key: relationship manager, credit officer, auditor. The reviewer's identity comes from the key, never from the request, and the API refuses an approval from the person who submitted the job. Both identities go into the evidence log. | Contract tests; week 4 checks |
+| **Least-privilege tools through an MCP gateway** (LLM03, ASI02) | Agents never reach a tool service directly. Each workflow step has its own gateway token and may call only its own tools, with the scope (job, collection) set by code, not by the model. Rules fail closed. The MCP servers publish no ports, and each has its own secret that only the gateway holds. Every call, allowed or refused, is logged in a hash chain and shown in the memo's audit trail ([ADR 0014](docs/adr/0014-tool-gateway.md)). | Gate 1 checks refusals; Gate 2 checks that every one of 287 tool calls came from the step that owns the tool |
+| **Prompt injection** (LLM01, ASI01) | Documents enter prompts as labelled data, never as instructions. A local screen quarantines a package with planted instructions before any model call. The workflow path is fixed in code, so model output can't skip human review, and the numbers come from code, so injected text can't change them. | 20 planted attacks: 6 succeed with guardrails on, 20 with them off ([results](evals/adversarial/v1/results.md)) |
+| **Data isolation** (LLM02, LLM09) | Each job's documents get their own retrieval index, and the job ID comes from the workflow state, so the model can't name another borrower's job. | Isolation test in the Gate 1 check |
+| **Personal data** (LLM02) | Personal data is masked before any model call and checked again in every draft, with financial values left unchanged. Unmasked data may only go to a permitted local model; otherwise the job stops. | Tests that masking leaves every amount, percentage and year unchanged |
+| **Output handling** (LLM10) | The review page renders everything as text under a strict content security policy. API responses never name a model, agent or prompt. | Tests forbid HTML sinks; contract test |
+| **Audit integrity** | The evidence log is append-only and hash-chained; the database refuses updates and deletes on it. | Chain verification on every audit trail |
+| **Secrets** | Each install generates its own keys, and each container receives only the ones it needs. Every port is bound to the local machine. | Gate 1 and demo-key tests |
+
+**Not built yet:** per-key rate limits and token caps, cloud content-safety screening (recorded as *not evaluated* until it's connected), and image pinning by digest. The [threat model](docs/threat-model.md) lists all 16 threats, mapped to the OWASP Top 10 for LLM Applications 2026 and the OWASP Top 10 for Agentic Applications, with each control's status.
 
 ## 🧭 How it works
 
@@ -131,7 +146,7 @@ axiom_agent_platform/
 ├── scripts/            # gate checks and developer tools
 ├── tests/              # unit, contract, and integration tests
 ├── infra/terraform/    # Azure resources
-├── docs/               # plan, architecture, ADRs, threat model, model card
+├── docs/               # plan, status, architecture, ADRs, threat model, model card
 └── docker-compose.yml  # keyless demo: docker compose up, no .env needed
 ```
 
@@ -169,21 +184,6 @@ A change can't merge if it breaks these gates. [ADR 0008](docs/adr/0008-evaluati
 | Counterfactual consistency | Ratios, flags, and recommendation unchanged across identity-only changes |
 
 Every LLM judge uses a different model from the one under test, with no fallback to it, and is checked against a person's labels. So far that check is partial: the grader catches altered claims and ignores high-stakes framing, but its agreement with a person's judgement is not yet measured ([evaluation suite](evals/README.md)).
-
-## 📍 Status
-
-| Milestone | Target | What it proves | State |
-|---|---|---|---|
-| Repository scaffold | Nov 8 | Structure, tooling, and CI in place | ✅ Done |
-| **Gate 1** · Architecture ready | Nov 15 | Supporting services run without keys; Regulus returns cited provisions | ✅ Passed: checks 7/7, design docs published |
-| Week 3 · First vertical slice | Nov 22 | Submit a package, poll, get a cited draft memo traced in Phoenix | ✅ Done; run live on all ten packages |
-| Week 4 · Compliance and human review | Nov 29 | A job pauses for review, survives a restart, and finalizes only on approval by someone other than the submitter | ✅ Passed: checks 14/14, including a restart while a job awaits review |
-| Review page (week 7 item, brought forward) | Nov 11 | A credit officer can read a draft with its findings and decide in a browser | ✅ Built |
-| Week 5 · Guardrails | Dec 6 | Each control can be switched off; redaction leaves every financial value unchanged; cloud-only controls report not evaluated in demo | ✅ Passed: checks 16/16; attack success 6/20 with guardrails on vs 20/20 off ([results](evals/adversarial/v1/results.md)) |
-| Week 6 · Evaluation baseline | Dec 13 | Eval report in MLflow; attack success measured with guardrails on and off; fairness results with sample size | ✅ Passed: checks 7/7. Live baseline 25 × 3: deterministic checks 100%, 66/75 acceptable recommendations, 17/20 fairness pairs consistent ([results](evals/results/golden-live.md), [ADR 0008](docs/adr/0008-evaluation-thresholds.md)); golden answers and grader labels still to review |
-| Week 7 · Demo ready | Dec 20 | Role overviews, "Explain this", the keyless demo with all 25 packages recorded live, and an MCP tool gateway ([ADR 0014](docs/adr/0014-tool-gateway.md)) | ✅ Done |
-| **Gate 2** · Demo ready | Dec 20 | A stranger runs the demo in under 10 minutes with no API keys | ✅ Passed on a simulated fresh machine: checks 13/13. From `git clone` to a ready stack in 1.2 min (rerun Nov 14 with the tool gateway, cloned from the local commit), with no `.env`, the stack's images removed first and rebuilt without the build cache, on a fast connection. All 25 packages run end to end with no model call. A first run by someone new to the project is still to come ([checklist](docs/first-run.md)) |
-| **Gate 3** · Published | Jan 10 | CI gates enforced; docs and results public | ⬜ |
 
 ## 🚀 Quick start
 
@@ -281,6 +281,8 @@ Demo mode replays real model responses recorded from live runs, so no model API 
 | 3 · Ship and publish | 8–10 | CI release gates, Azure deployment, documentation |
 | 4 · Extend | from Jan 11 | Canary and shadow routing, Helm, webhooks, long-term memory |
 
+Progress on each milestone, with its result, is on the [status page](docs/status.md).
+
 <div align="center">
 <img src="docs/assets/roadmap.png" width="80%" alt="Roadmap: four phases with Gate 1 on Nov 15, Gate 2 on Dec 20, and Gate 3 on Jan 10."/>
 </div>
@@ -288,6 +290,8 @@ Demo mode replays real model responses recorded from live runs, so no model API 
 ## 📚 Documentation
 
 - [Development plan](docs/dev-plan.md): scope, architecture, API, gates, schedule
+- [Status](docs/status.md): each milestone, what it proves, and the result
+- [First run](docs/first-run.md): the checklist for someone trying the demo for the first time
 - [A sample package, end to end](docs/sample-package.md): the documents, extracted figures, computed ratios, the drafted memo, and how each claim is checked
 - [Architecture](docs/architecture.md): layers, the life of a memo job, and component status
 - [Architecture decision records](docs/adr/README.md): decisions and trade-offs as they're made

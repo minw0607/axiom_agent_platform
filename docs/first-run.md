@@ -39,5 +39,5 @@ Please time yourself from step 1 to the end of step 3, and write down anything t
 ## For the owner
 
 - Don't help while the timer runs. Each question the tester asks points at a gap in the README.
-- Gate 2 passes if the tester reaches the end of step 3 in under 10 minutes without help. Record the result, with the date and the tester's machine, in the README's Gate 2 row. Don't record the tester's name.
+- Gate 2 passes if the tester reaches the end of step 3 in under 10 minutes without help. Record the result, with the date and the tester's machine, in the Gate 2 row of the [status page](status.md). Don't record the tester's name.
 - Turn each problem the tester reports into a README fix or an issue, then ask whether the fix would have helped.
