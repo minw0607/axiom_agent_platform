@@ -73,4 +73,5 @@ For the credit memo app that is `agents/`, `graph/workflow.py`, `domain.py`, `to
 - Nothing changes for users or for Gate 3.
 - Week 8–10 work (CI gates, deployment) is reviewed against rule 1, so the split doesn't get harder.
 - The restructure will move lending code under an app package and replace direct imports in `api/`, `jobs/`, `guardrails/`, `mcp_clients/` and `memory/` with interfaces an app implements. The table above is its starting checklist.
+- The principles every app on the platform follows, with the credit memo app checked against each, are in [platform design principles](../platform-principles.md).
 - **Revisit when:** a second use case is chosen, or phase 4 begins.
