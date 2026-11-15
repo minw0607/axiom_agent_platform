@@ -107,7 +107,7 @@ Each check returns `passed`, `triggered` or `not_evaluated`, emits a span and an
 
 ## 5. Capabilities
 
-**Model router** ([ADR 0005](adr/0005-model-routing.md)). Agents ask for a task route (`extraction`, `narrative`, `compliance`), never a model. The router resolves logical aliases from environment settings, applies sensitivity rules first (unredacted PII only to a permitted local model, otherwise fail closed), then the task route, then fallback. Adapters: Azure OpenAI, Anthropic, Ollama, and `recorded` for the keyless demo. Every call returns a `RoutingDecision` for the evidence bundle.
+**Model router** ([ADR 0005](adr/0005-model-routing.md)). Agents ask for a task route (`extraction`, `narrative`, `compliance`), never a model. The router resolves logical aliases from environment settings, applies sensitivity rules first (unredacted PII only to a permitted local model, otherwise fail closed), then the task route, then fallback. Adapters: OpenAI (also Azure OpenAI and OpenAI-compatible endpoints), Anthropic, Ollama, and `recorded` for the keyless demo; one deployment can mix them, alias by alias. Only Ollama counts as local, so an alias allowed unredacted PII must map to it. Every call returns a `RoutingDecision` for the evidence bundle.
 
 **Deterministic tools** ([ADR 0003](adr/0003-tool-integration.md)). Ratio math and policy rules are plain Python in `src/axiom/tools/`, called in-process and unit-tested to 100% exactness.
 
@@ -159,6 +159,7 @@ Anything else is refused before it reaches a service. Only the gateway holds the
 | Worker, LangGraph workflow (intake → analyst → drafter), rule-based supervisor | Built and tested (week 3) |
 | Ratio, policy-flag and reconciliation tools | Built; exact against an independent reference on all 10 packages |
 | Router v1: recorded adapter (demo), OpenAI and Azure OpenAI adapter, fallback, fail-closed sensitivity rule | Built; run live on all ten packages, whose responses the demo replays |
+| Anthropic and Ollama adapters; providers mixed by alias; the PII rule accepts only a local provider | Built (week 8), tested against fake clients; not yet run live |
 | Telemetry: API, job, workflow, node and model-call spans to Phoenix | Built (week 3) |
 | Synthetic data v1: 10 packages, credit policy, ground truth | Built (week 3) |
 | Evidence log: per-job hash chain in Postgres (append-only by trigger), every model attempt including rejected ones, auditor-only `GET /v1/memos/{id}/evidence` with chain verification | Built and tested (week 4) |

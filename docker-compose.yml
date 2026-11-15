@@ -144,6 +144,8 @@ services:
     build: .
     command: ["sh", "/usr/local/bin/with-demo-keys.sh", "python", "-m", "axiom.api"]
     volumes: *demo-keys
+    # Lets OLLAMA_BASE_URL reach Ollama on this machine on Linux too (Docker Desktop has it).
+    extra_hosts: ["host.docker.internal:host-gateway"]
     environment:
       <<: &platform-env
         AXIOM_MODE: ${AXIOM_MODE:-demo}
@@ -153,6 +155,14 @@ services:
         OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
         MODEL_ALIAS_MAP: ${MODEL_ALIAS_MAP:-}
         OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+        OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
+        OPENAI_API_VERSION: ${OPENAI_API_VERSION:-}
+        OPENAI_APIM_HEADER_NAME: ${OPENAI_APIM_HEADER_NAME:-}
+        OPENAI_APIM_SUBSCRIPTION_KEY: ${OPENAI_APIM_SUBSCRIPTION_KEY:-}
+        ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+        ANTHROPIC_BASE_URL: ${ANTHROPIC_BASE_URL:-}
+        # Ollama on your own machine, seen from inside a container.
+        OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
       AXIOM_DEMO_KEYS: SUBMITTER_API_KEYS REVIEWER_API_KEYS AUDITOR_API_KEYS
       SUBMITTER_API_KEYS: ${SUBMITTER_API_KEYS:-}
       REVIEWER_API_KEYS: ${REVIEWER_API_KEYS:-}
@@ -174,6 +184,8 @@ services:
     image: axiom-platform:dev
     command: ["sh", "/usr/local/bin/with-demo-keys.sh", "python", "-m", "axiom.jobs.worker"]
     volumes: *demo-keys
+    # Lets OLLAMA_BASE_URL reach Ollama on this machine on Linux too (Docker Desktop has it).
+    extra_hosts: ["host.docker.internal:host-gateway"]
     environment:
       <<: *platform-env
       # The workflow steps' gateway tokens only: never the operator token or a service secret.

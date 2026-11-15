@@ -278,6 +278,32 @@ curl http://localhost:8000/v1/memos/<job_id>/evidence -H "X-API-Key: <auditor ke
 
 Demo mode replays real model responses recorded from live runs, so no model API key is needed ([what the recordings are](data/recorded/README.md)). The demo offers all 25 fictional packages, each built to test one scenario ([the list](data/synthetic/README.md)). In two of them, pkg-21 and pkg-23, the recorded draft recommends approval where the expected answer is to refer, and the credit policy rules flag the problem for the credit officer. The [recordings page](data/recorded/README.md) explains.
 
+### Use your own models
+
+The demo needs no models. To draft memos with real ones, bring your own provider account: the calls go to your account, and are billed there. Agents never name a model; they ask for a task, the [routing policy](config/routing.local.yaml) picks a logical alias for it, and `MODEL_ALIAS_MAP` in your `.env` says which provider and model each alias means. Supported providers:
+
+| Provider | `MODEL_ALIAS_MAP` entry | Settings in `.env` |
+|---|---|---|
+| OpenAI | `openai:<model>` | `OPENAI_API_KEY` |
+| Azure OpenAI | `openai:<deployment>` | `OPENAI_API_KEY`, `OPENAI_BASE_URL` (your endpoint) and `OPENAI_API_VERSION`; behind an API management gateway, also `OPENAI_APIM_HEADER_NAME` and `OPENAI_APIM_SUBSCRIPTION_KEY` |
+| Any OpenAI-compatible endpoint | `openai:<model>` | `OPENAI_API_KEY` and `OPENAI_BASE_URL` |
+| Anthropic | `anthropic:<model>` | `ANTHROPIC_API_KEY`; optionally `ANTHROPIC_BASE_URL` for a gateway |
+| Ollama, on your own machine | `ollama:<model>` | `OLLAMA_BASE_URL`; inside Docker it defaults to Ollama on your machine |
+
+1. Copy the example settings: `cp .env.example .env`. Git ignores `.env`; never commit it.
+2. In `.env`, set `AXIOM_MODE=local` and fill in the settings for your provider from the table.
+3. Map each alias in the routing policy to a model, comma-separated. The aliases are `small-a` (extraction, and the evaluation grader), `frontier-a` (the narrative, the draft and the compliance review), and `local-small` (the only model allowed to see unmasked personal data, so it must be an Ollama model). Providers can be mixed:
+
+   ```bash
+   MODEL_ALIAS_MAP=small-a=openai:<model>,frontier-a=anthropic:<model>,local-small=ollama:<model>
+   ```
+
+   `local-small` is optional: without it, a job that would send unmasked personal data stops instead (fail closed). Personal data is masked by default, so ordinary jobs never need it.
+4. Restart the stack, `docker compose up -d`, and request a memo on the review page.
+5. Optional: check the models before you rely on them. `uv run python evals/gate.py --live` drafts five memos and compares them with the accepted baseline (about 66k tokens with the reference models; your models' counts will differ).
+
+The model names stay in your `.env`. The repository, the API's responses and the evidence bundle name only the aliases. Settings for one provider don't affect another; an alias whose provider has no settings fails over to its route's fallback, or the job stops with a public reason code. To add a provider, write one adapter in [`src/axiom/router/adapters.py`](src/axiom/router/adapters.py) and register it in [`router.py`](src/axiom/router/router.py).
+
 ## 🗺 Roadmap
 
 | Phase | Weeks | Focus |

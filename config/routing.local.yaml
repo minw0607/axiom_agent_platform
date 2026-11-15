@@ -1,5 +1,6 @@
 # Local mode: real providers. Aliases resolve through MODEL_ALIAS_MAP in .env, for example
-#   MODEL_ALIAS_MAP=small-a=openai:<deployment>,frontier-a=openai:<deployment>
+#   MODEL_ALIAS_MAP=small-a=openai:<model>,frontier-a=anthropic:<model>,local-small=ollama:<model>
+# Providers: openai, anthropic, ollama. Aliases may point at different providers.
 # Routes are provisional (week 3), pending the capability benchmark in phase 4.
 routes:
   extraction: { primary: small-a, fallback: frontier-a }
@@ -9,5 +10,6 @@ routes:
   # back to the drafter's model would let a model grade its own work.
   judge: { primary: small-a }
 sensitivity:
-  # Unredacted PII may only reach a local model. With none configured, the job fails closed.
+  # Unredacted PII may only reach a local model: an allowed alias must map to ollama. With
+  # none configured, or one mapped to a hosted provider, the job fails closed.
   pii_unredacted: { allow: [local-small], on_unavailable: fail_closed }

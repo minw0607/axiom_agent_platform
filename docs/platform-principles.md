@@ -46,8 +46,8 @@ It is a living page. Each section gives the principles, then an **In Axiom today
 | Choose by evaluation on our own task | 🟡 Partly. A golden set of 25 synthetic packages with ground truth, and a live baseline of 75 runs. Smaller than a few hundred real examples, and the routes are provisional until the phase 4 capability benchmark | [golden set](../evals/golden/v1/answers.md), [ADR 0008](adr/0008-evaluation-thresholds.md), [`routing.local.yaml`](../config/routing.local.yaml) |
 | Cost per successful task | ⬜ Not yet. Token counts are recorded for every model call, but cost is not computed, and the cost gate in ADR 0008 is "not yet gated" | evidence bundle; ADR 0008 |
 | Smallest model that clears the bar, routed by task | 🟢 Built. A small model extracts; a frontier model writes the narrative, the draft and the compliance review; each route has a fallback | [ADR 0005](adr/0005-model-routing.md) |
-| Hard constraints first | 🟢 Built for data: sensitivity rules run before the task route, and unredacted personal data may reach only a local model, or the job stops (fail closed) | ADR 0005 |
-| Models behind an abstraction | 🟢 Built. Apps name logical aliases (`small-a`, `frontier-a`); real deployments live only in the environment | `src/axiom/router/` |
+| Hard constraints first | 🟢 Built for data: sensitivity rules run before the task route, and unredacted personal data may reach only a local model (an alias mapped to Ollama), or the job stops (fail closed) | ADR 0005 |
+| Models behind an abstraction | 🟢 Built. Apps name logical aliases (`small-a`, `frontier-a`); real deployments live only in the environment. Three provider adapters (OpenAI and Azure OpenAI, Anthropic, Ollama), mixed alias by alias; only OpenAI-family models have been run live so far | `src/axiom/router/`, [use your own models](../README.md#use-your-own-models) |
 | Re-evaluate on a schedule | 🟡 Partly. The live smoke gate runs when prompts, agents, the workflow or routing change; the full golden set runs on demand, not on a schedule | [live gates](../.github/workflows/live-gates.yml) |
 
 ---
@@ -222,3 +222,4 @@ Two questions: what to build versus buy or use as a managed service, and who run
 | Date | Change |
 |---|---|
 | Nov 15, 2026 | First version: five areas, with the credit memo app checked against each |
+| Nov 15, 2026 | Anthropic and Ollama adapters added; providers can be mixed by alias |

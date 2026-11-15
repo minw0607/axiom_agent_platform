@@ -14,7 +14,13 @@ from pathlib import Path
 
 import yaml
 
-from axiom.router.adapters import OpenAIAdapter, RecordedAdapter, save_recording
+from axiom.router.adapters import (
+    AnthropicAdapter,
+    OllamaAdapter,
+    OpenAIAdapter,
+    RecordedAdapter,
+    save_recording,
+)
 from axiom.router.types import (
     FailClosed,
     ModelAdapter,
@@ -26,6 +32,9 @@ from axiom.router.types import (
 from axiom.telemetry.setup import tracer
 
 RECORDED_ALIAS = "recorded"
+# Providers that run on infrastructure the operator controls. Only these may receive content
+# a sensitivity rule keeps off hosted models.
+LOCAL_PROVIDERS = frozenset({"ollama"})
 
 
 @dataclass(frozen=True)
@@ -71,6 +80,7 @@ class ModelRouter:
         recordings_dir: Path,
         adapter_factory: AdapterFactory | None = None,
         record: bool = False,
+        local_providers: frozenset[str] = LOCAL_PROVIDERS,
     ) -> None:
         self.policy = policy
         self.aliases = aliases
@@ -79,6 +89,7 @@ class ModelRouter:
         self._recorded = RecordedAdapter(recordings_dir)
         self._factory = adapter_factory or _default_factory
         self._adapters: dict[str, ModelAdapter] = {}
+        self.local_providers = local_providers
 
     @classmethod
     def from_settings(cls, config_dir: Path, mode: str, recordings_dir: Path) -> ModelRouter:
@@ -98,7 +109,13 @@ class ModelRouter:
         rule = self.policy.sensitivity.get(request.sensitivity)
         if rule is not None:
             allowed = [str(a) for a in rule.get("allow", [])]  # type: ignore[attr-defined]
-            usable = [a for a in allowed if a == RECORDED_ALIAS or a in self.aliases]
+            usable = [
+                a
+                for a in allowed
+                if a == RECORDED_ALIAS
+                or (a in self.aliases and self.aliases[a].provider in self.local_providers)
+            ]
+            # An allowed alias mapped to a hosted provider is a misconfiguration: refuse it.
             if not usable:
                 raise FailClosed(
                     f"{request.sensitivity} content has no permitted model in this environment"
@@ -158,7 +175,14 @@ class ModelRouter:
         raise ProviderError("all candidate models failed: " + "; ".join(errors))
 
 
+ADAPTERS: dict[str, Callable[[], ModelAdapter]] = {
+    "openai": OpenAIAdapter,
+    "anthropic": AnthropicAdapter,
+    "ollama": OllamaAdapter,
+}
+
+
 def _default_factory(provider: str) -> ModelAdapter:
-    if provider == "openai":
-        return OpenAIAdapter()
-    raise ProviderError(f"provider {provider} has no adapter yet")
+    if provider not in ADAPTERS:
+        raise ProviderError(f"unknown provider {provider}; known: {', '.join(sorted(ADAPTERS))}")
+    return ADAPTERS[provider]()

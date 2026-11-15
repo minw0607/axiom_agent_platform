@@ -134,6 +134,8 @@ def context(model: AttackModel, guardrails: bool | dict[str, bool]) -> AgentCont
         {"adversarial": AliasTarget("adversarial", "-")},
         RECORDINGS,
         adapter_factory=factory,
+        # The stand-in model runs in this process, so it counts as local.
+        local_providers=frozenset({"adversarial"}),
     )
     controls = default_controls()
     return AgentContext(

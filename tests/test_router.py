@@ -102,10 +102,21 @@ def test_unredacted_pii_fails_closed_without_a_local_model(tmp_path: Path) -> No
 
 def test_unredacted_pii_goes_only_to_the_permitted_model(tmp_path: Path) -> None:
     r, fake = router(tmp_path)
-    r.aliases["local-small"] = AliasTarget("fakeprov", "deploy-local")
+    r.aliases["local-small"] = AliasTarget("ollama", "deploy-local")
     _, decision = asyncio.run(r.complete(request(sensitivity="pii_unredacted")))
     assert fake.calls == ["deploy-local"]
     assert decision.reason == "sensitivity rule pii_unredacted"
+
+
+def test_unredacted_pii_refuses_a_permitted_alias_mapped_to_a_hosted_provider(
+    tmp_path: Path,
+) -> None:
+    # A typo in MODEL_ALIAS_MAP must not send unmasked personal data to a hosted model.
+    r, fake = router(tmp_path)
+    r.aliases["local-small"] = AliasTarget("openai", "deploy-hosted")
+    with pytest.raises(FailClosed):
+        asyncio.run(r.complete(request(sensitivity="pii_unredacted")))
+    assert fake.calls == []
 
 
 def test_recording_mode_saves_live_responses_for_replay(tmp_path: Path) -> None:

@@ -24,7 +24,7 @@ The platform calls models from several providers: a hosted frontier model, a sec
 
 Build a **thin in-house router** in `src/axiom/router/`:
 
-- A `ModelAdapter` protocol with one method for chat completion that returns text, token counts and latency. Adapters: Azure OpenAI, Anthropic, Ollama, and `recorded` (demo mode).
+- A `ModelAdapter` protocol with one method for chat completion that returns text, token counts and latency. Adapters: OpenAI (which also covers Azure OpenAI and OpenAI-compatible endpoints), Anthropic, Ollama, and `recorded` (demo mode). The Anthropic and Ollama adapters were added in week 8.
 - A `ModelRouter` that loads `config/routing.{demo,local,cloud}.yaml`, applies sensitivity rules first, then the task route, then the fallback, and returns a `RoutingDecision` together with the response.
 - Alias-to-deployment mapping from `MODEL_ALIAS_MAP` in the environment only.
 
