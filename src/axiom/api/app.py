@@ -11,19 +11,23 @@ import hashlib
 import json
 from collections.abc import AsyncIterator, Awaitable, Callable
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
-from fastapi import Depends, FastAPI, Header, Query, Request, Response
+from fastapi import Depends, FastAPI, Query, Request, Response
+from fastapi.dependencies.models import Dependant
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
+from fastapi.routing import APIRoute
 from fastapi.staticfiles import StaticFiles
 
 from axiom import __version__
 from axiom.api.auth import Principal, require
 from axiom.api.dashboard import Dashboard, build_dashboard
-from axiom.api.errors import Problem, install_error_handlers, problem_response
+from axiom.api.errors import Problem, install_error_handlers, problem_response, problems
 from axiom.api.explain import PolicyClause, SourceExcerpt, policy_clause, source_excerpt
 from axiom.api.schemas import (
     EvidenceBundle,
+    Health,
     JobAccepted,
     Links,
     Me,
@@ -31,6 +35,7 @@ from axiom.api.schemas import (
     MemoList,
     MemoRequest,
     PackageOut,
+    Readiness,
     ReviewAccepted,
     ReviewRequest,
     to_evidence,
@@ -87,6 +92,58 @@ REVIEW_PROBLEMS: dict[str, tuple[int, str, str, str]] = {
 }
 
 
+# Read from the request rather than declared as a FastAPI parameter, so a missing key gets the
+# documented 400 problem; the OpenAPI document still shows the header as required.
+IDEMPOTENCY_HEADER = {
+    "parameters": [
+        {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": True,
+            "description": "A unique key per request; a retry with the same key and body "
+            "returns the original job instead of creating another",
+            "schema": {"type": "string", "minLength": 1, "maxLength": MAX_IDEMPOTENCY_KEY},
+        }
+    ]
+}
+
+
+def require_idempotency_key(request: Request) -> str:
+    key = request.headers.get("Idempotency-Key")
+    if not key or len(key) > MAX_IDEMPOTENCY_KEY:
+        raise Problem(
+            400,
+            "idempotency-key-required",
+            "An Idempotency-Key header is required",
+            f"Send a unique key of at most {MAX_IDEMPOTENCY_KEY} characters per request.",
+        )
+    return key
+
+
+def _query_names(dependant: Dependant) -> set[str]:
+    names = {p.alias for p in dependant.query_params}
+    for sub in dependant.dependencies:
+        names |= _query_names(sub)
+    return names
+
+
+def reject_unknown_query(request: Request) -> None:
+    """Refuse query parameters an operation does not declare, so a typo such as ?stauts=
+    is an error rather than silently ignored."""
+    route = request.scope.get("route")
+    if not isinstance(route, APIRoute):
+        return
+    known = _query_names(route.dependant)
+    unknown = sorted(set(request.query_params) - known)
+    if unknown:
+        raise RequestValidationError(
+            [
+                {"loc": ("query", name), "msg": "Unknown query parameter", "type": "extra"}
+                for name in unknown
+            ]
+        )
+
+
 def create_app(settings: Settings | None = None, store: JobStore | None = None) -> FastAPI:
     settings = settings or Settings.from_env()
     if store is None:
@@ -112,6 +169,7 @@ def create_app(settings: Settings | None = None, store: JobStore | None = None) 
         description="Submit a synthetic borrower package and poll for a draft credit memo. "
         "A credit officer makes every decision.",
         lifespan=lifespan,
+        dependencies=[Depends(reject_unknown_query)],
     )
     app.state.settings = settings
     app.state.store = store
@@ -145,7 +203,13 @@ def create_app(settings: Settings | None = None, store: JobStore | None = None) 
 
     app.mount("/review/assets", StaticFiles(directory=REVIEW_PAGE), name="review-assets")
 
-    @app.get("/v1/me", response_model=Me, tags=["account"], summary="Who this key belongs to")
+    @app.get(
+        "/v1/me",
+        response_model=Me,
+        tags=["account"],
+        summary="Who this key belongs to",
+        responses=problems(401),
+    )
     async def me(
         principal: Annotated[Principal, Depends(require("submitter", "reviewer", "auditor"))],
     ) -> Me:
@@ -156,6 +220,7 @@ def create_app(settings: Settings | None = None, store: JobStore | None = None) 
         response_model=list[PackageOut],
         tags=["memos"],
         summary="The synthetic borrower packages a memo can be requested for",
+        responses=problems(401),
     )
     async def packages(
         principal: Annotated[Principal, Depends(require("submitter", "reviewer", "auditor"))],
@@ -170,11 +235,35 @@ def create_app(settings: Settings | None = None, store: JobStore | None = None) 
         """Demo mode replays recordings, so it offers only packages that have them."""
         return settings.mode != "demo" or has_recordings(settings.recordings_dir, package_id)
 
-    @app.get("/v1/health", tags=["operations"])
-    async def health() -> dict[str, str]:
-        return {"status": "ok"}
+    build_openapi = app.openapi
 
-    @app.get("/v1/ready", tags=["operations"])
+    def openapi() -> dict[str, Any]:
+        """The OpenAPI document lists the package ids this deployment accepts, so a client
+        (and the /docs page) sees the catalog rather than just the id pattern."""
+        if app.openapi_schema:
+            return app.openapi_schema
+        spec = build_openapi()
+        ids = [
+            p["package_id"]
+            for p in list_packages(settings.packages_dir)
+            if demo_ready(p["package_id"])
+        ]
+        spec["components"]["schemas"]["MemoRequest"]["properties"]["package_id"]["enum"] = ids
+        return spec
+
+    app.openapi = openapi  # type: ignore[method-assign]
+
+    @app.get("/v1/health", response_model=Health, tags=["operations"], summary="The API is up")
+    async def health() -> Health:
+        return Health(status="ok")
+
+    @app.get(
+        "/v1/ready",
+        response_model=Readiness,
+        tags=["operations"],
+        summary="The API can reach its database",
+        responses={503: {"model": Readiness, "description": "The database is not reachable"}},
+    )
     async def ready() -> JSONResponse:
         ok = await store.ping()
         return JSONResponse(
@@ -186,21 +275,15 @@ def create_app(settings: Settings | None = None, store: JobStore | None = None) 
         status_code=202,
         response_model=JobAccepted,
         tags=["memos"],
-        responses={202: {"description": "Job accepted"}},
+        responses={202: {"description": "Job accepted"}, **problems(400, 401, 403, 413, 422)},
+        openapi_extra=IDEMPOTENCY_HEADER,
     )
     async def submit_memo(
         body: MemoRequest,
         response: Response,
         principal: Annotated[Principal, Depends(require("submitter"))],
-        idempotency_key: Annotated[str | None, Header(alias="Idempotency-Key")] = None,
+        idempotency_key: Annotated[str, Depends(require_idempotency_key)],
     ) -> JobAccepted:
-        if not idempotency_key or len(idempotency_key) > MAX_IDEMPOTENCY_KEY:
-            raise Problem(
-                400,
-                "idempotency-key-required",
-                "An Idempotency-Key header is required",
-                f"Send a unique key of at most {MAX_IDEMPOTENCY_KEY} characters per request.",
-            )
         try:
             load_package(settings.packages_dir, body.package_id)
         except UnknownPackage:
@@ -241,6 +324,7 @@ def create_app(settings: Settings | None = None, store: JobStore | None = None) 
         tags=["memos"],
         summary="List memo jobs, most recently updated first",
         description="Submitters see their own jobs; reviewers and auditors see all jobs.",
+        responses=problems(401, 422),
     )
     async def list_memos(
         principal: Annotated[Principal, Depends(require("submitter", "reviewer", "auditor"))],
@@ -261,6 +345,7 @@ def create_app(settings: Settings | None = None, store: JobStore | None = None) 
         summary="A summary for the signed-in role",
         description="Relationship managers see their own requests; credit officers the review "
         "queue, riskiest first; auditors integrity checks, failures and decisions.",
+        responses=problems(401),
     )
     async def dashboard(
         principal: Annotated[Principal, Depends(require("submitter", "reviewer", "auditor"))],
@@ -274,7 +359,9 @@ def create_app(settings: Settings | None = None, store: JobStore | None = None) 
             raise Problem(404, "not-found", "No such memo job")
         return job
 
-    @app.get("/v1/memos/{job_id}", response_model=MemoJob, tags=["memos"])
+    @app.get(
+        "/v1/memos/{job_id}", response_model=MemoJob, tags=["memos"], responses=problems(401, 404)
+    )
     async def get_memo(
         job_id: str,
         principal: Annotated[Principal, Depends(require("submitter", "reviewer", "auditor"))],
@@ -289,6 +376,7 @@ def create_app(settings: Settings | None = None, store: JobStore | None = None) 
         description="Resolves a citation in this memo: a line of a borrower document, or a "
         "passage the job retrieved. Says whether the text matches the fingerprint recorded "
         "during the job. No model is called.",
+        responses=problems(401, 404, 422),
     )
     async def get_source(
         job_id: str,
@@ -316,6 +404,7 @@ def create_app(settings: Settings | None = None, store: JobStore | None = None) 
         response_model=PolicyClause,
         tags=["memos"],
         summary="A credit policy clause or section, by reference (CP-4.1, CP-3)",
+        responses=problems(401, 404),
     )
     async def get_policy(
         ref: str,
@@ -338,22 +427,19 @@ def create_app(settings: Settings | None = None, store: JobStore | None = None) 
         response_model=ReviewAccepted,
         tags=["memos"],
         summary="Approve, reject, or request revision (reviewer role only)",
-        responses={202: {"description": "Decision accepted; the job resumes"}},
+        responses={
+            202: {"description": "Decision accepted; the job resumes"},
+            **problems(400, 401, 403, 404, 409, 413, 422),
+        },
+        openapi_extra=IDEMPOTENCY_HEADER,
     )
     async def review_memo(
         job_id: str,
         body: ReviewRequest,
         response: Response,
         principal: Annotated[Principal, Depends(require("reviewer"))],
-        idempotency_key: Annotated[str | None, Header(alias="Idempotency-Key")] = None,
+        idempotency_key: Annotated[str, Depends(require_idempotency_key)],
     ) -> ReviewAccepted:
-        if not idempotency_key or len(idempotency_key) > MAX_IDEMPOTENCY_KEY:
-            raise Problem(
-                400,
-                "idempotency-key-required",
-                "An Idempotency-Key header is required",
-                f"Send a unique key of at most {MAX_IDEMPOTENCY_KEY} characters per request.",
-            )
         if body.decision == "revise" and not body.comments.strip():
             raise Problem(
                 422,
@@ -388,6 +474,7 @@ def create_app(settings: Settings | None = None, store: JobStore | None = None) 
         response_model=EvidenceBundle,
         tags=["audit"],
         summary="Evidence bundle for audit (auditor role only)",
+        responses=problems(401, 403, 404),
     )
     async def get_evidence(
         job_id: str,

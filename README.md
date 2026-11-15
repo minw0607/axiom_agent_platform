@@ -172,7 +172,7 @@ The platform depends on these repositories; none of them depend on it.
 
 **Regulatory position.** SR 26-2 replaced SR 11-7 in April 2026 and excludes generative and agentic AI from its scope, so this project doesn't claim to satisfy it. NIST AI RMF is the primary reference, and SR 26-2 principles are applied voluntarily by analogy.
 
-CI fails a change that breaks these gates; blocking the merge itself needs branch protection on `main`, still to be switched on. [ADR 0008](docs/adr/0008-evaluation-thresholds.md) set the thresholds in week 6 from the first live baseline (25 packages × 3 repeats): fixed at 100% where the platform is deterministic, a floor plus a tolerance against main where a model decides, and reported but not enforced for grader scores until the grader's calibration is complete. Since week 8, CI enforces them on every push and pull request: `evals/gate.py` checks the thresholds in `config/eval_gates.yaml` on the golden set, the fairness pairs and the attack set (with the guardrails as configured, so switching one off fails the build), and again on the 25 live recordings through a freshly built stack.
+CI fails a change that breaks these gates; blocking the merge itself needs branch protection on `main`, still to be switched on. [ADR 0008](docs/adr/0008-evaluation-thresholds.md) set the thresholds in week 6 from the first live baseline (25 packages × 3 repeats): fixed at 100% where the platform is deterministic, a floor plus a tolerance against main where a model decides, and reported but not enforced for grader scores until the grader's calibration is complete. Since week 8, CI enforces them on every push and pull request: `evals/gate.py` checks the thresholds in `config/eval_gates.yaml` on the golden set, the fairness pairs and the attack set (with the guardrails as configured, so switching one off fails the build), and again on the 25 live recordings through a freshly built stack. Contract tests check that the API keeps its published OpenAPI contract.
 
 | Gate | Threshold |
 |---|---|
@@ -236,6 +236,8 @@ uv run python evals/gate.py --stack
   - every tool call went through the gateway from the step that owns the tool.
 
   `--clean-run` first does what this page asks of a newcomer, and times it: clone into an empty folder with no `.env`, start the stack, and wait until it is ready.
+
+**Contract tests:** `uv run pytest tests/test_contract.py` has [Schemathesis](https://schemathesis.readthedocs.io/) generate about 1,300 requests from the API's OpenAPI document, valid and deliberately invalid, and checks each response against it: only declared status codes, bodies that match their schemas, problem details for every error, and never a server error. They run on the in-memory store and on Postgres, and one test walks a real memo through draft, review and audit.
 
 **Release gates (no keys, no stack):** `uv run python evals/gate.py` runs the golden set, the fairness pairs and the attack set and fails if any [threshold](config/eval_gates.yaml) is missed; `--stack` replays the 25 live recordings through the running stack instead. CI runs both.
 

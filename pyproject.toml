@@ -29,6 +29,7 @@ dev = [
   "mypy>=1.10",
   "pytest>=8.0",
   "ruff>=0.6",
+  "schemathesis>=4.33.0",
   "types-pyyaml>=6.0.12.20261103",
   "uvicorn>=0.30",
 ]

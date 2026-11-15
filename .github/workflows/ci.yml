@@ -42,7 +42,11 @@ jobs:
       - name: Type check
         run: uv run mypy
       - name: Tests
-        run: uv run pytest
+        run: uv run pytest --ignore=tests/test_contract.py
+      # Schemathesis: generated requests against the published OpenAPI document, on the
+      # in-memory store and on Postgres; every response must match the contract.
+      - name: Contract tests
+        run: uv run pytest tests/test_contract.py
       # ADR 0008's thresholds on the golden set, the fairness pairs and the attack set,
       # replayed with no keys; the attacks run with the guardrails as configured.
       - name: Release gates

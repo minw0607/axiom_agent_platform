@@ -4,15 +4,15 @@ Errors use RFC 9457 problem details (`application/problem+json`). The `type` fie
 
 | Status | Type | Meaning |
 |---|---|---|
-| 400 | <a id="idempotency-key-required"></a>`idempotency-key-required` | `POST /v1/memos` needs an `Idempotency-Key` header of at most 128 characters. |
+| 400 | <a id="idempotency-key-required"></a>`idempotency-key-required` | `POST /v1/memos` and `POST /v1/memos/{id}/review` need an `Idempotency-Key` header of at most 128 characters. |
 | 401 | <a id="unauthorized"></a>`unauthorized` | The `X-API-Key` header is missing or not a valid key. |
 | 403 | <a id="forbidden"></a>`forbidden` | The key is valid, but its role cannot perform this action. Only submitter keys can submit. |
 | 404 | <a id="not-found"></a>`not-found` | No such job, or the job belongs to another submitter. The two cases look the same on purpose. |
 | 404 | <a id="source-not-found"></a>`source-not-found` | `GET /v1/memos/{id}/source`: the document or locator is not part of this job's package or the passages it retrieved. |
 | 404 | <a id="policy-clause-not-found"></a>`policy-clause-not-found` | `GET /v1/policy/{ref}`: no such clause or section in the credit policy. References outside it, such as regulations, are cited by the passages a finding lists. |
-| 405 | <a id="method-not-allowed"></a>`method-not-allowed` | The path does not accept this HTTP method. |
+| 405 | <a id="method-not-allowed"></a>`method-not-allowed` | The path does not accept this HTTP method. The `Allow` header lists the methods it does accept. |
 | 413 | <a id="payload-too-large"></a>`payload-too-large` | The request body is over 64 KiB. |
-| 422 | <a id="invalid-request"></a>`invalid-request` | The body does not match the schema. The `errors` field lists each problem. |
+| 422 | <a id="invalid-request"></a>`invalid-request` | The request does not match the OpenAPI schema: the body, a path or query parameter, or a query parameter the operation does not accept (so a misspelled `?stauts=` is an error, not ignored). The `errors` field lists each problem. |
 | 422 | <a id="unknown-package"></a>`unknown-package` | The `package_id` is well formed but not in the synthetic catalog. |
 | 422 | <a id="package-not-recorded"></a>`package-not-recorded` | Demo mode replays recorded model responses, and this package has none. The golden-set packages added in week 6 are recorded for tests only until live recordings are made. |
 | 422 | <a id="idempotency-key-reused"></a>`idempotency-key-reused` | The key was already used, within 24 hours, with a different request body. |

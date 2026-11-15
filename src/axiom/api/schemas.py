@@ -35,13 +35,28 @@ class MemoRequest(BaseModel):
 
 
 class ReviewRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    # The API refuses a revise with blank comments (comments-required); the schema says so.
+    model_config = ConfigDict(
+        extra="forbid",
+        json_schema_extra={
+            "if": {"properties": {"decision": {"const": "revise"}}},
+            "then": {"required": ["comments"], "properties": {"comments": {"pattern": r"\S"}}},
+        },
+    )
     decision: Literal["approve", "reject", "revise"]
     comments: str = Field(
         default="",
         max_length=2000,
         description="Required for revise: what the credit officer wants changed",
     )
+
+
+class Health(BaseModel):
+    status: Literal["ok"]
+
+
+class Readiness(BaseModel):
+    status: Literal["ready", "not_ready"]
 
 
 class Links(BaseModel):
