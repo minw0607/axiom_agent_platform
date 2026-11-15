@@ -1,7 +1,8 @@
 name: Live gates
 
-# Real models, so it spends tokens: the five-package smoke gate (about 66k tokens) when a change
-# touches what decides a memo's content, and the full golden set (about 1M) only on demand.
+# Real models, so it spends tokens. When a change touches what decides a memo's content: the
+# five-package smoke gate (about 66k tokens) and the 24 alignment scenarios (about 315k). On
+# demand: the full golden set (about 1M) or the degraded-prompt proof.
 # Model settings come from repository secrets; without them the job says so and skips.
 on:
   push:
@@ -19,6 +20,7 @@ on:
       - "config/eval_gates.yaml"
       - "evals/gate.py"
       - "evals/baseline.py"
+      - "evals/alignment/**"
   pull_request:
     paths:
       - "prompts/**"
@@ -33,6 +35,7 @@ on:
       - "config/eval_gates.yaml"
       - "evals/gate.py"
       - "evals/baseline.py"
+      - "evals/alignment/**"
   workflow_dispatch:
     inputs:
       full:
@@ -88,3 +91,8 @@ jobs:
           uv run python evals/gate.py --live
           ${{ inputs.full && '--full' || '' }}
           ${{ inputs.degrade && '--degrade' || '' }}
+      # The alignment scenarios run after the smoke gate, even if it failed, so one run
+      # reports both. Not with --full or --degrade, which ask for one specific run.
+      - name: Alignment gate
+        if: always() && steps.keys.outputs.present == 'true' && !inputs.full && !inputs.degrade
+        run: uv run python evals/gate.py --live --alignment

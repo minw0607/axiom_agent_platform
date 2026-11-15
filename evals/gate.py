@@ -16,6 +16,8 @@ bring its own suites and thresholds (ADR 0015).
     uv run python evals/gate.py --live --full     # 25 packages x 3 repeats (about 1M tokens)
     uv run python evals/gate.py --live --degrade  # the same with a deliberately degraded
                                                   # drafter prompt: it must fail (acceptance A)
+    uv run python evals/gate.py --live --alignment  # 24 alignment scenarios (about 315k
+                                                    # tokens; evals/alignment)
 
 Exits 1 if a gate fails. In GitHub Actions it also writes the table to the job summary.
 """
@@ -133,6 +135,12 @@ def evaluate(
                 actual = statistics.mean(float(v) for v in values) if values else 0.0
             ok = bool(values) and actual >= float(target) - 1e-9
             detail = f"{actual:.3f} over {len(values)} runs"
+            if kind == "rate":
+                bad = [r for r in pool if r.get(metric) is not True]
+                shown = ", ".join(
+                    f"{r['id']} ({r.get('failed_why', r.get(metric))})" for r in bad[:SHOWN]
+                )
+                detail += f"; not met: {shown}" if bad else ""
             if "max_drop" in rule:
                 ids = {r["id"] for r in pool}
                 main = _mean(
@@ -332,7 +340,30 @@ def per_package(rows: list[dict[str, Any]], rules: dict[str, Any]) -> list[dict[
     return out
 
 
+def run_alignment(args: argparse.Namespace, gates: dict[str, Any]) -> list[GateResult]:
+    """The alignment scenarios against real models (evals/alignment)."""
+    spec = load_live(args.gates)["alignment"]
+    _live_env(degrade=False)
+    sys.path.insert(0, str(HERE / "alignment"))
+    import align as alignment
+
+    scenarios = alignment.load_scenarios(REPO_ROOT / spec["scenarios"])
+    rows = asyncio.run(alignment.run("live", scenarios))
+    print(alignment.table(rows))
+    _summary(f"## Alignment scenarios\n\n{alignment.table(rows)}\n")
+    return evaluate("alignment (live)", rows, gates[spec["suite"]])
+
+
+def _summary(text: str) -> None:
+    path = os.environ.get("GITHUB_STEP_SUMMARY")
+    if path:
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(text)
+
+
 def run_live(args: argparse.Namespace, gates: dict[str, Any]) -> list[GateResult]:
+    if args.alignment:
+        return run_alignment(args, gates)
     spec = load_live(args.gates)["full" if args.full else "smoke"]
     rules = gates[spec["suite"]]
     packages = spec["packages"] if spec["packages"] != "all" else None
@@ -366,12 +397,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--degrade", action="store_true", help="with --live: a degraded drafter prompt"
     )
+    parser.add_argument(
+        "--alignment", action="store_true", help="with --live: the alignment scenarios"
+    )
     parser.add_argument("--gates", type=Path, default=GATES_FILE)
     args = parser.parse_args(argv)
     gates = load_gates(args.gates)
     sys.path.insert(0, str(HERE))
-    if (args.full or args.degrade) and not args.live:
-        parser.error("--full and --degrade go with --live")
+    if (args.full or args.degrade or args.alignment) and not args.live:
+        parser.error("--full, --degrade and --alignment go with --live")
+    if args.alignment and (args.full or args.degrade):
+        parser.error("--alignment runs on its own")
     results: list[GateResult] = []
     if args.live:
         results = run_live(args, gates)
@@ -380,17 +416,14 @@ def main(argv: list[str] | None = None) -> int:
         results += evaluate(label, rows, gates[suite])
     text = report(results)
     print(text)
-    summary = os.environ.get("GITHUB_STEP_SUMMARY")
-    if summary:
-        title = (
-            "Release gates, live models"
-            if args.live
-            else "Release gates, through the stack"
-            if args.stack
-            else "Release gates"
-        )
-        with open(summary, "a", encoding="utf-8") as f:
-            f.write(f"## {title}\n\n{text}\n")
+    title = (
+        "Release gates, live models"
+        if args.live
+        else "Release gates, through the stack"
+        if args.stack
+        else "Release gates"
+    )
+    _summary(f"## {title}\n\n{text}\n")
     return 1 if any(not r.ok for r in results) else 0
 
 

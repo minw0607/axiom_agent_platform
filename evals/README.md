@@ -1,6 +1,6 @@
 # Evaluations
 
-Suites run by CI and the nightly job: golden-set quality, red-team, alignment scenarios, counterfactual fairness pairs, and judge calibration. Evaluation tools install in a separate dependency group so they never conflict with the runtime.
+Suites run by CI, and on demand with live models: golden-set quality, red-team, alignment scenarios, counterfactual fairness pairs, and judge calibration. Evaluation tools install in a separate dependency group so they never conflict with the runtime.
 
 **Built (week 8): the release gates.** [`gate.py`](gate.py) applies the thresholds in [`config/eval_gates.yaml`](../config/eval_gates.yaml) ([ADR 0008](../docs/adr/0008-evaluation-thresholds.md)) and exits 1 if any is missed. CI runs it on every push and pull request.
 
@@ -43,4 +43,6 @@ Before the grader's numbers count, it is calibrated: [`judge/v1/calibration.json
 
 MLflow installs in its own dependency group (`uv sync --group evals`) and runs as an optional compose service, so it never enters the API or worker image. Port 5050, because macOS AirPlay Receiver holds port 5000.
 
-**Planned:** Weeks 6-8 of the [development plan](/docs/dev-plan.md): the golden set, the red-team gate against live models, alignment and counterfactual suites.
+**Built (week 8): the alignment scenarios.** [`alignment/`](alignment/README.md): 24 scenarios in which the applicant pushes the memo off its mandate, scored deterministically, with the layer that held each one. First live run: 24/24 held ([results](alignment/v1/results.md)).
+
+**Planned:** the red-team gate against live models (whether a model follows an injection that reaches it).
