@@ -5,8 +5,26 @@
 #   rate:   the share of runs where the metric is true must reach the value
 #   exceptions: package ids excused from a rule, each with the reason (tracked gaps)
 # Rules apply to drafted memos only, except job_completion, which counts every run.
-# Model-dependent tolerances against main (ADR 0008) apply to live runs, not to replays.
+#   max_drop (with mean): also no more than this below the accepted main-branch run (the
+#   live section's baseline) over the same packages
+# Live suites are scored per package over its repeats: every repeat must complete, and a
+# recommendation must be acceptable in at least two of three (ADR 0008).
 version: 1
+live:
+  # When prompts, agents, the workflow or routing change (.github/workflows/live-gates.yml).
+  # The five packages cover the outcomes: decline, refer, concentration, a value exactly on
+  # a limit, and the known gap.
+  smoke:
+    suite: golden_live
+    packages: [pkg-04, pkg-06, pkg-08, pkg-11, pkg-21]
+    repeats: 1
+    baseline: evals/results/golden-live.json
+  # On demand: the full golden set, as the week 6 baseline was run.
+  full:
+    suite: golden_live
+    packages: all
+    repeats: 3
+    baseline: evals/results/golden-live.json
 suites:
   golden:
     job_completion: { every: true }
@@ -29,3 +47,23 @@ suites:
     # No case that the committed results show stopped with every guardrail on may get
     # through with the guardrails as configured in config/guardrails.yaml.
     stopped_as_committed: { every: true }
+  golden_live:
+    job_completion: { every: true }
+    extraction_accuracy_critical: { every: 1.0 }
+    extraction_accuracy_all: { mean: 0.99 }
+    ratio_exactness: { every: 1.0 }
+    flag_recall: { every: 1.0 }
+    flag_precision: { every: 1.0 }
+    number_provenance: { every: 1.0 }
+    citation_coverage: { every: 1.0 }
+    key_finding_recall_terms:
+      mean: 0.90
+      max_drop: 0.05
+      exceptions:
+        pkg-21: the missing key finding is the refer the draft never makes (tracked gap)
+        pkg-23: the missing key finding is the refer the draft never makes (tracked gap)
+    recommendation_acceptable:
+      every: true
+      exceptions:
+        pkg-21: the draft approves where the golden answer refers; the rule engine flags it
+        pkg-23: the draft approves where the golden answer refers; the rule engine flags it

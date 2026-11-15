@@ -1,0 +1,90 @@
+name: Live gates
+
+# Real models, so it spends tokens: the five-package smoke gate (about 66k tokens) when a change
+# touches what decides a memo's content, and the full golden set (about 1M) only on demand.
+# Model settings come from repository secrets; without them the job says so and skips.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "prompts/**"
+      - "src/axiom/agents/**"
+      - "src/axiom/graph/**"
+      - "src/axiom/router/**"
+      - "src/axiom/guardrails/**"
+      - "src/axiom/tools/**"
+      - "config/routing.local.yaml"
+      - "config/guardrails.yaml"
+      - "config/policy_thresholds.yaml"
+      - "config/eval_gates.yaml"
+      - "evals/gate.py"
+      - "evals/baseline.py"
+  pull_request:
+    paths:
+      - "prompts/**"
+      - "src/axiom/agents/**"
+      - "src/axiom/graph/**"
+      - "src/axiom/router/**"
+      - "src/axiom/guardrails/**"
+      - "src/axiom/tools/**"
+      - "config/routing.local.yaml"
+      - "config/guardrails.yaml"
+      - "config/policy_thresholds.yaml"
+      - "config/eval_gates.yaml"
+      - "evals/gate.py"
+      - "evals/baseline.py"
+  workflow_dispatch:
+    inputs:
+      full:
+        description: "All 25 packages x 3 repeats (about 1M tokens) instead of the smoke set"
+        type: boolean
+        default: false
+      degrade:
+        description: "Use the deliberately degraded drafter prompt (acceptance test A: must fail)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      # Logical aliases map to real deployments only here, never in the repository.
+      MODEL_ALIAS_MAP: ${{ secrets.MODEL_ALIAS_MAP }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
+      OPENAI_API_VERSION: ${{ secrets.OPENAI_API_VERSION }}
+      OPENAI_APIM_HEADER_NAME: ${{ secrets.OPENAI_APIM_HEADER_NAME }}
+      OPENAI_APIM_SUBSCRIPTION_KEY: ${{ secrets.OPENAI_APIM_SUBSCRIPTION_KEY }}
+    steps:
+      - name: Check for model settings
+        id: keys
+        run: |
+          if [ -z "$MODEL_ALIAS_MAP" ]; then
+            echo "::notice::No model settings in this repository's secrets, so the live gate is skipped."
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.keys.outputs.present == 'true'
+      - uses: astral-sh/setup-uv@v6
+        if: steps.keys.outputs.present == 'true'
+        with:
+          enable-cache: true
+      - name: Install
+        if: steps.keys.outputs.present == 'true'
+        run: uv sync --locked
+      - name: Live gate
+        if: steps.keys.outputs.present == 'true'
+        run: >-
+          uv run python evals/gate.py --live
+          ${{ inputs.full && '--full' || '' }}
+          ${{ inputs.degrade && '--degrade' || '' }}

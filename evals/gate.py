@@ -10,6 +10,12 @@ bring its own suites and thresholds (ADR 0015).
                                           # guardrails as configured
     uv run python evals/gate.py --stack   # the golden set on the live recordings, through
                                           # the running stack's tool gateway and GKN
+    uv run python evals/gate.py --live    # five packages against real models (spends
+                                          # tokens, about 66k): run when prompts, agents,
+                                          # the workflow or routing change
+    uv run python evals/gate.py --live --full     # 25 packages x 3 repeats (about 1M tokens)
+    uv run python evals/gate.py --live --degrade  # the same with a deliberately degraded
+                                                  # drafter prompt: it must fail (acceptance A)
 
 Exits 1 if a gate fails. In GitHub Actions it also writes the table to the job summary.
 """
@@ -20,8 +26,10 @@ import argparse
 import asyncio
 import json
 import os
+import shutil
 import statistics
 import sys
+import tempfile
 from collections.abc import Callable, Coroutine
 from dataclasses import dataclass
 from pathlib import Path
@@ -34,6 +42,7 @@ from axiom.settings import REPO_ROOT
 HERE = Path(__file__).parent
 GATES_FILE = REPO_ROOT / "config" / "eval_gates.yaml"
 RULES = ("every", "mean", "rate")
+OPTIONS = {"exceptions", "max_drop"}
 SHOWN = 6  # failing runs listed per gate
 
 
@@ -50,17 +59,28 @@ class GateResult:
 
 
 def load_gates(path: Path = GATES_FILE) -> dict[str, dict[str, dict[str, Any]]]:
-    raw = yaml.safe_load(path.read_text()) or {}
-    suites = raw.get("suites")
+    suites = _load(path).get("suites")
     if not isinstance(suites, dict):
         raise ValueError(f"{path.name} needs a 'suites' mapping")
     for suite, metrics in suites.items():
         for metric, rule in (metrics or {}).items():
             kinds = [k for k in RULES if k in rule]
-            unknown = set(rule) - {*RULES, "exceptions"}
+            unknown = set(rule) - {*RULES, *OPTIONS}
             if len(kinds) != 1 or unknown:
                 raise ValueError(f"{suite}.{metric}: give exactly one of {', '.join(RULES)}")
+            if "max_drop" in rule and kinds != ["mean"]:
+                raise ValueError(f"{suite}.{metric}: max_drop applies to a mean rule")
     return suites
+
+
+def _load(path: Path) -> dict[str, Any]:
+    return yaml.safe_load(path.read_text()) or {}
+
+
+def load_live(path: Path = GATES_FILE) -> dict[str, dict[str, Any]]:
+    """The live runs: which packages, how many repeats, and the accepted main-branch results
+    that max_drop rules compare with."""
+    return _load(path).get("live") or {}
 
 
 def _passes(value: Any, target: Any) -> bool:
@@ -69,9 +89,21 @@ def _passes(value: Any, target: Any) -> bool:
     return value is not None and float(value) >= float(target) - 1e-9
 
 
-def evaluate(suite: str, rows: list[dict[str, Any]], rules: dict[str, Any]) -> list[GateResult]:
+def _mean(rows: list[dict[str, Any]], metric: str) -> float | None:
+    values = [float(r[metric]) for r in rows if r.get(metric) is not None]
+    return statistics.mean(values) if values else None
+
+
+def evaluate(
+    suite: str,
+    rows: list[dict[str, Any]],
+    rules: dict[str, Any],
+    baseline: list[dict[str, Any]] | None = None,
+) -> list[GateResult]:
     """Apply each rule to the rows. A metric is judged on completed runs only, except
-    `job_completion`; a value that was not evaluated (None) never passes an `every` rule."""
+    `job_completion`; a value that was not evaluated (None) never passes an `every` rule.
+    A `max_drop` rule also compares the mean with the baseline's (the accepted main-branch
+    run) over the same packages."""
     results = []
     for metric, rule in rules.items():
         kind = next(k for k in RULES if k in rule)
@@ -87,7 +119,9 @@ def evaluate(suite: str, rows: list[dict[str, Any]], rules: dict[str, Any]) -> l
         if kind == "every":
             bad = [r for r in pool if not _passes(r.get(metric), target)]
             ok = not bad
-            shown = ", ".join(f"{r['id']} ({r.get(metric)})" for r in bad[:SHOWN])
+            # A failed job shows its reason (a code and guardrail names, never memo text).
+            why = "failed_why" if metric == "job_completion" else metric
+            shown = ", ".join(f"{r['id']} ({r.get(why, r.get(metric))})" for r in bad[:SHOWN])
             detail = f"{len(pool) - len(bad)}/{len(pool)} runs" + (
                 f"; failing: {shown}" if bad else ""
             )
@@ -99,6 +133,16 @@ def evaluate(suite: str, rows: list[dict[str, Any]], rules: dict[str, Any]) -> l
                 actual = statistics.mean(float(v) for v in values) if values else 0.0
             ok = bool(values) and actual >= float(target) - 1e-9
             detail = f"{actual:.3f} over {len(values)} runs"
+            if "max_drop" in rule:
+                ids = {r["id"] for r in pool}
+                main = _mean(
+                    [b for b in baseline or [] if b["id"] in ids and b["completed"]], metric
+                )
+                if main is None:
+                    raise ValueError(f"{suite}.{metric}: max_drop needs a baseline for these runs")
+                floor = main - float(rule["max_drop"])
+                ok = ok and actual >= floor - 1e-9
+                detail += f"; main {main:.3f}, at most {rule['max_drop']} below"
         if excused:
             detail += f"; excused: {', '.join(excused)}"
         results.append(GateResult(suite, metric, f"{kind} {target}", ok, detail))
@@ -122,7 +166,11 @@ def report(results: list[GateResult]) -> str:
 
 def _golden_row(scored: dict[str, Any]) -> dict[str, Any]:
     done = scored["outcome"] == "drafted"
-    return {**scored, "id": scored["package_id"], "completed": done, "job_completion": done}
+    row = {**scored, "id": scored["package_id"], "completed": done, "job_completion": done}
+    if not done:
+        rails = scored.get("guardrails_triggered") or []
+        row["failed_why"] = scored["outcome"] + (f": {', '.join(rails)}" if rails else "")
+    return row
 
 
 async def golden_scripted() -> list[dict[str, Any]]:
@@ -164,16 +212,21 @@ async def attacks_configured(guardrails_file: Path | None = None) -> list[dict[s
     return rows
 
 
-def _load_stack_env() -> None:
-    """The settings a replay through the running stack needs: the demo's generated keys
-    and the gateway on localhost. Values from the environment or .env win; none is printed."""
-    for path in (REPO_ROOT / ".env", REPO_ROOT / ".demo" / "keys.env"):
+def _load_env_files(*paths: Path) -> None:
+    """Fill unset variables from these files; the environment wins. Nothing is printed."""
+    for path in paths:
         if not path.is_file():
             continue
         for line in path.read_text(encoding="utf-8").splitlines():
             name, sep, value = line.partition("=")
             if sep and not name.startswith("#") and not os.environ.get(name.strip()):
                 os.environ[name.strip()] = value.strip()
+
+
+def _load_stack_env() -> None:
+    """The settings a replay through the running stack needs: the demo's generated keys
+    and the gateway on localhost."""
+    _load_env_files(REPO_ROOT / ".env", REPO_ROOT / ".demo" / "keys.env")
     os.environ["AXIOM_MODE"] = "demo"
     os.environ["AXIOM_RECORDINGS_DIR"] = str(REPO_ROOT / "data" / "recorded")
     os.environ["TOOL_GATEWAY_URL"] = os.environ.get(
@@ -211,6 +264,89 @@ async def golden_stack() -> list[dict[str, Any]]:
     return rows
 
 
+DEGRADED_DRAFTER = HERE / "smoke" / "degraded_drafter.md"
+
+
+def _live_env(degrade: bool) -> None:
+    """Real models, with the routing and keys from the environment or .env. Retrieval is
+    in memory, as in the week 6 baseline the results are compared with, and nothing is
+    recorded over the demo's recordings."""
+    _load_env_files(REPO_ROOT / ".env")
+    if not os.environ.get("MODEL_ALIAS_MAP"):
+        raise SystemExit("--live needs model settings (MODEL_ALIAS_MAP and a provider key)")
+    os.environ["AXIOM_MODE"] = "local"
+    os.environ["AXIOM_RECORD"] = ""
+    for name in ("GKN_MCP_URL", "REGULUS_MCP_URL", "TOOL_GATEWAY_URL", "MCP_SHARED_SECRET"):
+        os.environ[name] = ""
+    if degrade:
+        from axiom.agents.base import PROMPT_VERSIONS
+
+        prompts = Path(tempfile.mkdtemp(prefix="axiom-degraded-")) / "prompts"
+        shutil.copytree(REPO_ROOT / "prompts", prompts)
+        target = prompts / "drafter" / f"{PROMPT_VERSIONS['drafter']}.md"
+        target.write_text(DEGRADED_DRAFTER.read_text(encoding="utf-8"), encoding="utf-8")
+        os.environ["AXIOM_PROMPTS_DIR"] = str(prompts)
+        print(f"Degraded drafter prompt in place of {target.relative_to(prompts.parent)}")
+
+
+async def golden_live(packages: list[str] | None, repeats: int) -> list[dict[str, Any]]:
+    import baseline
+
+    report_ = await baseline.run_golden("live", repeats, packages, judge=False)
+    return [_golden_row(r) for r in report_["rows"]]
+
+
+def per_package(rows: list[dict[str, Any]], rules: dict[str, Any]) -> list[dict[str, Any]]:
+    """One row per package over its repeats (ADR 0008): every repeat must complete; a
+    recommendation is acceptable in at least two of three repeats; an `every` metric takes
+    the package's worst completed run and a `mean` metric its average."""
+    by_id: dict[str, list[dict[str, Any]]] = {}
+    for r in rows:
+        by_id.setdefault(r["id"], []).append(r)
+    out = []
+    for pid, runs in by_id.items():
+        done = [r for r in runs if r["completed"]]
+        acceptable = sum(r.get("recommendation_acceptable") is True for r in runs)
+        row: dict[str, Any] = {
+            "id": pid,
+            "completed": bool(done),
+            "job_completion": len(done) == len(runs),
+            "recommendation_acceptable": 3 * acceptable >= 2 * len(runs),
+        }
+        failed = [r["failed_why"] for r in runs if "failed_why" in r]
+        if failed:
+            row["failed_why"] = "; ".join(sorted(set(failed)))
+        for metric, rule in rules.items():
+            if metric in row:
+                continue
+            values = [r[metric] for r in done if r.get(metric) is not None]
+            if any(metric in r for r in runs):
+                row[metric] = (
+                    None
+                    if not values
+                    else statistics.mean(float(v) for v in values)
+                    if "mean" in rule
+                    else min(values)
+                )
+        out.append(row)
+    return out
+
+
+def run_live(args: argparse.Namespace, gates: dict[str, Any]) -> list[GateResult]:
+    spec = load_live(args.gates)["full" if args.full else "smoke"]
+    rules = gates[spec["suite"]]
+    packages = spec["packages"] if spec["packages"] != "all" else None
+    _live_env(args.degrade)
+    rows = per_package(asyncio.run(golden_live(packages, spec["repeats"])), rules)
+    ids = {r["id"] for r in rows}
+    accepted = json.loads((REPO_ROOT / spec["baseline"]).read_text())["rows"]
+    baseline = per_package([_golden_row(r) for r in accepted if r["package_id"] in ids], rules)
+    label = (
+        f"{'full' if args.full else 'smoke'} (live{', degraded drafter' if args.degrade else ''})"
+    )
+    return evaluate(label, rows, rules, baseline)
+
+
 Runner = Callable[[], Coroutine[Any, Any, list[dict[str, Any]]]]
 LOCAL: dict[str, tuple[str, Runner]] = {
     "golden": ("golden", golden_scripted),
@@ -225,19 +361,34 @@ STACK: dict[str, tuple[str, Runner]] = {
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--stack", action="store_true", help="replay through the running stack")
+    parser.add_argument("--live", action="store_true", help="real models: spends tokens")
+    parser.add_argument("--full", action="store_true", help="with --live: all packages, 3 repeats")
+    parser.add_argument(
+        "--degrade", action="store_true", help="with --live: a degraded drafter prompt"
+    )
     parser.add_argument("--gates", type=Path, default=GATES_FILE)
     args = parser.parse_args(argv)
     gates = load_gates(args.gates)
     sys.path.insert(0, str(HERE))
+    if (args.full or args.degrade) and not args.live:
+        parser.error("--full and --degrade go with --live")
     results: list[GateResult] = []
-    for label, (suite, runner) in (STACK if args.stack else LOCAL).items():
+    if args.live:
+        results = run_live(args, gates)
+    for label, (suite, runner) in ({} if args.live else STACK if args.stack else LOCAL).items():
         rows = asyncio.run(runner())
         results += evaluate(label, rows, gates[suite])
     text = report(results)
     print(text)
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary:
-        title = "Release gates, through the stack" if args.stack else "Release gates"
+        title = (
+            "Release gates, live models"
+            if args.live
+            else "Release gates, through the stack"
+            if args.stack
+            else "Release gates"
+        )
         with open(summary, "a", encoding="utf-8") as f:
             f.write(f"## {title}\n\n{text}\n")
     return 1 if any(not r.ok for r in results) else 0

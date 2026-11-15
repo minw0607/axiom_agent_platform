@@ -73,6 +73,7 @@ def test_a_rule_needs_exactly_one_kind(tmp_path: Path) -> None:
 def test_every_configured_suite_has_a_runner() -> None:
     gates = gate.load_gates()
     runners = {suite for suite, _ in [*gate.LOCAL.values(), *gate.STACK.values()]}
+    runners |= {spec["suite"] for spec in gate.load_live().values()}
     assert set(gates) == runners
     # ADR 0008's two tracked gaps are the only excused packages.
     excused = gates["golden"]["recommendation_acceptable"]["exceptions"]
@@ -96,3 +97,87 @@ def test_switching_off_a_guardrail_fails_the_red_team_gate(tmp_path: Path) -> No
     path.write_text(yaml.safe_dump(raw))
     result = attack_gate(path)
     assert not result.ok and "doc-override" in result.detail
+
+
+def test_a_max_drop_rule_also_compares_with_main() -> None:
+    rules = {"m": {"mean": 0.8, "max_drop": 0.05}}
+    main = [row("a", m=1.0), row("b", m=1.0), row("z", m=0.0)]  # z is not in this run
+    assert gate.evaluate("s", [row("a", m=1.0), row("b", m=0.9)], rules, main)[0].ok
+    [result] = gate.evaluate("s", [row("a", m=1.0), row("b", m=0.8)], rules, main)
+    assert not result.ok and "main 1.000" in result.detail
+
+
+def test_max_drop_needs_a_baseline_and_a_mean_rule(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="needs a baseline"):
+        gate.evaluate("s", [row("a", m=1.0)], {"m": {"mean": 0.8, "max_drop": 0.05}})
+    path = tmp_path / "gates.yaml"
+    path.write_text(yaml.safe_dump({"suites": {"s": {"m": {"every": 1.0, "max_drop": 0.1}}}}))
+    with pytest.raises(ValueError, match="max_drop applies to a mean"):
+        gate.load_gates(path)
+
+
+def test_repeats_are_scored_per_package() -> None:
+    rules = {
+        "job_completion": {"every": True},
+        "recommendation_acceptable": {"every": True},
+        "exact": {"every": 1.0},
+        "coverage": {"mean": 0.9},
+    }
+    runs = [
+        row("p", job_completion=True, recommendation_acceptable=True, exact=1.0, coverage=1.0),
+        row("p", job_completion=True, recommendation_acceptable=False, exact=0.5, coverage=0.8),
+        row("p", job_completion=True, recommendation_acceptable=True, exact=1.0, coverage=0.9),
+        row("q", False, job_completion=False, recommendation_acceptable=None),
+    ]
+    p, q = gate.per_package(runs, rules)
+    assert p["recommendation_acceptable"] is True  # two of three
+    assert p["exact"] == 0.5 and p["coverage"] == pytest.approx(0.9)  # worst; average
+    assert not q["completed"] and not q["job_completion"]
+
+
+def test_the_smoke_set_is_the_one_adr_0008_names() -> None:
+    live = gate.load_live()
+    assert live["smoke"]["packages"] == ["pkg-04", "pkg-06", "pkg-08", "pkg-11", "pkg-21"]
+    assert live["full"] == {**live["full"], "packages": "all", "repeats": 3}
+
+
+def test_the_degraded_run_swaps_only_the_drafter_prompt(monkeypatch: pytest.MonkeyPatch) -> None:
+    for name in (
+        "MODEL_ALIAS_MAP",
+        "AXIOM_MODE",
+        "AXIOM_RECORD",
+        "AXIOM_PROMPTS_DIR",
+        "GKN_MCP_URL",
+        "REGULUS_MCP_URL",
+        "TOOL_GATEWAY_URL",
+        "MCP_SHARED_SECRET",
+    ):
+        monkeypatch.setenv(name, "set-by-test")
+    monkeypatch.setattr(gate, "_load_env_files", lambda *paths: None)
+    gate._live_env(degrade=True)
+    import os
+
+    from axiom.agents.base import PROMPT_VERSIONS
+
+    prompts = Path(os.environ["AXIOM_PROMPTS_DIR"])
+    drafter = prompts / "drafter" / f"{PROMPT_VERSIONS['drafter']}.md"
+    assert drafter.read_text() == gate.DEGRADED_DRAFTER.read_text()
+    real = SETTINGS.prompts_dir
+    assert (prompts / "analyst" / "v1.md").read_text() == (real / "analyst" / "v1.md").read_text()
+    assert os.environ["AXIOM_MODE"] == "local" and os.environ["AXIOM_RECORD"] == ""
+    assert os.environ["GKN_MCP_URL"] == ""  # in-memory retrieval, like the baseline
+
+
+def test_a_failed_job_shows_its_reason() -> None:
+    rows = [
+        gate._golden_row({"package_id": "pkg-01", "outcome": "drafted"}),
+        gate._golden_row(
+            {
+                "package_id": "pkg-02",
+                "outcome": "guardrail_failed",
+                "guardrails_triggered": ["number_provenance@drafter"],
+            }
+        ),
+    ]
+    [result] = gate.evaluate("s", rows, {"job_completion": {"every": True}})
+    assert "pkg-02 (guardrail_failed: number_provenance@drafter)" in result.detail

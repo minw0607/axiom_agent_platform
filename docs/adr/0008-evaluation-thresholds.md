@@ -1,6 +1,6 @@
 # ADR 0008: Evaluation thresholds and gating policy
 
-**Status:** Accepted (week 6). Enforced in CI since week 8 (Nov 15, 2026): `evals/gate.py`, with the thresholds in `config/eval_gates.yaml`.
+**Status:** Accepted (week 6). Enforced in CI since week 8 (Nov 15, 2026): `evals/gate.py`, with the thresholds in `config/eval_gates.yaml`. The live smoke gate and the full run use the tolerance against the week 6 baseline; the nightly full run became on demand, to spend tokens only when asked. The key-finding gate excuses pkg-21 and pkg-23 as well, since their missing finding is the same tracked gap.
 
 ## Context
 

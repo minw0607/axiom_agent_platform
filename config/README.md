@@ -4,7 +4,7 @@ Settings that change behavior without code changes:
 
 - `routing.{demo,local,cloud}.yaml`: logical model aliases per task, sensitivity rules
 - `guardrails.yaml`: an on/off switch per control, so attack success can be measured with and without it
-- `eval_gates.yaml`: release-gate thresholds (ADR 0008), applied by `evals/gate.py` in CI
+- `eval_gates.yaml`: release-gate thresholds (ADR 0008), applied by `evals/gate.py` in CI, and the live runs (which packages, how many repeats, which baseline)
 - `tool_gateway.yaml`: which workflow step may call which tool, with which arguments (ADR 0014)
 
 Real model deployment names live in environment settings, never here.
