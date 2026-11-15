@@ -79,6 +79,7 @@ An agent that reads untrusted documents and calls tools has to be contained, not
 | **Output handling** (LLM10) | The review page renders everything as text under a strict content security policy. API responses never name a model, agent or prompt. | Tests forbid HTML sinks; contract test |
 | **Audit integrity** | The evidence log is append-only and hash-chained; the database refuses updates and deletes on it. | Chain verification on every audit trail |
 | **Secrets** | Each install generates its own keys, and each container receives only the ones it needs. Every port is bound to the local machine. | Gate 1 and demo-key tests |
+| **Outside connections** | At runtime the demo makes no outside calls: model answers are replayed, Regulus works from committed snapshots, GKN retrieves locally, the review page loads nothing from other sites, and Phoenix's and MLflow's usage data is switched off. Only the first build downloads images and the two MCP services' pinned releases. With live models, the one outside call is to the configured model provider. | The review page's content security policy allows its own site only; compose settings |
 
 **Not built yet:** per-key rate limits and token caps, cloud content-safety screening (recorded as *not evaluated* until it's connected), and image pinning by digest. The [threat model](docs/threat-model.md) lists all 16 threats, mapped to the OWASP Top 10 for LLM Applications 2026 and the OWASP Top 10 for Agentic Applications, with each control's status.
 

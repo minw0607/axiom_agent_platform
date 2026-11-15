@@ -19,6 +19,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import os
 import sys
 import time
 from dataclasses import asdict, replace
@@ -241,6 +242,7 @@ def main(argv: list[str] | None = None) -> int:
     out.with_suffix(".md").write_text(markdown(report, args.mode))
     print(json.dumps(report["summary"]))
     if args.mlflow:
+        os.environ.setdefault("MLFLOW_DISABLE_TELEMETRY", "true")  # no usage data sent
         import mlflow
 
         mlflow.set_experiment("axiom-judge-calibration")

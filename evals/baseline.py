@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import os
 import statistics
 import sys
 import time
@@ -468,6 +469,7 @@ def markdown(report: dict[str, Any]) -> str:
 
 def log_mlflow(report: dict[str, Any], started: float) -> str | None:
     try:
+        os.environ.setdefault("MLFLOW_DISABLE_TELEMETRY", "true")  # no usage data sent
         import mlflow
     except ImportError:
         print("MLflow is not installed: uv sync --group evals", file=sys.stderr)

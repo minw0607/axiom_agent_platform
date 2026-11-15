@@ -54,6 +54,7 @@ def check_mlflow() -> None:
     try:
         os.environ.setdefault("MLFLOW_TRACKING_URI", "http://localhost:5050")
         os.environ.setdefault("MLFLOW_DISABLE_AGENT_HINT", "1")
+        os.environ.setdefault("MLFLOW_DISABLE_TELEMETRY", "true")  # no usage data sent
         import mlflow
 
         client = mlflow.MlflowClient()

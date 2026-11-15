@@ -57,6 +57,8 @@ services:
     image: arizephoenix/phoenix:version-20.27.0
     environment:
       PHOENIX_WORKING_DIR: /phoenix
+      # Phoenix sends anonymous usage data by default; this stack makes no outside calls.
+      PHOENIX_TELEMETRY_ENABLED: "false"
     ports:
       - "127.0.0.1:6006:6006" # trace UI
     volumes:
@@ -192,6 +194,10 @@ services:
   mlflow:
     image: ghcr.io/mlflow/mlflow:v3.18.0
     profiles: ["evals"]
+    environment:
+      # MLflow sends anonymous usage data by default; turn it off.
+      MLFLOW_DISABLE_TELEMETRY: "true"
+      DO_NOT_TRACK: "true"
     command:
       - mlflow
       - server
