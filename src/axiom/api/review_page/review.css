@@ -1,12 +1,18 @@
 :root {
-  --bg: #f5f6f8;
+  /* Neutral charcoal, from the logo. Red is the brand mark only; status colours keep
+     their meaning (green approved, amber caution, red flags and rejections). */
+  --brand-ink: #111114;
+  --brand-paper: #f2f4f8;
+  --brand-red: #d63a3a;
+  --brand-muted: #9a9ea9;
+  --bg: #f4f4f6;
   --surface: #ffffff;
-  --surface-2: #f0f2f5;
-  --text: #1b1f24;
-  --muted: #5b6573;
-  --border: #dde1e7;
-  --accent: #1f5fbf;
-  --accent-text: #ffffff;
+  --surface-2: #eeeef1;
+  --text: #17171b;
+  --muted: #5d606b;
+  --border: #dcdce1;
+  --accent: #222228;
+  --accent-text: #f2f4f8;
   --good: #1d7a46;
   --good-bg: #e5f4ea;
   --warn: #8a5a00;
@@ -15,29 +21,29 @@
   --bad-bg: #fbe5e3;
   --info: #4a5563;
   --info-bg: #eceff3;
-  --focus: #1f5fbf;
+  --focus: #222228;
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #14171b;
-    --surface: #1c2026;
-    --surface-2: #242a31;
-    --text: #e6e9ed;
-    --muted: #9aa4b1;
-    --border: #2f363f;
-    --accent: #6ea3f0;
-    --accent-text: #0d1117;
+    --bg: #0e0e11;
+    --surface: #18181c;
+    --surface-2: #222227;
+    --text: #eceef2;
+    --muted: #9a9ea9;
+    --border: #2d2d34;
+    --accent: #f2f4f8;
+    --accent-text: #111114;
     --good: #6cc792;
     --good-bg: #183324;
     --warn: #e7b453;
     --warn-bg: #3a2d12;
     --bad: #f08a82;
     --bad-bg: #3d1d1b;
-    --info: #b5bec9;
-    --info-bg: #2a3038;
-    --focus: #6ea3f0;
+    --info: #b8bbc4;
+    --info-bg: #26262c;
+    --focus: #f2f4f8;
     color-scheme: dark;
   }
 }
@@ -70,9 +76,13 @@ button { cursor: pointer; }
   justify-content: space-between;
   gap: 1rem;
   padding: 0.75rem 1.25rem;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
+  background: var(--brand-ink);
+  color: var(--brand-paper);
+  border-bottom: 2px solid var(--brand-red);
 }
+.topbar .muted { color: var(--brand-muted); }
+.topbar .link-button { color: var(--brand-paper); }
+.topbar :focus-visible { outline-color: var(--brand-paper); }
 .brand { display: flex; align-items: center; gap: 0.6rem; font-weight: 600; }
 .brand-mark { display: block; width: 30px; height: 30px; }
 .sign-in-logo { display: block; width: 112px; height: 112px; margin: 0.25rem auto 0.5rem; }
