@@ -1,6 +1,8 @@
 <div align="center">
 
-# 🏛️ axiom_agent_platform
+<img src="docs/assets/axiom-logo.svg" width="120" alt="Axiom logo"/>
+
+# axiom_agent_platform
 
 **A governed multi-agent platform for commercial lending: a versioned API, specialist agents, layered guardrails, human approval, and audit evidence for every memo.**
 
@@ -185,7 +187,7 @@ Every LLM judge uses a different model from the one under test, with no fallback
 
 ## 🚀 Quick start
 
-**Try the demo: no API keys, no setup.** You need [Docker](https://docs.docker.com/get-docker/) running and about 8 GB of free disk space. Then:
+**Try the demo: no API keys, no setup.** You need [Docker](https://docs.docker.com/get-docker/) running, git, and about 8 GB of free disk space. On Windows, install [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/) (it sets up WSL 2) and [Git for Windows](https://git-scm.com/downloads/win), and run the commands in PowerShell. Then:
 
 ```bash
 git clone https://github.com/minw0607/axiom_agent_platform.git
@@ -204,6 +206,8 @@ The first start downloads and builds about 6 GB of images, which takes the longe
 - the platform's API, at http://localhost:8000/docs, and its worker
 
 Every port is bound to your machine only, and the two MCP servers are reachable only through the gateway. The models' answers are replayed from live recordings, so no model is called. A one-time `demo-keys` service generates the three role keys, a secret for each MCP server and a gateway token for each workflow step into `.demo/keys.env`; each container is given only the values it needs. Git ignores that file, and the keys stay the same until you delete it. Any value you set in `.env` is used instead of the generated one.
+
+**Why Docker:** the demo is nine services, each with its own dependencies. Docker packages each one with exactly what it needs, so Docker is the only thing you install, the stack starts the same way on macOS, Windows and Linux, and `docker compose down -v` removes all of it. It also enforces the design: the MCP servers publish no ports and accept only the gateway's secret, and each container is given only its own keys.
 
 **Run the tests:** install [uv](https://docs.astral.sh/uv/), then:
 

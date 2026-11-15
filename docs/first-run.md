@@ -8,7 +8,7 @@ You need:
 
 - Docker Desktop (or Docker Engine with Compose), running
 - git
-- about 6 GB of free disk space for the images
+- about 8 GB of free disk space for the images
 - no API keys and no accounts
 
 Please time yourself from step 1 to the end of step 3, and write down anything that confused you or did not work. Read only the project's README; ask the owner nothing until you finish or give up.

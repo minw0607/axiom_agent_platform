@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Axiom logo">
+  <circle cx="256" cy="256" r="248" fill="#111114" stroke="#D63A3A" stroke-width="3"/>
+  <g fill="none" stroke="#F2F4F8" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+    <polygon points="256,59 134.8,129 134.8,269 256,339 377.2,269 377.2,129"/>
+    <line x1="256" y1="199" x2="256" y2="59"/>
+    <line x1="256" y1="199" x2="134.8" y2="269"/>
+    <line x1="256" y1="199" x2="377.2" y2="269"/>
+  </g>
+  <g fill="#F2F4F8">
+    <circle cx="256" cy="59" r="13"/>
+    <circle cx="134.8" cy="129" r="13"/>
+    <circle cx="134.8" cy="269" r="13"/>
+    <circle cx="256" cy="339" r="13"/>
+    <circle cx="377.2" cy="269" r="13"/>
+    <circle cx="377.2" cy="129" r="13"/>
+  </g>
+  <circle cx="256" cy="199" r="17" fill="#D63A3A"/>
+  <text x="256" y="430" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="58" font-weight="500" letter-spacing="13" fill="#7A7F8A"><tspan fill="#D63A3A">A</tspan><tspan>X</tspan><tspan fill="#D63A3A">I</tspan><tspan>O</tspan><tspan>M</tspan></text>
+</svg>
