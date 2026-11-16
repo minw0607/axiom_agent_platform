@@ -42,6 +42,7 @@ PROBLEM_MEANINGS = {
     409: "The memo is not in a state that allows this decision",
     413: "The request body is over 64 KiB",
     422: "The request is invalid",
+    429: "Today's job limit is reached (environments with a daily cap only)",
 }
 
 

@@ -63,6 +63,8 @@ class SubmitResult(BaseModel):
     job: JobRecord | None
     replayed: bool = False
     key_conflict: bool = False
+    # The daily job cap (AXIOM_DAILY_JOB_CAP) is reached; no job was created.
+    cap_reached: bool = False
 
 
 class ReviewResult(BaseModel):
@@ -116,7 +118,12 @@ class JobStore(Protocol):
     async def init(self) -> None: ...
     async def ping(self) -> bool: ...
     async def submit(
-        self, submitter: str, idem_key: str, request_hash: str, package_id: str
+        self,
+        submitter: str,
+        idem_key: str,
+        request_hash: str,
+        package_id: str,
+        daily_cap: int | None = None,
     ) -> SubmitResult: ...
     async def get(self, job_id: str) -> JobRecord | None: ...
     async def list_jobs(
@@ -156,6 +163,11 @@ def _now() -> datetime:
     return datetime.now(UTC)
 
 
+def _utc_midnight(moment: datetime) -> datetime:
+    """The start of the UTC day; the daily job cap resets then."""
+    return moment.astimezone(UTC).replace(hour=0, minute=0, second=0, microsecond=0)
+
+
 class InMemoryJobStore:
     def __init__(self) -> None:
         self.jobs: dict[str, JobRecord] = {}
@@ -172,7 +184,12 @@ class InMemoryJobStore:
         return True
 
     async def submit(
-        self, submitter: str, idem_key: str, request_hash: str, package_id: str
+        self,
+        submitter: str,
+        idem_key: str,
+        request_hash: str,
+        package_id: str,
+        daily_cap: int | None = None,
     ) -> SubmitResult:
         async with self._lock:
             existing = self.keys.get((submitter, idem_key))
@@ -182,6 +199,10 @@ class InMemoryJobStore:
                     return SubmitResult(job=None, key_conflict=True)
                 return SubmitResult(job=self.jobs[job_id], replayed=True)
             now = _now()
+            if daily_cap is not None:
+                today = sum(1 for j in self.jobs.values() if j.created_at >= _utc_midnight(now))
+                if today >= daily_cap:
+                    return SubmitResult(job=None, cap_reached=True)
             job = JobRecord(
                 job_id=new_job_id(),
                 status="queued",
@@ -416,7 +437,12 @@ class PostgresJobStore:
             return False
 
     async def submit(
-        self, submitter: str, idem_key: str, request_hash: str, package_id: str
+        self,
+        submitter: str,
+        idem_key: str,
+        request_hash: str,
+        package_id: str,
+        daily_cap: int | None = None,
     ) -> SubmitResult:
         async with await self._connect() as conn, conn.transaction():
             # Serialize concurrent submissions with the same key.
@@ -437,6 +463,15 @@ class PostgresJobStore:
                 )
                 job_row = await cur.fetchone()
                 return SubmitResult(job=_record(job_row), replayed=True)
+            if daily_cap is not None:
+                # One lock for every submitter, so two new jobs cannot both take the last slot.
+                await conn.execute("SELECT pg_advisory_xact_lock(hashtext('axiom-daily-cap'))")
+                cur = await conn.execute(
+                    "SELECT count(*) FROM jobs WHERE created_at >= %s", (_utc_midnight(_now()),)
+                )
+                count_row = await cur.fetchone()
+                if count_row is not None and count_row[0] >= daily_cap:
+                    return SubmitResult(job=None, cap_reached=True)
             job_id = new_job_id()
             cur = await conn.execute(
                 f"INSERT INTO jobs (job_id, status, package_id, submitter) "

@@ -206,3 +206,20 @@ def test_list_jobs_filters_by_submitter_and_status(store: PostgresJobStore) -> N
     waiting = asyncio.run(store.list_jobs(None, ("awaiting_review",), 10))
     assert [j.job_id for j in waiting] == [a.job_id]
     assert len(asyncio.run(store.list_jobs(None, None, 1))) == 1
+
+
+def test_daily_cap_is_shared_and_exact_under_a_race(store: PostgresJobStore) -> None:
+    async def race() -> list[bool]:
+        results = await asyncio.gather(
+            *(store.submit(f"rm-{i}", f"k{i}", "h", "pkg-01", daily_cap=3) for i in range(8))
+        )
+        return [r.job is not None for r in results]
+
+    created = asyncio.run(race())
+    assert sum(created) == 3
+    capped = asyncio.run(store.submit("rm-x", "k-new", "h", "pkg-01", daily_cap=3))
+    assert capped.cap_reached and capped.job is None
+    # A retry of a job that got in still returns it after the cap is reached.
+    i = created.index(True)
+    replay = asyncio.run(store.submit(f"rm-{i}", f"k{i}", "h", "pkg-01", daily_cap=3))
+    assert replay.replayed and replay.job is not None

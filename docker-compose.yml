@@ -149,6 +149,8 @@ services:
     environment:
       <<: &platform-env
         AXIOM_MODE: ${AXIOM_MODE:-demo}
+        # Empty means no cap; the cloud demo sets one (scripts/check_week9.py tests it).
+        AXIOM_DAILY_JOB_CAP: ${AXIOM_DAILY_JOB_CAP:-}
         AXIOM_API_HOST: 0.0.0.0
         DATABASE_URL: postgresql://axiom:axiom@postgres:5432/axiom
         TOOL_GATEWAY_URL: http://tool-gateway:8003/mcp

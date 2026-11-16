@@ -43,6 +43,16 @@ def _gateway_tokens() -> dict[str, str]:
     return out
 
 
+def _cap(value: str) -> int | None:
+    """AXIOM_DAILY_JOB_CAP: a whole number of at least 1, or empty for no cap."""
+    if not value.strip():
+        return None
+    cap = int(value)
+    if cap < 1:
+        raise ValueError("AXIOM_DAILY_JOB_CAP must be at least 1, or empty for no cap")
+    return cap
+
+
 @dataclass(frozen=True)
 class Settings:
     mode: str = "demo"
@@ -61,6 +71,8 @@ class Settings:
     auditor_keys: dict[str, str] = field(default_factory=dict)
     inprocess_worker: bool = False
     recordings_override: Path | None = None
+    # New jobs allowed per UTC day across all submitters (the public demo); None means no cap.
+    daily_job_cap: int | None = None
 
     @classmethod
     def from_env(cls) -> Settings:
@@ -84,6 +96,7 @@ class Settings:
             recordings_override=_path("AXIOM_RECORDINGS_DIR", REPO_ROOT / "data" / "recorded")
             if os.environ.get("AXIOM_RECORDINGS_DIR")
             else None,
+            daily_job_cap=_cap(os.environ.get("AXIOM_DAILY_JOB_CAP", "")),
         )
 
     @property

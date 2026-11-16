@@ -24,4 +24,4 @@ Week 7, Gate 2 passed on a simulated fresh machine. The demo starts with one com
 
 ## What's next
 
-Toward Gate 3 (CI gates enforced): the live gates need the model keys as GitHub repository secrets, and blocking a merge on a failed gate needs branch protection on `main`. Then week 9, cloud deployment. The [roadmap](../README.md#-roadmap) shows the phases after that.
+Toward Gate 3 (CI gates enforced): the live gates need the model keys as GitHub repository secrets, and blocking a merge on a failed gate needs branch protection on `main`. Week 9, cloud deployment, is written but not yet deployed: Terraform for a lean demo that replays recorded model responses, about $28 a month ([ADR 0009](adr/0009-deployment-target.md)). Deploying it needs a personal Azure subscription. The [roadmap](../README.md#-roadmap) shows the phases after that.

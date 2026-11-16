@@ -10,6 +10,7 @@ import contextlib
 import hashlib
 import json
 from collections.abc import AsyncIterator, Awaitable, Callable
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Annotated, Any
 
@@ -275,7 +276,10 @@ def create_app(settings: Settings | None = None, store: JobStore | None = None) 
         status_code=202,
         response_model=JobAccepted,
         tags=["memos"],
-        responses={202: {"description": "Job accepted"}, **problems(400, 401, 403, 413, 422)},
+        responses={
+            202: {"description": "Job accepted"},
+            **problems(400, 401, 403, 413, 422, 429),
+        },
         openapi_extra=IDEMPOTENCY_HEADER,
     )
     async def submit_memo(
@@ -304,7 +308,20 @@ def create_app(settings: Settings | None = None, store: JobStore | None = None) 
         request_hash = hashlib.sha256(
             json.dumps(body.model_dump(), sort_keys=True).encode()
         ).hexdigest()
-        result = await store.submit(principal.name, idempotency_key, request_hash, body.package_id)
+        result = await store.submit(
+            principal.name, idempotency_key, request_hash, body.package_id, settings.daily_job_cap
+        )
+        if result.cap_reached:
+            now = datetime.now(UTC)
+            reset = (now + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+            raise Problem(
+                429,
+                "daily-cap-reached",
+                "Today's job limit is reached",
+                f"This environment accepts {settings.daily_job_cap} new jobs a day. "
+                "The limit resets at midnight UTC.",
+                headers={"Retry-After": str(int((reset - now).total_seconds()) + 1)},
+            )
         if result.key_conflict or result.job is None:
             raise Problem(
                 422,
@@ -500,4 +517,8 @@ def main() -> None:
     FastAPIInstrumentor.instrument_app(app, excluded_urls="/v1/health,/v1/ready")
     import os
 
-    uvicorn.run(app, host=os.environ.get("AXIOM_API_HOST", "127.0.0.1"), port=8000)
+    uvicorn.run(
+        app,
+        host=os.environ.get("AXIOM_API_HOST", "127.0.0.1"),
+        port=int(os.environ.get("AXIOM_API_PORT", "8000")),
+    )

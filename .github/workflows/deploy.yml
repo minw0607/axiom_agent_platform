@@ -1,0 +1,73 @@
+name: Deploy cloud demo
+
+# Builds the platform image in Azure Container Registry, rolls it out to the api, worker and
+# tool-gateway apps, and checks the public endpoint. On demand only. Terraform creates the
+# environment first (infra/terraform/README.md).
+#
+# Signs in to Azure with OpenID Connect: no Azure password or key is stored in GitHub. It needs
+# these repository variables (identifiers, not secrets): AZURE_CLIENT_ID, AZURE_TENANT_ID,
+# AZURE_SUBSCRIPTION_ID, AXIOM_RESOURCE_GROUP, AXIOM_REGISTRY. Without them it says so and
+# stops.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy-cloud-demo
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      RG: ${{ vars.AXIOM_RESOURCE_GROUP }}
+      REGISTRY: ${{ vars.AXIOM_REGISTRY }}
+    steps:
+      - name: Check for Azure settings
+        id: azure
+        run: |
+          if [ -z "${{ vars.AZURE_CLIENT_ID }}" ] || [ -z "$RG" ] || [ -z "$REGISTRY" ]; then
+            echo "::notice::No Azure settings in this repository's variables, so nothing is deployed."
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.azure.outputs.present == 'true'
+      - uses: azure/login@v2
+        if: steps.azure.outputs.present == 'true'
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Build the platform image in the registry
+        if: steps.azure.outputs.present == 'true'
+        run: |
+          az acr build --registry "$REGISTRY" --image "axiom-platform:${GITHUB_SHA::12}" \
+            --image axiom-platform:latest .
+      - name: Roll out to api, worker and tool-gateway
+        if: steps.azure.outputs.present == 'true'
+        run: |
+          image="${REGISTRY}.azurecr.io/axiom-platform:${GITHUB_SHA::12}"
+          for app in api worker tool-gateway; do
+            az containerapp update --resource-group "$RG" --name "$app" --image "$image" --output none
+          done
+      - name: Smoke test
+        if: steps.azure.outputs.present == 'true'
+        run: |
+          fqdn=$(az containerapp show --resource-group "$RG" --name api \
+            --query properties.configuration.ingress.fqdn --output tsv)
+          # The API may be scaled to zero; give it time to start.
+          for i in $(seq 1 30); do
+            if curl --fail --silent "https://${fqdn}/v1/health" > /dev/null; then
+              echo "https://${fqdn}/v1/health answers"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::https://${fqdn}/v1/health did not answer in 5 minutes"
+          exit 1

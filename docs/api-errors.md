@@ -16,6 +16,7 @@ Errors use RFC 9457 problem details (`application/problem+json`). The `type` fie
 | 422 | <a id="unknown-package"></a>`unknown-package` | The `package_id` is well formed but not in the synthetic catalog. |
 | 422 | <a id="package-not-recorded"></a>`package-not-recorded` | Demo mode replays recorded model responses, and this package has none. The golden-set packages added in week 6 are recorded for tests only until live recordings are made. |
 | 422 | <a id="idempotency-key-reused"></a>`idempotency-key-reused` | The key was already used, within 24 hours, with a different request body. |
+| 429 | <a id="daily-cap-reached"></a>`daily-cap-reached` | `POST /v1/memos` only, where `AXIOM_DAILY_JOB_CAP` is set (the public cloud demo). The environment has accepted its new jobs for the UTC day. `Retry-After` gives the seconds until midnight UTC. A retry with an existing `Idempotency-Key` still returns its job. |
 
 ## Job failure reasons
 

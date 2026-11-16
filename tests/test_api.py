@@ -322,3 +322,33 @@ def test_demo_mode_offers_only_packages_it_can_replay(
             "/v1/memos", json={"package_id": "pkg-10"}, headers={**h, "Idempotency-Key": "k-10"}
         )
         assert ok.status_code == 202
+
+
+def test_daily_cap_refuses_new_jobs_but_replays_old_ones(store: InMemoryJobStore) -> None:
+    capped = replace(SETTINGS_WITH_KEYS, daily_job_cap=2)
+    with TestClient(create_app(capped, store)) as c:
+        assert submit(c, key="k-1").status_code == 202
+        assert submit(c, key="k-2", who="other").status_code == 202
+        r = submit(c, key="k-3")
+        assert r.status_code == 429 and r.headers["content-type"] == PROBLEM
+        assert r.json()["type"].endswith("#daily-cap-reached")
+        assert 0 < int(r.headers["Retry-After"]) <= 86401
+        replay = submit(c, key="k-1")
+        assert replay.status_code == 202 and replay.headers["Idempotent-Replayed"] == "true"
+    assert len(store.jobs) == 2
+
+
+def test_no_cap_by_default(client: TestClient) -> None:
+    assert SETTINGS_WITH_KEYS.daily_job_cap is None
+    for i in range(5):
+        assert submit(client, key=f"k-{i}").status_code == 202
+
+
+def test_cap_setting_must_be_positive(monkeypatch: pytest.MonkeyPatch) -> None:
+    from axiom.settings import Settings
+
+    monkeypatch.setenv("AXIOM_DAILY_JOB_CAP", "25")
+    assert Settings.from_env().daily_job_cap == 25
+    monkeypatch.setenv("AXIOM_DAILY_JOB_CAP", "0")
+    with pytest.raises(ValueError, match="at least 1"):
+        Settings.from_env()
