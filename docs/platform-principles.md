@@ -11,6 +11,7 @@ It is a living page. Each section gives the principles, then an **In Axiom today
 3. [LLM-as-judge practice](#3-llm-as-judge-practice)
 4. [Multi-agent design](#4-multi-agent-design)
 5. [Build, buy and operate](#5-build-buy-and-operate)
+6. [Data for AI applications](#6-data-for-ai-applications)
 
 ---
 
@@ -215,6 +216,53 @@ Two questions: what to build versus buy or use as a managed service, and who run
 | Budget for operation; define the run model | ⬜ Not yet. No service-level targets, runbooks or ownership chart. Due with the cloud deployment and before a second app | |
 | Accountability for vendor models | 🟡 Partly. Each model call records alias, provider and prompt version for audit; no model inventory or vendor risk record yet | ADR 0012 |
 
+## 6. Data for AI applications
+
+Two things change. AI speeds up the data preparation teams already do. And generative AI apps need a new kind of preparation: turning unstructured knowledge into context a model can use reliably, where traditional machine learning turned structured data into features.
+
+**AI speeds up traditional preparation**
+
+- **Exploration:** a model with a code-execution tool can profile a dataset, write the pandas or SQL, plot distributions and flag anomalies in minutes.
+- **Cleaning:** standardizing messy text fields (company names, addresses, free-text categories), suggesting data-quality rules, writing transformation code.
+- **Labeling:** a model pre-labels text, and people check a sample.
+- **Documentation:** drafting data dictionaries and inferring what columns mean.
+
+**Have the AI write and run code; don't let it produce numbers itself.** A model that "reads" a table and reports a mean can make one up. Code gives exact, reproducible results, and someone still has to judge whether the findings make sense. AI speeds up the analyst; it doesn't replace the judgment.
+
+**What's new: preparing knowledge for generative AI**
+
+| Area | What it involves |
+|---|---|
+| Document parsing | Getting clean text from PDFs, scans, tables and slides. Tables and layout are where most retrieval failures start. |
+| Chunking | Splitting documents along meaningful boundaries (sections, clauses) instead of fixed lengths, so each chunk stands on its own. |
+| Metadata | Tagging each chunk with source, date, version, document type and owner, so retrieval can filter and answers can cite sources. |
+| Deduplication and versioning | Removing superseded versions and drafts. If two versions of a credit policy are both indexed, the model may cite the old one. |
+| Freshness | Re-indexing pipelines, so the knowledge base doesn't go stale. |
+| Permissions | Carrying each document's access rights into the index, so retrieval never shows a user something they couldn't open themselves. A major risk in banks. |
+| Personal and sensitive data | Masking or redacting before indexing or sending to a model, with tools such as Presidio or a data classification service. |
+| Semantic layer | For agents that query structured data: business definitions ("what counts as revenue"), so a text-to-SQL agent doesn't guess. |
+| Evaluation datasets | Golden question-and-answer sets with the expected sources. The generative AI version of a test set, and the step many teams skip. |
+| Synthetic data | Generating realistic test cases and edge cases, with checks that the data is realistic. |
+
+**Treat the knowledge base as a product with an owner.** Parsing, versions, freshness and permissions decide what the model can say; they need the same care as the model choice.
+
+**In Axiom today**
+
+| Principle | Status | Where |
+|---|---|---|
+| Code produces the numbers | 🟢 Built. Models extract figures, and code checks each one against its cited source line and fiscal-year column; code computes every ratio, reconciles the statements and applies the policy thresholds. A model never reports a number it computed | `src/axiom/agents/intake.py`, `src/axiom/tools/` |
+| AI-assisted labeling, checked by people | 🟡 Partly. The golden answers are derived by code from the policy text and are a draft until reviewed; the grader's calibration set has human labels in part | [golden answers](../evals/golden/v1/answers.md), [evaluation suite](../evals/README.md) |
+| Document parsing | ⬜ Not yet needed. Every document is clean, generated Markdown. Real packages arrive as PDFs and scans, so a parser, with checks on tables, is needed before real data | [synthetic data](../data/synthetic/README.md) |
+| Chunking along meaningful boundaries | 🟡 Partly. The in-memory index splits on paragraphs, and a statement table stays one chunk; GKN chunks its own way. Nothing splits by section or clause yet | `src/axiom/mcp_clients/evidence.py` |
+| Metadata for filtering and citation | 🟡 Partly. Every chunk carries its collection, document id, chunk id and a fingerprint, and every claim cites a source line. No date, version or owner on the chunk | `src/axiom/mcp_clients/evidence.py` |
+| Deduplication and versioning | 🟡 Partly. One credit policy version (CP-2026.2) is indexed, and Regulus serves pinned snapshots. Nothing yet stops two versions being indexed together | [credit policy](../data/synthetic/credit_policy/README.md) |
+| Freshness | 🟡 Partly. A job's documents are indexed when it starts and deleted with the job. The reference documents are fixed snapshots, updated by hand; no re-indexing pipeline | |
+| Permissions carried into retrieval | 🟡 Partly. Retrieval is scoped to the job, which the platform sets and a model can never choose, so one job never sees another's documents; role keys decide who reads what. No per-document access rights yet, which a second app with shared documents will need | `src/axiom/mcp_clients/evidence.py`, [threat model](threat-model.md) |
+| Mask personal data before indexing and model calls | 🟢 Built. Presidio masking runs first; the index and every model see only masked documents, and financial values stay unchanged. If masking is off or fails, every model call is treated as unmasked, and only a local model may take it | `src/axiom/graph/workflow.py`, [ADR 0005](adr/0005-model-routing.md) |
+| Semantic layer: business definitions | 🟢 Built for this app's scope. Each ratio's formula is defined once in code and each threshold once in config, and "Explain this" shows each formula with its inputs and the policy clause behind each flag. No agent writes queries, so there is no text-to-SQL layer to define | `src/axiom/tools/ratios.py`, [`policy_thresholds.yaml`](../config/policy_thresholds.yaml) |
+| Evaluation datasets with expected sources | 🟡 Partly. The golden set holds every figure's value and source line, the expected flags, recommendations and key findings. No retrieval set yet that scores whether the right passages came back | [golden set](../evals/golden/v1/answers.md) |
+| Realistic synthetic data | 🟡 Partly. Numbers are generated first and text second, so every figure has a known answer, and the expected ratios are computed by a second implementation that must agree with the platform's. Boundary cases are tuned to land exactly on each limit. No check against the distributions of real loan packages | [synthetic data](../data/synthetic/README.md) |
+
 ---
 
 ## Change log
@@ -223,3 +271,4 @@ Two questions: what to build versus buy or use as a managed service, and who run
 |---|---|
 | Nov 15, 2026 | First version: five areas, with the credit memo app checked against each |
 | Nov 15, 2026 | Anthropic and Ollama adapters added; providers can be mixed by alias |
+| Nov 15, 2026 | New section 6, data for AI applications |

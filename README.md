@@ -327,7 +327,7 @@ Progress on each milestone, with its result, is on the [status page](docs/status
 - [A sample package, end to end](docs/sample-package.md): the documents, extracted figures, computed ratios, the drafted memo, and how each claim is checked
 - [Architecture](docs/architecture.md): layers, the life of a memo job, and component status
 - [Architecture decision records](docs/adr/README.md): decisions and trade-offs as they're made
-- [Platform design principles](docs/platform-principles.md): model choice and cost, the API contract, LLM judges, multi-agent design, build or buy; each checked against the credit memo app
+- [Platform design principles](docs/platform-principles.md): model choice and cost, the API contract, LLM judges, multi-agent design, build or buy, data for AI; each checked against the credit memo app
 - [AI-assisted engineering log](docs/ai-assisted-engineering.md): what was delegated to Claude Code and what review changed
 - [Threat model](docs/threat-model.md): threats, trust boundaries, and controls, mapped to the OWASP LLM and agentic Top 10 lists
 - [Evaluation suite](evals/README.md): the golden set, scoring, the grader and its calibration, fairness pairs, and the adversarial set
