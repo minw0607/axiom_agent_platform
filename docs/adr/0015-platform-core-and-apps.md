@@ -75,3 +75,4 @@ For the credit memo app that is `agents/`, `graph/workflow.py`, `domain.py`, `to
 - The restructure will move lending code under an app package and replace direct imports in `api/`, `jobs/`, `guardrails/`, `mcp_clients/` and `memory/` with interfaces an app implements. The table above is its starting checklist.
 - The principles every app on the platform follows, with the credit memo app checked against each, are in [platform design principles](../platform-principles.md).
 - **Revisit when:** a second use case is chosen, or phase 4 begins.
+- **Nov 18, 2026:** the second app is chosen (model documentation review), and the core-app contract is drawn in [ADR 0016](0016-app-contract.md).
