@@ -1,0 +1,111 @@
+# The sections a model's documentation must contain (ADR 0016, app 2).
+#
+# Code decides whether each section is present: a heading in the named document that matches
+# one of `headings` (case-insensitive, ignoring numbering), with at least `min_lines` lines of
+# content under it. A model judges whether a present section is adequate, and cites the lines.
+# Each item cites the public provisions it is drawn from, by their IDs in Regulus, so a
+# finding that cites a provision can be checked like any other citation.
+#
+# This checklist is written for this repository from public frameworks. It is not any
+# organization's standard, and it is not supervisory guidance.
+version: MR-2026.1
+min_lines: 3
+items:
+  - id: MR-1
+    title: Purpose and intended use
+    document: development_report
+    headings: [purpose, intended use, purpose and intended use, business use]
+    critical: true
+    provisions:
+      - { framework: nist_ai_rmf, provision_id: MAP 1.1 }
+      - { framework: nist_ai_rmf, provision_id: MAP 3.3 }
+      - { framework: eu_ai_act, provision_id: Article 13 }
+  - id: MR-2
+    title: Limitations and conditions of use
+    document: development_report
+    headings: [limitations, known limitations, limitations and conditions of use, model limitations]
+    critical: false
+    provisions:
+      - { framework: nist_ai_rmf, provision_id: MAP 2.2 }
+      - { framework: eu_ai_act, provision_id: Article 13 }
+  - id: MR-3
+    title: Methodology and design choices
+    document: development_report
+    headings: [methodology, model design, methodology and design choices, approach]
+    critical: true
+    provisions:
+      - { framework: nist_ai_rmf, provision_id: MAP 2.1 }
+      - { framework: nist_ai_rmf, provision_id: MEASURE 2.9 }
+      - { framework: eu_ai_act, provision_id: Article 11 }
+  - id: MR-4
+    title: Performance testing
+    document: development_report
+    headings: [performance testing, performance, testing results, validation results, back-testing]
+    critical: true
+    provisions:
+      - { framework: nist_ai_rmf, provision_id: MEASURE 2.1 }
+      - { framework: nist_ai_rmf, provision_id: MEASURE 2.5 }
+      - { framework: eu_ai_act, provision_id: Article 15 }
+  - id: MR-5
+    title: Sensitivity and stress testing
+    document: development_report
+    headings: [sensitivity testing, stress testing, sensitivity and stress testing, robustness]
+    critical: false
+    provisions:
+      - { framework: nist_ai_rmf, provision_id: MEASURE 2.6 }
+      - { framework: eu_ai_act, provision_id: Article 15 }
+  - id: MR-6
+    title: Fairness assessment
+    document: development_report
+    headings: [fairness, fairness assessment, bias assessment, fairness and bias]
+    critical: false
+    provisions:
+      - { framework: nist_ai_rmf, provision_id: MEASURE 2.11 }
+      - { framework: eu_ai_act, provision_id: Article 10 }
+  - id: MR-7
+    title: Human oversight
+    document: development_report
+    headings: [human oversight, oversight, human review, use constraints]
+    critical: false
+    provisions:
+      - { framework: nist_ai_rmf, provision_id: MAP 3.5 }
+      - { framework: eu_ai_act, provision_id: Article 14 }
+  - id: MR-8
+    title: Data sources and lineage
+    document: data_description
+    headings: [data sources, sources, data sources and lineage, lineage]
+    critical: true
+    provisions:
+      - { framework: eu_ai_act, provision_id: Article 10 }
+      - { framework: nist_ai_rmf, provision_id: MEASURE 2.1 }
+  - id: MR-9
+    title: Data quality and representativeness
+    document: data_description
+    headings: [data quality, quality, data quality and representativeness, representativeness]
+    critical: false
+    provisions:
+      - { framework: eu_ai_act, provision_id: Article 10 }
+  - id: MR-10
+    title: Personal data and privacy
+    document: data_description
+    headings: [personal data, privacy, personal data and privacy]
+    critical: false
+    provisions:
+      - { framework: nist_ai_rmf, provision_id: MEASURE 2.10 }
+  - id: MR-11
+    title: Monitoring metrics and thresholds
+    document: monitoring_plan
+    headings: [monitoring metrics, metrics and thresholds, monitoring metrics and thresholds, ongoing monitoring]
+    critical: true
+    provisions:
+      - { framework: nist_ai_rmf, provision_id: MANAGE 4.1 }
+      - { framework: eu_ai_act, provision_id: Article 72 }
+  - id: MR-12
+    title: Change management and incidents
+    document: monitoring_plan
+    headings: [change management, incidents, change management and incidents, incident response]
+    critical: false
+    provisions:
+      - { framework: nist_ai_rmf, provision_id: MANAGE 2.3 }
+      - { framework: nist_ai_rmf, provision_id: MANAGE 4.3 }
+      - { framework: eu_ai_act, provision_id: Article 73 }

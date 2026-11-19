@@ -1,0 +1,125 @@
+{
+  "package_id": "mdl-03",
+  "scenario": "no_fairness_assessment",
+  "checks": {
+    "MR-1": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-03-development_report",
+      "heading_line": 5,
+      "lines": [
+        6,
+        8
+      ]
+    },
+    "MR-2": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-03-development_report",
+      "heading_line": 10,
+      "lines": [
+        11,
+        13
+      ]
+    },
+    "MR-3": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-03-development_report",
+      "heading_line": 15,
+      "lines": [
+        16,
+        18
+      ]
+    },
+    "MR-4": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-03-development_report",
+      "heading_line": 20,
+      "lines": [
+        21,
+        23
+      ]
+    },
+    "MR-5": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-03-development_report",
+      "heading_line": 25,
+      "lines": [
+        26,
+        28
+      ]
+    },
+    "MR-6": {
+      "outcome": "missing",
+      "document": "development_report"
+    },
+    "MR-7": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-03-development_report",
+      "heading_line": 30,
+      "lines": [
+        31,
+        33
+      ]
+    },
+    "MR-8": {
+      "outcome": "present",
+      "document": "data_description",
+      "doc_id": "mdl-03-data_description",
+      "heading_line": 5,
+      "lines": [
+        6,
+        8
+      ]
+    },
+    "MR-9": {
+      "outcome": "present",
+      "document": "data_description",
+      "doc_id": "mdl-03-data_description",
+      "heading_line": 10,
+      "lines": [
+        11,
+        13
+      ]
+    },
+    "MR-10": {
+      "outcome": "present",
+      "document": "data_description",
+      "doc_id": "mdl-03-data_description",
+      "heading_line": 15,
+      "lines": [
+        16,
+        18
+      ]
+    },
+    "MR-11": {
+      "outcome": "present",
+      "document": "monitoring_plan",
+      "doc_id": "mdl-03-monitoring_plan",
+      "heading_line": 5,
+      "lines": [
+        6,
+        8
+      ]
+    },
+    "MR-12": {
+      "outcome": "present",
+      "document": "monitoring_plan",
+      "doc_id": "mdl-03-monitoring_plan",
+      "heading_line": 10,
+      "lines": [
+        11,
+        14
+      ]
+    }
+  },
+  "completeness": "11/12",
+  "critical_gaps": [],
+  "expected_findings": {
+    "MR-6": "No fairness assessment, although the ranking decides how each customer is contacted and uses customer age band as an input."
+  }
+}

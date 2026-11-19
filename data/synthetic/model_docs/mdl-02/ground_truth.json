@@ -1,0 +1,122 @@
+{
+  "package_id": "mdl-02",
+  "scenario": "no_monitoring_metrics",
+  "checks": {
+    "MR-1": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-02-development_report",
+      "heading_line": 5,
+      "lines": [
+        6,
+        8
+      ]
+    },
+    "MR-2": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-02-development_report",
+      "heading_line": 10,
+      "lines": [
+        11,
+        13
+      ]
+    },
+    "MR-3": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-02-development_report",
+      "heading_line": 15,
+      "lines": [
+        16,
+        18
+      ]
+    },
+    "MR-4": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-02-development_report",
+      "heading_line": 20,
+      "lines": [
+        21,
+        23
+      ]
+    },
+    "MR-5": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-02-development_report",
+      "heading_line": 25,
+      "lines": [
+        26,
+        28
+      ]
+    },
+    "MR-6": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-02-development_report",
+      "heading_line": 30,
+      "lines": [
+        31,
+        33
+      ]
+    },
+    "MR-7": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-02-development_report",
+      "heading_line": 35,
+      "lines": [
+        36,
+        38
+      ]
+    },
+    "MR-8": {
+      "outcome": "present",
+      "document": "data_description",
+      "doc_id": "mdl-02-data_description",
+      "heading_line": 5,
+      "lines": [
+        6,
+        8
+      ]
+    },
+    "MR-9": {
+      "outcome": "present",
+      "document": "data_description",
+      "doc_id": "mdl-02-data_description",
+      "heading_line": 10,
+      "lines": [
+        11,
+        13
+      ]
+    },
+    "MR-10": {
+      "outcome": "present",
+      "document": "data_description",
+      "doc_id": "mdl-02-data_description",
+      "heading_line": 15,
+      "lines": [
+        16,
+        18
+      ]
+    },
+    "MR-11": {
+      "outcome": "missing",
+      "document": "monitoring_plan"
+    },
+    "MR-12": {
+      "outcome": "missing",
+      "document": "monitoring_plan"
+    }
+  },
+  "completeness": "10/12",
+  "critical_gaps": [
+    "MR-11"
+  ],
+  "expected_findings": {
+    "MR-11": "No monitoring metrics or thresholds: a fast-degrading fraud model has no trigger for review.",
+    "MR-12": "No change management or incident process."
+  }
+}

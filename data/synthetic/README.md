@@ -41,3 +41,18 @@ Boundary loan amounts were tuned so the rounded ratio lands exactly on the limit
 The fictional credit policy is in `credit_policy/`; its numeric thresholds are in `config/apps/credit_memo/policy_thresholds.yaml`. Adversarial documents are in `evals/adversarial/` (week 5).
 
 Counterfactual pairs are in `evals/counterfactual/` (week 6): they add a sentence to a package's business description at run time, so they need no files here.
+
+## Model documentation packages (app 2)
+
+`model_docs/` holds six documentation packages for fictional models, each with a development report, a data description and a monitoring plan, written by `scripts/generate_model_docs.py` for app 2, model documentation review ([ADR 0016](../../docs/adr/0016-app-contract.md)). Each package's `ground_truth.json` records, for every item of the section checklist (`config/apps/model_review/checklist.yaml`), whether the generator wrote the section and on which lines, and what a reviewer should find.
+
+| Package | Model | Built to test |
+|---|---|---|
+| mdl-01 | Deposit run-off forecast | Complete documentation (12 of 12 sections) |
+| mdl-02 | Card fraud alerting | No monitoring metrics (a critical gap) and no change management |
+| mdl-03 | Collections prioritization | No fairness assessment, although the ranking affects customers |
+| mdl-04 | Mortgage prepayment | Performance tested only on the data the model was fitted to; sensitivity testing a placeholder |
+| mdl-05 | Savings offer propensity | No data lineage (a critical gap); privacy a placeholder; a fairness result accepted without analysis |
+| mdl-06 | Call summary assistant (generative) | No limitations and no human oversight; performance judged by reading 40 summaries |
+
+Code decides whether a section is present; a weak section such as mdl-04's performance testing is present to code and needs a model's judgment, which step 2b adds. All models, teams and figures are fictional.

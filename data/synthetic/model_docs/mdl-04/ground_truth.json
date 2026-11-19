@@ -1,0 +1,132 @@
+{
+  "package_id": "mdl-04",
+  "scenario": "in_sample_testing_only",
+  "checks": {
+    "MR-1": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-04-development_report",
+      "heading_line": 5,
+      "lines": [
+        6,
+        8
+      ]
+    },
+    "MR-2": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-04-development_report",
+      "heading_line": 10,
+      "lines": [
+        11,
+        13
+      ]
+    },
+    "MR-3": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-04-development_report",
+      "heading_line": 15,
+      "lines": [
+        16,
+        18
+      ]
+    },
+    "MR-4": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-04-development_report",
+      "heading_line": 20,
+      "lines": [
+        21,
+        23
+      ]
+    },
+    "MR-5": {
+      "outcome": "empty",
+      "document": "development_report",
+      "doc_id": "mdl-04-development_report",
+      "heading_line": 25,
+      "lines": [
+        26,
+        26
+      ]
+    },
+    "MR-6": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-04-development_report",
+      "heading_line": 28,
+      "lines": [
+        29,
+        31
+      ]
+    },
+    "MR-7": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-04-development_report",
+      "heading_line": 33,
+      "lines": [
+        34,
+        36
+      ]
+    },
+    "MR-8": {
+      "outcome": "present",
+      "document": "data_description",
+      "doc_id": "mdl-04-data_description",
+      "heading_line": 5,
+      "lines": [
+        6,
+        8
+      ]
+    },
+    "MR-9": {
+      "outcome": "present",
+      "document": "data_description",
+      "doc_id": "mdl-04-data_description",
+      "heading_line": 10,
+      "lines": [
+        11,
+        13
+      ]
+    },
+    "MR-10": {
+      "outcome": "present",
+      "document": "data_description",
+      "doc_id": "mdl-04-data_description",
+      "heading_line": 15,
+      "lines": [
+        16,
+        18
+      ]
+    },
+    "MR-11": {
+      "outcome": "present",
+      "document": "monitoring_plan",
+      "doc_id": "mdl-04-monitoring_plan",
+      "heading_line": 5,
+      "lines": [
+        6,
+        8
+      ]
+    },
+    "MR-12": {
+      "outcome": "present",
+      "document": "monitoring_plan",
+      "doc_id": "mdl-04-monitoring_plan",
+      "heading_line": 10,
+      "lines": [
+        11,
+        14
+      ]
+    }
+  },
+  "completeness": "11/12",
+  "critical_gaps": [],
+  "expected_findings": {
+    "MR-4": "Performance is reported only on the data the model was fitted to; no out-of-time or holdout test.",
+    "MR-5": "Sensitivity and stress testing is a placeholder."
+  }
+}

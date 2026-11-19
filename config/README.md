@@ -10,3 +10,5 @@ Settings that change behavior without code changes:
 Real model deployment names live in environment settings, never here.
 
 **Built (week 3):** `routing.demo.yaml`, `routing.local.yaml`, `policy_thresholds.yaml` (now `apps/credit_memo/`, one folder per app's own settings, ADR 0016), `otel-collector.yaml`. **Built (week 5):** `guardrails.yaml`; it must list every control the platform has, and the platform refuses to start if a name is unknown or missing. **Built (week 7):** `tool_gateway.yaml`. **Built (week 8):** `eval_gates.yaml`. **Planned:** `routing.cloud.yaml` (week 9).
+
+**App 2 (Nov 18):** `apps/model_review/checklist.yaml`, the twelve sections a model's documentation must contain, each citing the NIST AI RMF and EU AI Act provisions it is drawn from by their IDs in Regulus. Version MR-2026.1, written for this repository; not any organization's standard.

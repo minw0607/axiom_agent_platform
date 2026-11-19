@@ -12,6 +12,8 @@ SUBPACKAGES = [
     "apps.credit_memo",
     "apps.credit_memo.agents",
     "apps.credit_memo.tools",
+    "apps.model_review",
+    "apps.model_review.tools",
     "core",
     "evidence",
     "gateway",

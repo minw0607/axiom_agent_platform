@@ -1,0 +1,26 @@
+{
+  "package_id": "mdl-02",
+  "model_name": "Synthetic Model 02 (card fraud alerting)",
+  "model_type": "classifier",
+  "scenario": "no_monitoring_metrics",
+  "documents": [
+    {
+      "doc_id": "mdl-02-development_report",
+      "kind": "development_report",
+      "title": "Development report",
+      "file": "development_report.md"
+    },
+    {
+      "doc_id": "mdl-02-data_description",
+      "kind": "data_description",
+      "title": "Data description",
+      "file": "data_description.md"
+    },
+    {
+      "doc_id": "mdl-02-monitoring_plan",
+      "kind": "monitoring_plan",
+      "title": "Monitoring plan",
+      "file": "monitoring_plan.md"
+    }
+  ]
+}

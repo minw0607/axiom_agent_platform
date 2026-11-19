@@ -1,0 +1,129 @@
+{
+  "package_id": "mdl-05",
+  "scenario": "no_data_lineage",
+  "checks": {
+    "MR-1": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-05-development_report",
+      "heading_line": 5,
+      "lines": [
+        6,
+        8
+      ]
+    },
+    "MR-2": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-05-development_report",
+      "heading_line": 10,
+      "lines": [
+        11,
+        13
+      ]
+    },
+    "MR-3": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-05-development_report",
+      "heading_line": 15,
+      "lines": [
+        16,
+        18
+      ]
+    },
+    "MR-4": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-05-development_report",
+      "heading_line": 20,
+      "lines": [
+        21,
+        23
+      ]
+    },
+    "MR-5": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-05-development_report",
+      "heading_line": 25,
+      "lines": [
+        26,
+        28
+      ]
+    },
+    "MR-6": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-05-development_report",
+      "heading_line": 30,
+      "lines": [
+        31,
+        33
+      ]
+    },
+    "MR-7": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-05-development_report",
+      "heading_line": 35,
+      "lines": [
+        36,
+        38
+      ]
+    },
+    "MR-8": {
+      "outcome": "missing",
+      "document": "data_description"
+    },
+    "MR-9": {
+      "outcome": "present",
+      "document": "data_description",
+      "doc_id": "mdl-05-data_description",
+      "heading_line": 5,
+      "lines": [
+        6,
+        8
+      ]
+    },
+    "MR-10": {
+      "outcome": "empty",
+      "document": "data_description",
+      "doc_id": "mdl-05-data_description",
+      "heading_line": 10,
+      "lines": [
+        11,
+        11
+      ]
+    },
+    "MR-11": {
+      "outcome": "present",
+      "document": "monitoring_plan",
+      "doc_id": "mdl-05-monitoring_plan",
+      "heading_line": 5,
+      "lines": [
+        6,
+        8
+      ]
+    },
+    "MR-12": {
+      "outcome": "present",
+      "document": "monitoring_plan",
+      "doc_id": "mdl-05-monitoring_plan",
+      "heading_line": 10,
+      "lines": [
+        11,
+        14
+      ]
+    }
+  },
+  "completeness": "10/12",
+  "critical_gaps": [
+    "MR-8"
+  ],
+  "expected_findings": {
+    "MR-8": "No data sources or lineage: the inputs cannot be traced to their systems.",
+    "MR-10": "Personal data and privacy section is a placeholder, although the model scores individual customers.",
+    "MR-6": "Customers over 70 receive offers at half the average rate; the documentation accepts this without analysis."
+  }
+}

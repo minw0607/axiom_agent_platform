@@ -1,0 +1,38 @@
+[
+  {
+    "package_id": "mdl-01",
+    "model_name": "Synthetic Model 01 (deposit run-off forecast)",
+    "model_type": "forecast",
+    "scenario": "complete"
+  },
+  {
+    "package_id": "mdl-02",
+    "model_name": "Synthetic Model 02 (card fraud alerting)",
+    "model_type": "classifier",
+    "scenario": "no_monitoring_metrics"
+  },
+  {
+    "package_id": "mdl-03",
+    "model_name": "Synthetic Model 03 (collections prioritization)",
+    "model_type": "classifier",
+    "scenario": "no_fairness_assessment"
+  },
+  {
+    "package_id": "mdl-04",
+    "model_name": "Synthetic Model 04 (mortgage prepayment)",
+    "model_type": "forecast",
+    "scenario": "in_sample_testing_only"
+  },
+  {
+    "package_id": "mdl-05",
+    "model_name": "Synthetic Model 05 (savings offer propensity)",
+    "model_type": "classifier",
+    "scenario": "no_data_lineage"
+  },
+  {
+    "package_id": "mdl-06",
+    "model_name": "Synthetic Model 06 (call summary assistant)",
+    "model_type": "generative",
+    "scenario": "no_oversight_or_limitations"
+  }
+]

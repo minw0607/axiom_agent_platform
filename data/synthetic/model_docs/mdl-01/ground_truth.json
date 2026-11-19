@@ -1,0 +1,129 @@
+{
+  "package_id": "mdl-01",
+  "scenario": "complete",
+  "checks": {
+    "MR-1": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-01-development_report",
+      "heading_line": 5,
+      "lines": [
+        6,
+        8
+      ]
+    },
+    "MR-2": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-01-development_report",
+      "heading_line": 10,
+      "lines": [
+        11,
+        13
+      ]
+    },
+    "MR-3": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-01-development_report",
+      "heading_line": 15,
+      "lines": [
+        16,
+        19
+      ]
+    },
+    "MR-4": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-01-development_report",
+      "heading_line": 21,
+      "lines": [
+        22,
+        25
+      ]
+    },
+    "MR-5": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-01-development_report",
+      "heading_line": 27,
+      "lines": [
+        28,
+        30
+      ]
+    },
+    "MR-6": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-01-development_report",
+      "heading_line": 32,
+      "lines": [
+        33,
+        35
+      ]
+    },
+    "MR-7": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-01-development_report",
+      "heading_line": 37,
+      "lines": [
+        38,
+        40
+      ]
+    },
+    "MR-8": {
+      "outcome": "present",
+      "document": "data_description",
+      "doc_id": "mdl-01-data_description",
+      "heading_line": 5,
+      "lines": [
+        6,
+        8
+      ]
+    },
+    "MR-9": {
+      "outcome": "present",
+      "document": "data_description",
+      "doc_id": "mdl-01-data_description",
+      "heading_line": 10,
+      "lines": [
+        11,
+        13
+      ]
+    },
+    "MR-10": {
+      "outcome": "present",
+      "document": "data_description",
+      "doc_id": "mdl-01-data_description",
+      "heading_line": 15,
+      "lines": [
+        16,
+        18
+      ]
+    },
+    "MR-11": {
+      "outcome": "present",
+      "document": "monitoring_plan",
+      "doc_id": "mdl-01-monitoring_plan",
+      "heading_line": 5,
+      "lines": [
+        6,
+        9
+      ]
+    },
+    "MR-12": {
+      "outcome": "present",
+      "document": "monitoring_plan",
+      "doc_id": "mdl-01-monitoring_plan",
+      "heading_line": 11,
+      "lines": [
+        12,
+        15
+      ]
+    }
+  },
+  "completeness": "12/12",
+  "critical_gaps": [],
+  "expected_findings": {}
+}

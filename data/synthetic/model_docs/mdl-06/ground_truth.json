@@ -1,0 +1,121 @@
+{
+  "package_id": "mdl-06",
+  "scenario": "no_oversight_or_limitations",
+  "checks": {
+    "MR-1": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-06-development_report",
+      "heading_line": 5,
+      "lines": [
+        6,
+        8
+      ]
+    },
+    "MR-2": {
+      "outcome": "missing",
+      "document": "development_report"
+    },
+    "MR-3": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-06-development_report",
+      "heading_line": 10,
+      "lines": [
+        11,
+        13
+      ]
+    },
+    "MR-4": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-06-development_report",
+      "heading_line": 15,
+      "lines": [
+        16,
+        18
+      ]
+    },
+    "MR-5": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-06-development_report",
+      "heading_line": 20,
+      "lines": [
+        21,
+        23
+      ]
+    },
+    "MR-6": {
+      "outcome": "present",
+      "document": "development_report",
+      "doc_id": "mdl-06-development_report",
+      "heading_line": 25,
+      "lines": [
+        26,
+        28
+      ]
+    },
+    "MR-7": {
+      "outcome": "missing",
+      "document": "development_report"
+    },
+    "MR-8": {
+      "outcome": "present",
+      "document": "data_description",
+      "doc_id": "mdl-06-data_description",
+      "heading_line": 5,
+      "lines": [
+        6,
+        8
+      ]
+    },
+    "MR-9": {
+      "outcome": "present",
+      "document": "data_description",
+      "doc_id": "mdl-06-data_description",
+      "heading_line": 10,
+      "lines": [
+        11,
+        13
+      ]
+    },
+    "MR-10": {
+      "outcome": "present",
+      "document": "data_description",
+      "doc_id": "mdl-06-data_description",
+      "heading_line": 15,
+      "lines": [
+        16,
+        18
+      ]
+    },
+    "MR-11": {
+      "outcome": "present",
+      "document": "monitoring_plan",
+      "doc_id": "mdl-06-monitoring_plan",
+      "heading_line": 5,
+      "lines": [
+        6,
+        8
+      ]
+    },
+    "MR-12": {
+      "outcome": "present",
+      "document": "monitoring_plan",
+      "doc_id": "mdl-06-monitoring_plan",
+      "heading_line": 10,
+      "lines": [
+        11,
+        14
+      ]
+    }
+  },
+  "completeness": "10/12",
+  "critical_gaps": [],
+  "expected_findings": {
+    "MR-2": "No limitations section, although long calls are cut and non-English calls were not tested.",
+    "MR-7": "No human oversight section: summaries are saved to customer records with no review.",
+    "MR-4": "Performance rests on reading 40 summaries; no error rate was measured."
+  }
+}

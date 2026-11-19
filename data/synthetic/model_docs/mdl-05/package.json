@@ -1,0 +1,26 @@
+{
+  "package_id": "mdl-05",
+  "model_name": "Synthetic Model 05 (savings offer propensity)",
+  "model_type": "classifier",
+  "scenario": "no_data_lineage",
+  "documents": [
+    {
+      "doc_id": "mdl-05-development_report",
+      "kind": "development_report",
+      "title": "Development report",
+      "file": "development_report.md"
+    },
+    {
+      "doc_id": "mdl-05-data_description",
+      "kind": "data_description",
+      "title": "Data description",
+      "file": "data_description.md"
+    },
+    {
+      "doc_id": "mdl-05-monitoring_plan",
+      "kind": "monitoring_plan",
+      "title": "Monitoring plan",
+      "file": "monitoring_plan.md"
+    }
+  ]
+}
