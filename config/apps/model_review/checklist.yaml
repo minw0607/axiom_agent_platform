@@ -2,7 +2,8 @@
 #
 # Code decides whether each section is present: a heading in the named document that matches
 # one of `headings` (case-insensitive, ignoring numbering), with at least `min_lines` lines of
-# content under it. A model judges whether a present section is adequate, and cites the lines.
+# content under it. A model judges whether a present section covers what `expects` says, and
+# cites the lines it relied on.
 # Each item cites the public provisions it is drawn from, by their IDs in Regulus, so a
 # finding that cites a provision can be checked like any other citation.
 #
@@ -13,6 +14,7 @@ min_lines: 3
 items:
   - id: MR-1
     title: Purpose and intended use
+    expects: What the model is for, who uses its output, and what it must not be used for.
     document: development_report
     headings: [purpose, intended use, purpose and intended use, business use]
     critical: true
@@ -22,6 +24,7 @@ items:
       - { framework: eu_ai_act, provision_id: Article 13 }
   - id: MR-2
     title: Limitations and conditions of use
+    expects: The conditions the model was built and tested for, and where its output should not be relied on.
     document: development_report
     headings: [limitations, known limitations, limitations and conditions of use, model limitations]
     critical: false
@@ -30,6 +33,7 @@ items:
       - { framework: eu_ai_act, provision_id: Article 13 }
   - id: MR-3
     title: Methodology and design choices
+    expects: How the model works, its inputs, and why this approach was chosen over alternatives.
     document: development_report
     headings: [methodology, model design, methodology and design choices, approach]
     critical: true
@@ -39,6 +43,7 @@ items:
       - { framework: eu_ai_act, provision_id: Article 11 }
   - id: MR-4
     title: Performance testing
+    expects: Results on data not used to build the model (out of time or holdout), against a stated tolerance or benchmark.
     document: development_report
     headings: [performance testing, performance, testing results, validation results, back-testing]
     critical: true
@@ -48,6 +53,7 @@ items:
       - { framework: eu_ai_act, provision_id: Article 15 }
   - id: MR-5
     title: Sensitivity and stress testing
+    expects: How the output changes when inputs or conditions move, including a stress scenario where relevant.
     document: development_report
     headings: [sensitivity testing, stress testing, sensitivity and stress testing, robustness]
     critical: false
@@ -56,6 +62,7 @@ items:
       - { framework: eu_ai_act, provision_id: Article 15 }
   - id: MR-6
     title: Fairness assessment
+    expects: Whether outcomes differ across groups of people affected, or why the question does not arise.
     document: development_report
     headings: [fairness, fairness assessment, bias assessment, fairness and bias]
     critical: false
@@ -64,6 +71,7 @@ items:
       - { framework: eu_ai_act, provision_id: Article 10 }
   - id: MR-7
     title: Human oversight
+    expects: Who reviews the output before it is acted on, whether they can override it, and how overrides are tracked.
     document: development_report
     headings: [human oversight, oversight, human review, use constraints]
     critical: false
@@ -72,6 +80,7 @@ items:
       - { framework: eu_ai_act, provision_id: Article 14 }
   - id: MR-8
     title: Data sources and lineage
+    expects: Which systems the data comes from, how it is extracted and reconciled, and any known label delays.
     document: data_description
     headings: [data sources, sources, data sources and lineage, lineage]
     critical: true
@@ -80,6 +89,7 @@ items:
       - { framework: nist_ai_rmf, provision_id: MEASURE 2.1 }
   - id: MR-9
     title: Data quality and representativeness
+    expects: Completeness, duplicates and whether the sample represents the population the model is used on.
     document: data_description
     headings: [data quality, quality, data quality and representativeness, representativeness]
     critical: false
@@ -87,6 +97,7 @@ items:
       - { framework: eu_ai_act, provision_id: Article 10 }
   - id: MR-10
     title: Personal data and privacy
+    expects: Which personal data the model uses, how it is protected, and who can access it.
     document: data_description
     headings: [personal data, privacy, personal data and privacy]
     critical: false
@@ -94,6 +105,7 @@ items:
       - { framework: nist_ai_rmf, provision_id: MEASURE 2.10 }
   - id: MR-11
     title: Monitoring metrics and thresholds
+    expects: The metrics tracked after release, how often, and the thresholds that trigger review or escalation.
     document: monitoring_plan
     headings: [monitoring metrics, metrics and thresholds, monitoring metrics and thresholds, ongoing monitoring]
     critical: true
@@ -102,6 +114,7 @@ items:
       - { framework: eu_ai_act, provision_id: Article 72 }
   - id: MR-12
     title: Change management and incidents
+    expects: How changes are approved and revalidated, and how incidents are reported and recorded.
     document: monitoring_plan
     headings: [change management, incidents, change management and incidents, incident response]
     critical: false

@@ -132,9 +132,10 @@ def test_each_app_has_its_own_prompts_recordings_and_settings() -> None:
     assert (live.app_recordings_dir("credit_memo") / "intake").is_dir()
     assert (live.app_config_dir("credit_memo") / "policy_thresholds.yaml").is_file()
     assert (SETTINGS.app_recordings_dir("credit_memo") / "drafter").is_dir()  # test fixtures
-    # Nothing app-specific is left at the roots.
-    for root in (live.prompts_dir, live.recordings_dir):
-        assert {p.name for p in root.iterdir() if p.is_dir()} == {"credit_memo"}
+    # Every folder under a shared root belongs to an app package.
+    packages = {p.name for p in (Path(__file__).parents[1] / "src/axiom/apps").iterdir()}
+    for root in (live.prompts_dir, live.recordings_dir, live.config_dir / "apps"):
+        assert {p.name for p in root.iterdir() if p.is_dir()} <= packages, root
     assert not (live.config_dir / "policy_thresholds.yaml").exists()
 
 

@@ -3,6 +3,7 @@ whether a section is present; the score is the share of items present (ADR 0016,
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
 
@@ -13,7 +14,9 @@ from axiom.apps.model_review.domain import (
     ChecklistItem,
     Completeness,
     DocumentationPackage,
+    DocumentationStatus,
     ProvisionRef,
+    SectionAssessment,
     SectionCheck,
 )
 from axiom.apps.model_review.tools.sections import normalize, sections
@@ -25,6 +28,7 @@ def load_checklist(path: Path) -> Checklist:
         ChecklistItem(
             item_id=str(i["id"]),
             title=str(i["title"]),
+            expects=str(i["expects"]),
             document=i["document"],
             headings=tuple(normalize(h) for h in i["headings"]),
             critical=bool(i["critical"]),
@@ -79,3 +83,14 @@ def completeness(checks: list[SectionCheck], checklist: Checklist) -> Completene
         missing=tuple(c.item_id for c in checks if c.outcome == "missing"),
         critical_gaps=tuple(c.item_id for c in checks if c.critical and c.outcome != "present"),
     )
+
+
+def documentation_status(
+    completeness: Completeness, assessments: Sequence[SectionAssessment]
+) -> DocumentationStatus:
+    """A critical gap is a major gap; any other gap or a weak section needs remediation."""
+    if completeness.critical_gaps:
+        return "major_gaps"
+    if completeness.empty or completeness.missing or any(a.adequacy == "weak" for a in assessments):
+        return "remediation_needed"
+    return "no_material_gaps"

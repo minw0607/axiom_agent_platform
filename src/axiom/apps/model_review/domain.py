@@ -7,7 +7,14 @@ from typing import Literal, get_args
 
 from pydantic import field_validator
 
-from axiom.core.types import Document, Frozen
+from axiom.core.types import (
+    MAX_HUMAN_REVISIONS,
+    Citation,
+    Claim,
+    Document,
+    Frozen,
+    ReviewDecision,
+)
 
 DocumentKind = Literal["development_report", "data_description", "monitoring_plan"]
 DOCUMENT_KINDS: tuple[str, ...] = get_args(DocumentKind)
@@ -48,6 +55,7 @@ class ProvisionRef(Frozen):
 class ChecklistItem(Frozen):
     item_id: str
     title: str
+    expects: str  # what the section should cover; the assessor judges against it
     document: DocumentKind
     headings: tuple[str, ...]
     critical: bool
@@ -81,3 +89,45 @@ class Completeness(Frozen):
     empty: tuple[str, ...]
     missing: tuple[str, ...]
     critical_gaps: tuple[str, ...]
+
+
+Adequacy = Literal["adequate", "weak"]
+# What the documentation's state calls for, decided by code from the checklist and the
+# assessments: a critical gap is a major gap, any other gap or weak section needs
+# remediation. It is never a decision about the model; the validator decides.
+DocumentationStatus = Literal["no_material_gaps", "remediation_needed", "major_gaps"]
+REPORT_HEADINGS = ("Summary", "Checklist gaps", "Section assessments", "Matters for the validator")
+
+
+class SectionAssessment(Frozen):
+    """A model's judgment of one present section against what the checklist expects."""
+
+    item_id: str
+    adequacy: Adequacy
+    reason: str
+    citations: tuple[Citation, ...]
+
+
+class Assessments(Frozen):
+    assessments: tuple[SectionAssessment, ...]
+
+
+class ReportSection(Frozen):
+    heading: str
+    claims: tuple[Claim, ...]
+
+
+class FindingsReport(Frozen):
+    """The drafted findings for the validator. Every claim cites a document line or a
+    checklist provision (doc_id is the framework, locator the provision ID)."""
+
+    sections: tuple[ReportSection, ...]
+
+
+__all__ = [
+    "MAX_HUMAN_REVISIONS",
+    "Citation",
+    "Claim",
+    "Document",
+    "ReviewDecision",
+]

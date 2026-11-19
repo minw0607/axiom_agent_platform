@@ -41,16 +41,17 @@ def _state_types(module: ModuleType) -> list[type[Any]]:
     ]
 
 
-def allowed_types() -> list[tuple[str, str]]:
+def allowed_types(extra_modules: tuple[ModuleType, ...] = ()) -> list[tuple[str, str]]:
     """Every Pydantic model and enum in the core types and in each enabled app's state
     modules, plus the call, evidence, guidance and guardrail records. A type is allowed
     under its current module and under any module it was reachable from before ADR 0016,
-    so a job paused before the restructure still resumes."""
+    so a job paused before the restructure still resumes. `extra_modules` adds an app's
+    state modules before the app is enabled, for its own tests."""
     pairs: set[tuple[str, str]] = {
         (t.__module__, t.__name__)
         for t in (ToolCall, EvidenceHit, RelatedGuidance, RelatedProvision, GuardrailResult)
     }
-    modules: list[ModuleType] = [core_types]
+    modules: list[ModuleType] = [core_types, *extra_modules]
     legacy = dict(LEGACY_MODULES)
     for app in enabled_apps().values():
         modules += app.state_modules
@@ -64,8 +65,8 @@ def allowed_types() -> list[tuple[str, str]]:
     return sorted(pairs)
 
 
-def serializer() -> JsonPlusSerializer:
-    return JsonPlusSerializer(allowed_msgpack_modules=allowed_types())
+def serializer(extra_modules: tuple[ModuleType, ...] = ()) -> JsonPlusSerializer:
+    return JsonPlusSerializer(allowed_msgpack_modules=allowed_types(extra_modules))
 
 
 @asynccontextmanager

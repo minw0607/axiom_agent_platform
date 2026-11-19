@@ -22,14 +22,12 @@ from typing import Annotated, Any, TypedDict
 from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph import END, START, StateGraph
-from langgraph.types import Command, interrupt
+from langgraph.types import Command
 from opentelemetry.trace import Status, StatusCode
 
 from axiom.apps.credit_memo.agents.analyst import run_analyst
 from axiom.apps.credit_memo.agents.base import (
     AgentContext,
-    AgentOutputError,
-    collect_calls,
     sensitivity,
 )
 from axiom.apps.credit_memo.agents.compliance import run_compliance_review
@@ -51,6 +49,16 @@ from axiom.apps.credit_memo.tools.policy import PolicyThresholds
 from axiom.apps.credit_memo.tools.policy_rules import RuleInput, evaluate
 from axiom.apps.credit_memo.tools.reconcile import reconcile
 from axiom.core.types import ModelCall, ReviewError
+from axiom.core.workflow import (
+    CORE_EXPECTED_ERRORS,
+    DocumentQuarantined,
+    GuardrailFailed,
+    after_review,
+    fails,
+    review_node,
+    thread,
+    traced,
+)
 from axiom.guardrails import GuardrailResult, Subject, pii_protected
 from axiom.guardrails.base import DraftFacts, SourcedValue
 from axiom.guardrails.output import problems
@@ -58,49 +66,13 @@ from axiom.mcp_clients.client import ToolCall, acting_as, collect_tool_calls
 from axiom.mcp_clients.evidence import EvidenceHit
 from axiom.mcp_clients.governance import RelatedGuidance
 from axiom.memory.checkpoint import serializer
-from axiom.router.types import FailClosed, ProviderError, Sensitivity
 from axiom.telemetry.setup import tracer
 
 NODE_ORDER = ("intake", "analyst", "drafter", "compliance")
 REVIEW_NODES = ("human_review", "finalize")
 
 
-class DocumentQuarantined(RuntimeError):
-    """An input guardrail found instructions aimed at the AI. No model sees the package."""
-
-    def __init__(self, guardrails: list[GuardrailResult]) -> None:
-        blocked = [r.control for r in guardrails if r.action == "quarantined"]
-        super().__init__(f"quarantined by {', '.join(blocked)}")
-        self.state_update: dict[str, Any] = {"guardrails": guardrails}
-
-
-class GuardrailFailed(RuntimeError):
-    """A draft still failed a guardrail after its one automated fix."""
-
-    def __init__(
-        self, guardrails: list[GuardrailResult], last: list[GuardrailResult], automated_fixes: int
-    ) -> None:
-        failed = sorted({r.control for r in last if fails(r)})
-        super().__init__(f"draft failed {', '.join(failed)} after an automated fix")
-        self.state_update: dict[str, Any] = {
-            "guardrails": guardrails,
-            "automated_fixes": automated_fixes,
-        }
-
-
-EXPECTED_ERRORS = (
-    IntakeError,
-    AgentOutputError,
-    ProviderError,
-    FailClosed,
-    DocumentQuarantined,
-    GuardrailFailed,
-)
-
-
-def fails(result: GuardrailResult) -> bool:
-    """A generation or output check that found a problem. not_evaluated sends nothing back."""
-    return result.stage in ("generation", "output") and result.outcome == "triggered"
+EXPECTED_ERRORS: tuple[type[Exception], ...] = (IntakeError, *CORE_EXPECTED_ERRORS)
 
 
 class MemoState(TypedDict, total=False):
@@ -131,43 +103,8 @@ class MemoState(TypedDict, total=False):
     error_node: str
 
 
-Node = Callable[[MemoState], Awaitable[dict[str, Any]]]
-
-
-def _traced(name: str, fn: Node) -> Node:
-    async def run(state: MemoState) -> dict[str, Any]:
-        with tracer().start_as_current_span(f"node {name}") as span:
-            span.set_attribute("axiom.job_id", state["job_id"])
-            span.set_attribute("axiom.node", name)
-            level: Sensitivity = "standard" if state.get("pii_redacted") else "pii_unredacted"
-            with (
-                collect_calls() as calls,
-                collect_tool_calls() as tools,
-                sensitivity(level),
-                acting_as(name),
-            ):
-                try:
-                    update = await fn(state)
-                except EXPECTED_ERRORS as exc:
-                    span.set_status(Status(StatusCode.ERROR, type(exc).__name__))
-                    # Keep the attempts that failed, and the guardrail results that stopped
-                    # the node: the evidence log records both.
-                    return {
-                        "error": f"{type(exc).__name__}: {exc}",
-                        "error_node": name,
-                        "model_calls": list(calls),
-                        "tool_calls": list(tools),
-                        **getattr(exc, "state_update", {}),
-                    }
-            span.set_attribute("axiom.node.model_calls", len(calls))
-            return {
-                **update,
-                "model_calls": list(calls),
-                "tool_calls": list(tools),
-                "completed": [name],
-            }
-
-    return run
+def _traced(name: str, fn: Callable[[MemoState], Awaitable[dict[str, Any]]]) -> Any:
+    return traced(name, fn, EXPECTED_ERRORS)
 
 
 def draft_facts(state: MemoState, hits: list[EvidenceHit], policy: PolicyThresholds) -> DraftFacts:
@@ -288,21 +225,6 @@ def build_workflow(ctx: AgentContext, checkpointer: BaseCheckpointSaver[Any] | N
         )
         return {"findings": rule_findings + review, "reference_evidence": hits}
 
-    async def human_review(state: MemoState) -> dict[str, Any]:
-        # Pauses the run. On resume, interrupt() returns the credit officer's decision.
-        decision = ReviewDecision.model_validate(
-            interrupt({"round": len(state.get("reviews", [])) + 1})
-        )
-        update: dict[str, Any] = {"reviews": [decision]}
-        if decision.decision == "revise":
-            done = state.get("human_revisions", 0)
-            if done >= MAX_HUMAN_REVISIONS:
-                raise ReviewError(f"at most {MAX_HUMAN_REVISIONS} human revisions")
-            update["human_revisions"] = done + 1
-        elif decision.decision == "reject":
-            update["outcome"] = "rejected"
-        return update
-
     async def finalize(state: MemoState) -> dict[str, Any]:
         last = state["reviews"][-1]
         if last.decision != "approve":  # unreachable by routing; a hard stop all the same
@@ -330,10 +252,6 @@ def build_workflow(ctx: AgentContext, checkpointer: BaseCheckpointSaver[Any] | N
 
         return route
 
-    def after_review(state: MemoState) -> str:
-        decision = state["reviews"][-1].decision
-        return {"approve": "finalize", "revise": "drafter"}.get(decision, END)
-
     graph = StateGraph(MemoState)
     nodes = (
         ("intake", intake),
@@ -342,12 +260,12 @@ def build_workflow(ctx: AgentContext, checkpointer: BaseCheckpointSaver[Any] | N
         ("compliance", compliance),
     )
     for name, fn in nodes:
-        graph.add_node(name, _traced(name, fn))  # type: ignore[call-overload]
+        graph.add_node(name, _traced(name, fn))
     graph.add_edge(START, "intake")
     for name in NODE_ORDER:
         graph.add_conditional_edges(name, supervisor(name))
     # Not wrapped in _traced: interrupt() re-runs this node on resume, and it makes no calls.
-    graph.add_node("human_review", human_review)
+    graph.add_node("human_review", review_node(MAX_HUMAN_REVISIONS))  # type: ignore[call-overload]
     graph.add_node("finalize", finalize)
     graph.add_conditional_edges("human_review", after_review)
     graph.add_edge("finalize", END)
@@ -382,10 +300,6 @@ async def related_guidance(ctx: AgentContext, state: MemoState) -> RelatedGuidan
             status="not_evaluated", reason=f"lookup failed ({type(exc).__name__})", query=query
         )
     return RelatedGuidance(status="attached", query=query, provisions=provisions)
-
-
-def thread(job_id: str) -> dict[str, Any]:
-    return {"configurable": {"thread_id": job_id}}
 
 
 async def run_workflow(

@@ -41,3 +41,16 @@ def test_the_scan_finds_app_imports(tmp_path: Path) -> None:
 def test_the_api_and_worker_are_core_modules() -> None:
     scanned = {str(p.relative_to(SRC)) for p in core_modules()}
     assert {"api/app.py", "api/jobs.py", "jobs/worker.py", "core/registry.py"} <= scanned
+
+
+def test_an_app_never_imports_another_app() -> None:
+    """Shared code belongs in the core, so apps stay independent of one another."""
+    apps = SRC / "apps"
+    offenders = {}
+    for package in (p for p in apps.iterdir() if p.is_dir() and (p / "__init__.py").exists()):
+        own = f"axiom.apps.{package.name}"
+        for module in package.rglob("*.py"):
+            others = [n for n in app_imports(module) if n != "axiom.apps" and not n.startswith(own)]
+            if others:
+                offenders[str(module.relative_to(SRC))] = others
+    assert offenders == {}
