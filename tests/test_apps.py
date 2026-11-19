@@ -120,3 +120,44 @@ def test_each_app_route_has_the_apps_own_schemas(client: TestClient) -> None:
     assert (
         "pkg-01" in spec["components"]["schemas"]["MemoRequest"]["properties"]["package_id"]["enum"]
     )
+
+
+def test_each_app_has_its_own_prompts_recordings_and_settings() -> None:
+    from axiom.settings import Settings
+    from conftest import SETTINGS
+
+    live = Settings()
+    assert live.app_prompts_dir("credit_memo") == live.prompts_dir / "credit_memo"
+    assert (live.app_prompts_dir("credit_memo") / "drafter").is_dir()
+    assert (live.app_recordings_dir("credit_memo") / "intake").is_dir()
+    assert (live.app_config_dir("credit_memo") / "policy_thresholds.yaml").is_file()
+    assert (SETTINGS.app_recordings_dir("credit_memo") / "drafter").is_dir()  # test fixtures
+    # Nothing app-specific is left at the roots.
+    for root in (live.prompts_dir, live.recordings_dir):
+        assert {p.name for p in root.iterdir() if p.is_dir()} == {"credit_memo"}
+    assert not (live.config_dir / "policy_thresholds.yaml").exists()
+
+
+def test_the_core_decision_rail_has_no_phrases_of_its_own() -> None:
+    from axiom.apps.credit_memo.guardrails import DECISION_LANGUAGE, controls
+    from axiom.core.types import Citation, Claim
+    from axiom.guardrails import Subject, default_controls
+    from axiom.guardrails.output import RAILS, decision_language
+
+    assert "decision_language" not in RAILS
+    claim = Claim(text="The loan is approved.", citations=(Citation(doc_id="d", locator="line 1"),))
+
+    class Section:
+        heading = "Recommendation"
+        claims = (claim,)
+
+    class Draft:
+        sections = (Section(),)
+
+    subject = Subject(job_id="j", node="drafter", draft=Draft())
+    core = asyncio.run(decision_language({}).check(subject))
+    assert core.outcome == "not_evaluated"
+    assert asyncio.run(DECISION_LANGUAGE.check(subject)).outcome == "triggered"
+    names = [c.name for c in controls()]
+    assert names == [c.name for c in default_controls()]
+    assert controls()[names.index("decision_language")] is DECISION_LANGUAGE

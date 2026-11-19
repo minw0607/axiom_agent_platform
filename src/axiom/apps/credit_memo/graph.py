@@ -46,6 +46,7 @@ from axiom.apps.credit_memo.domain import (
     ReviewDecision,
     RiskFlag,
 )
+from axiom.apps.credit_memo.guardrails import DECISION_MESSAGES
 from axiom.apps.credit_memo.tools.policy import PolicyThresholds
 from axiom.apps.credit_memo.tools.policy_rules import RuleInput, evaluate
 from axiom.apps.credit_memo.tools.reconcile import reconcile
@@ -247,7 +248,9 @@ def build_workflow(ctx: AgentContext, checkpointer: BaseCheckpointSaver[Any] | N
         if any(fails(r) for r in checked):
             # One automated fix, counted apart from the credit officer's revisions.
             fixes += 1
-            draft, hits, _ = await run_drafter(*inputs, fix=(draft, problems(checked, draft)))
+            draft, hits, _ = await run_drafter(
+                *inputs, fix=(draft, problems(checked, draft, DECISION_MESSAGES))
+            )
             second = await check_draft(state, draft, hits)
             checked += second
             if any(fails(r) for r in second):

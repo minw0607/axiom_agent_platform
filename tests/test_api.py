@@ -307,7 +307,7 @@ def test_demo_mode_offers_only_packages_it_can_replay(
     store: InMemoryJobStore, tmp_path: Path
 ) -> None:
     """A package with no recorded run is neither listed nor accepted in demo mode."""
-    (tmp_path / "intake" / "v2" / "pkg-10").mkdir(parents=True)
+    (tmp_path / "credit_memo" / "intake" / "v2" / "pkg-10").mkdir(parents=True)
     partial = replace(SETTINGS_WITH_KEYS, recordings_override=tmp_path)
     with TestClient(create_app(partial, store)) as c:
         h = {"X-API-Key": KEYS["submitter"]}

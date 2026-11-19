@@ -157,10 +157,12 @@ async def main() -> int:
             return 2
         packages = args.packages
     elif args.check:
-        packages = [p for p in catalog if has_recordings(args.check, p)]
+        packages = [p for p in catalog if has_recordings(args.check / "credit_memo", p)]
     else:
         current = replace(settings, recordings_override=ROOT / "data" / "recorded")
-        packages = [p for p in catalog if not has_recordings(current.recordings_dir, p)]
+        packages = [
+            p for p in catalog if not has_recordings(current.app_recordings_dir("credit_memo"), p)
+        ]
     if not packages:
         print("Nothing to do: every package has a recording.")
         return 0

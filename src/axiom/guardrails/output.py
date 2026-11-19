@@ -1,8 +1,8 @@
 """Checks on each draft: three policy rails (generation) and two evidence checks (output).
 
 Rails, on every claim's text:
-- `decision_language`: the draft states a credit decision as made ("the loan is approved").
-  The recommendation is a labeled draft field; only a credit officer decides.
+- `decision_language`: the draft states a decision as made, such as "the loan is approved".
+  Only the reviewer decides. The phrases come from the app (ADR 0016).
 - `investment_advice`: advice to buy, sell or hold securities, or other investment advice.
 - `on_task`: text that is not memo content, such as chatbot asides, links, or instructions
   echoed from the documents.
@@ -24,8 +24,8 @@ issue, never the claim text.
 from __future__ import annotations
 
 import re
-from collections.abc import Iterator
-from dataclasses import dataclass
+from collections.abc import Iterator, Mapping
+from dataclasses import dataclass, field
 from decimal import Decimal, InvalidOperation
 from typing import Any
 
@@ -34,18 +34,9 @@ from axiom.guardrails.base import DraftFacts, GuardrailResult, Stage, Subject, V
 from axiom.guardrails.injection import PATTERNS as INJECTION_PATTERNS
 from axiom.guardrails.injection import normalize
 
+# The rails every app shares. Decision language is a rail too, but its phrases are the app's
+# ("the loan is approved", "the model is validated"): see decision_language().
 RAILS: dict[str, dict[str, re.Pattern[str]]] = {
-    "decision_language": {
-        "decision_stated_as_made": re.compile(
-            r"\b(loan|credit|application|request|facility|borrower)\b[^.;]{0,30}"
-            r"\b(is|has been|was|are|have been) (hereby |now )?"
-            r"(approved|declined|denied|granted|rejected|funded)\b"
-        ),
-        "first_person_decision": re.compile(
-            r"\bwe (hereby )?(approve|decline|deny|grant|reject|will (fund|lend))\b"
-        ),
-        "final_decision": re.compile(r"\bfinal (credit )?decision\b|\bdecision is final\b"),
-    },
     "investment_advice": {
         "securities_advice": re.compile(
             r"\b(buy|sell|hold|short|invest in|purchase)\b[^.;]{0,20}"
@@ -101,23 +92,36 @@ def _verdict(control: str, issues: list[dict[str, Any]], clean: str) -> Verdict:
 class Rail:
     name: str
     description: str
+    patterns: Mapping[str, re.Pattern[str]] = field(default_factory=dict, compare=False)
     stage: Stage = "generation"
 
     async def check(self, subject: Subject) -> Verdict:
         if subject.draft is None:
             return Verdict("not_evaluated", "no draft to check")
+        if not self.patterns:
+            return Verdict("not_evaluated", "the app gives this rail no phrases")
         issues = [
             {"section": i, "claim": j, "code": code}
             for i, j, claim in claims(subject.draft)
-            for code, pattern in RAILS[self.name].items()
+            for code, pattern in self.patterns.items()
             if pattern.search(normalize(claim.text))
         ]
         return _verdict(self.name, issues, "no claim breaks this rule")
 
 
-DECISION_LANGUAGE = Rail("decision_language", "No credit decision stated as made")
-INVESTMENT_ADVICE = Rail("investment_advice", "No investment advice")
-ON_TASK = Rail("on_task", "Only memo content: no asides, links or echoed instructions")
+def decision_language(
+    patterns: Mapping[str, re.Pattern[str]], description: str = "No decision stated as made"
+) -> Rail:
+    """The decision-language rail with an app's phrases. Without phrases it never runs and
+    records not_evaluated."""
+    return Rail("decision_language", description, patterns)
+
+
+DECISION_LANGUAGE = decision_language({})
+INVESTMENT_ADVICE = Rail("investment_advice", "No investment advice", RAILS["investment_advice"])
+ON_TASK = Rail(
+    "on_task", "Only memo content: no asides, links or echoed instructions", RAILS["on_task"]
+)
 
 
 # Numbers -------------------------------------------------------------------------------------
@@ -279,10 +283,6 @@ PII_OUTPUT = PIIOutput()
 
 
 PROBLEM = {
-    "decision_stated_as_made": "states a credit decision as made; only the credit officer "
-    "decides, so describe the draft recommendation instead",
-    "first_person_decision": "states a credit decision as made; only the credit officer decides",
-    "final_decision": "calls something a final decision; the memo is a draft",
     "securities_advice": "gives investment advice; remove it",
     "investment_language": "gives investment advice; remove it",
     "chatbot_aside": "is not memo content; remove it",
@@ -294,18 +294,20 @@ PROBLEM = {
 }
 
 
-def problems(results: list[GuardrailResult], draft: Draft) -> list[dict[str, str]]:
+def problems(
+    results: list[GuardrailResult], draft: Draft, messages: Mapping[str, str] | None = None
+) -> list[dict[str, str]]:
     """The triggered findings in words the drafter can act on, with the claim they are about.
-    For the fix prompt only: the evidence keeps positions and codes, not claim text."""
+    `messages` adds the app's words for its own codes, such as its decision phrases. For the
+    fix prompt only: the evidence keeps positions and codes, not claim text."""
+    words = {**PROBLEM, **(messages or {})}
     out: list[dict[str, str]] = []
     for r in results:
         if r.outcome != "triggered":
             continue
         for issue in r.details.get("issues", []):
             section = draft.sections[issue["section"]]
-            text = PROBLEM.get(
-                issue["code"], "repeats an instruction from the documents; remove it"
-            )
+            text = words.get(issue["code"], "repeats an instruction from the documents; remove it")
             out.append(
                 {
                     "section": section.heading,

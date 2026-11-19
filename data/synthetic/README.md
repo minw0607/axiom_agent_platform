@@ -38,6 +38,6 @@ Generated borrower packages (three years of statements, application, business de
 
 Boundary loan amounts were tuned so the rounded ratio lands exactly on the limit. The new packages have scripted test recordings but no live ones yet, so the keyless demo still offers pkg-01 to pkg-10.
 
-The fictional credit policy is in `credit_policy/`; its numeric thresholds are in `config/policy_thresholds.yaml`. Adversarial documents are in `evals/adversarial/` (week 5).
+The fictional credit policy is in `credit_policy/`; its numeric thresholds are in `config/apps/credit_memo/policy_thresholds.yaml`. Adversarial documents are in `evals/adversarial/` (week 5).
 
 Counterfactual pairs are in `evals/counterfactual/` (week 6): they add a sentence to a package's business description at run time, so they need no files here.

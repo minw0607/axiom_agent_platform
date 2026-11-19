@@ -13,9 +13,10 @@ from typing import Any, TypeVar
 from pydantic import BaseModel, ValidationError
 
 from axiom.apps.credit_memo.agents.prompts import Prompt, load_prompt
+from axiom.apps.credit_memo.guardrails import suite
 from axiom.apps.credit_memo.tools.policy import PolicyThresholds
 from axiom.core.types import ModelCall
-from axiom.guardrails import GuardrailSuite, load_suite
+from axiom.guardrails import GuardrailSuite
 from axiom.mcp_clients.evidence import EvidenceService
 from axiom.mcp_clients.governance import GovernanceLookup
 from axiom.router.router import ModelRouter
@@ -46,7 +47,7 @@ class AgentContext:
     prompts_dir: Path
     governance: GovernanceLookup | None = None
     guardrails: GuardrailSuite = field(
-        default_factory=lambda: load_suite(Settings.from_env().guardrails_file)
+        default_factory=lambda: suite(Settings.from_env().guardrails_file)
     )
 
     def prompt(self, prompt_id: str) -> Prompt:

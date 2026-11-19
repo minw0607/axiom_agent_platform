@@ -160,10 +160,12 @@ def test_the_degraded_run_swaps_only_the_drafter_prompt(monkeypatch: pytest.Monk
     from axiom.apps.credit_memo.agents.base import PROMPT_VERSIONS
 
     prompts = Path(os.environ["AXIOM_PROMPTS_DIR"])
-    drafter = prompts / "drafter" / f"{PROMPT_VERSIONS['drafter']}.md"
+    drafter = prompts / "credit_memo" / "drafter" / f"{PROMPT_VERSIONS['drafter']}.md"
     assert drafter.read_text() == gate.DEGRADED_DRAFTER.read_text()
-    real = SETTINGS.prompts_dir
-    assert (prompts / "analyst" / "v1.md").read_text() == (real / "analyst" / "v1.md").read_text()
+    real = SETTINGS.app_prompts_dir("credit_memo")
+    assert (prompts / "credit_memo" / "analyst" / "v1.md").read_text() == (
+        real / "analyst" / "v1.md"
+    ).read_text()
     assert os.environ["AXIOM_MODE"] == "local" and os.environ["AXIOM_RECORD"] == ""
     assert os.environ["GKN_MCP_URL"] == ""  # in-memory retrieval, like the baseline
 

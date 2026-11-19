@@ -137,7 +137,7 @@ axiom_agent_platform/
 │   ├── memory/         # checkpointer
 │   ├── telemetry/      # OpenTelemetry setup
 │   └── evidence/       # append-only evidence log and bundle writer
-├── prompts/            # versioned prompt files
+├── prompts/            # versioned prompt files, one folder per app
 ├── config/             # routing, guardrail, threshold and tool gateway settings
 ├── docker/           # start-up wrapper that hands each container the demo keys
 ├── data/

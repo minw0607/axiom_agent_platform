@@ -26,7 +26,7 @@ from axiom.apps.credit_memo.tools.reconcile import reconcile
 from axiom.settings import REPO_ROOT, Settings
 
 OUT = Path(__file__).parent / "v1" / "calibration.json"
-LIVE = REPO_ROOT / "data" / "recorded" / "drafter" / "v3"
+LIVE = REPO_ROOT / "data" / "recorded" / "credit_memo" / "drafter" / "v3"
 SETTINGS = Settings.from_env()
 PACKAGES = [f"pkg-{i:02d}" for i in range(1, 11)]  # the packages with live drafts
 BIG_NUMBER = re.compile(r"\b\d{5,}\b")
@@ -67,7 +67,10 @@ def line_cited_claims(package_id: str) -> list[dict[str, Any]]:
 def platform(package_id: str) -> list[str]:
     """The tool outputs the drafter was given, computed from the package's true figures."""
     fs = ground_truth_statements(load_ground_truth(SETTINGS.packages_dir, package_id))
-    ratios, policy = compute_ratios(fs), load_policy(SETTINGS.config_dir / "policy_thresholds.yaml")
+    ratios, policy = (
+        compute_ratios(fs),
+        load_policy(SETTINGS.app_config_dir("credit_memo") / "policy_thresholds.yaml"),
+    )
     return list(platform_outputs(ratios, risk_flags(fs, ratios, policy), reconcile(fs), policy))
 
 

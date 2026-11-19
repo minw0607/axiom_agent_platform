@@ -23,7 +23,7 @@ Week 8's acceptance test A: a deliberately degraded prompt fails the eval gate. 
 
 ## With the degraded drafter prompt: fails
 
-`uv run python evals/gate.py --live --degrade` (4 min), with [`degraded_drafter.md`](degraded_drafter.md) in place of `prompts/drafter/v3.md`
+`uv run python evals/gate.py --live --degrade` (4 min), with [`degraded_drafter.md`](degraded_drafter.md) in place of `prompts/credit_memo/drafter/v3.md`
 
 | Suite | Gate | Rule | Result | Detail |
 |---|---|---|---|---|

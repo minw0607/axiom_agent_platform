@@ -14,7 +14,8 @@ import pytest
 from axiom.apps.credit_memo.catalog import list_packages, load_package
 from axiom.apps.credit_memo.domain import BorrowerPackage, Document
 from axiom.apps.credit_memo.graph import run_workflow
-from axiom.guardrails import GuardrailSuite, Subject, default_controls, pii_protected
+from axiom.apps.credit_memo.guardrails import controls as credit_memo_controls
+from axiom.guardrails import GuardrailSuite, Subject, pii_protected
 from axiom.guardrails import pii as pii_module
 from axiom.guardrails.injection import scan
 from axiom.guardrails.pii import (
@@ -161,7 +162,7 @@ def test_with_redaction_off_every_model_call_is_marked_unredacted(
 
 
 def suite_with(**switches: bool) -> GuardrailSuite:
-    controls = default_controls()
+    controls = credit_memo_controls()
     return GuardrailSuite(controls, {c.name: switches.get(c.name, True) for c in controls})
 
 

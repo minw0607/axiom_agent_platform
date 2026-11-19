@@ -1,4 +1,4 @@
-"""Versioned prompt files: prompts/<prompt_id>/<version>.md."""
+"""Versioned prompt files: prompts/credit_memo/<prompt_id>/<version>.md."""
 
 from __future__ import annotations
 

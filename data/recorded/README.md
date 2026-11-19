@@ -1,6 +1,6 @@
 # Recorded model responses
 
-Demo mode (`AXIOM_MODE=demo`) replays these files instead of calling a model, so the stack runs with no API keys. Each file holds one response, keyed by prompt, prompt version, package and document, for example `intake/v2/pkg-01/income_statement.json`.
+Demo mode (`AXIOM_MODE=demo`) replays these files instead of calling a model, so the stack runs with no API keys. Each file holds one response, keyed by app, prompt, prompt version, package and document, for example `credit_memo/intake/v2/pkg-01/income_statement.json`. Each app replays only its own folder (ADR 0016).
 
 These are **live recordings**: real model responses saved during local-mode runs, each marked `origin: recorded`. Each file also stores the SHA-256 of the prompt it answered. When a replayed recording was made from a different prompt, the evidence trail says so.
 
@@ -17,7 +17,7 @@ The tests do not use these files. They replay scripted responses in `tests/fixtu
 
 In both, the credit policy rules catch what the drafter missed. pkg-21 triggers two high-severity findings, required documents (CP-3) and three years of statements (CP-3.1). pkg-23 triggers a high-severity loan amount in scope finding (CP-1.1). So the credit officer's queue puts both first. This is the open "refer" gap from the week 6 baseline (`evals/results/golden-live.md`).
 
-**Revisions.** `drafter_revision/v1/<package>.r1` and `.r2`, with the matching `compliance/v2/<package>.r1` and `.r2`, are two revision rounds recorded live for every package with these comments: "Add a sentence on liquidity that cites the current ratio." and "State the main condition you would propose, or say that none is needed." All were valid on first attempts. In demo mode a revision replays the recording for its round, **whatever comments the reviewer typed**, so a demo revision shows the mechanism, not a response to the comment. Local mode sends the actual comments to the model.
+**Revisions.** `credit_memo/drafter_revision/v1/<package>.r1` and `.r2`, with the matching `credit_memo/compliance/v2/<package>.r1` and `.r2`, are two revision rounds recorded live for every package with these comments: "Add a sentence on liquidity that cites the current ratio." and "State the main condition you would propose, or say that none is needed." All were valid on first attempts. In demo mode a revision replays the recording for its round, **whatever comments the reviewer typed**, so a demo revision shows the mechanism, not a response to the comment. Local mode sends the actual comments to the model.
 
 ## Re-recording
 

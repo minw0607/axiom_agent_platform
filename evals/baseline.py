@@ -95,10 +95,12 @@ def context(mode: str) -> AgentContext:
         return build_context(settings)
     settings = replace(Settings.from_env(), recordings_override=SCRIPTED)
     return AgentContext(
-        ModelRouter.from_settings(settings.config_dir, "demo", settings.recordings_dir),
+        ModelRouter.from_settings(
+            settings.config_dir, "demo", settings.app_recordings_dir("credit_memo")
+        ),
         InMemoryEvidence(settings.reference_dirs),
-        load_policy(settings.config_dir / "policy_thresholds.yaml"),
-        settings.prompts_dir,
+        load_policy(settings.app_config_dir("credit_memo") / "policy_thresholds.yaml"),
+        settings.app_prompts_dir("credit_memo"),
     )
 
 

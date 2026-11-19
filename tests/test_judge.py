@@ -56,11 +56,14 @@ def judge_context(
     router = ModelRouter(
         RoutingPolicy(routes={"judge": {"primary": judge_alias}}),
         {judge_alias: AliasTarget("fake", "-")},
-        SETTINGS.recordings_dir,
+        SETTINGS.app_recordings_dir("credit_memo"),
         adapter_factory=factory,
     )
     return AgentContext(
-        router, InMemoryEvidence(SETTINGS.reference_dirs), load_policy(), SETTINGS.prompts_dir
+        router,
+        InMemoryEvidence(SETTINGS.reference_dirs),
+        load_policy(),
+        SETTINGS.app_prompts_dir("credit_memo"),
     ), seen
 
 

@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Mapping
-from pathlib import Path
 from types import ModuleType
 from typing import Annotated, Any
 
@@ -23,6 +22,7 @@ from axiom.apps.credit_memo.graph import (
     resume_workflow,
     run_workflow,
 )
+from axiom.apps.credit_memo.guardrails import suite
 from axiom.apps.credit_memo.schemas import (
     EvidenceBundle,
     MemoJob,
@@ -35,7 +35,6 @@ from axiom.apps.credit_memo.tools.policy import load_policy
 from axiom.core.app import Role
 from axiom.core.types import MAX_HUMAN_REVISIONS, ReviewDecision
 from axiom.evidence.log import ChainCheck, EvidenceEvent
-from axiom.guardrails import load_suite
 from axiom.jobs.store import JobRecord
 from axiom.mcp_clients.client import GatewayClient, MCPToolClient
 from axiom.mcp_clients.evidence import EvidenceService, GKNEvidence, InMemoryEvidence
@@ -44,6 +43,7 @@ from axiom.router.router import ModelRouter
 from axiom.settings import Settings
 
 log = logging.getLogger("axiom.worker")
+APP_ID = "credit_memo"
 
 # The state saved as the job's result, in this order.
 RESULT_KEYS = (
@@ -89,12 +89,12 @@ def build_context(settings: Settings) -> AgentContext:
         evidence = InMemoryEvidence(settings.reference_dirs)
     return AgentContext(
         router=ModelRouter.from_settings(
-            settings.config_dir, settings.mode, settings.recordings_dir
+            settings.config_dir, settings.mode, settings.app_recordings_dir(APP_ID)
         ),
         evidence=evidence,
-        policy=load_policy(settings.config_dir / "policy_thresholds.yaml"),
-        prompts_dir=settings.prompts_dir,
-        guardrails=load_suite(settings.guardrails_file),
+        policy=load_policy(settings.app_config_dir(APP_ID) / "policy_thresholds.yaml"),
+        prompts_dir=settings.app_prompts_dir(APP_ID),
+        guardrails=suite(settings.guardrails_file),
         governance=governance
         or (
             RegulusGovernance(MCPToolClient(settings.regulus_mcp_url, settings.mcp_shared_secret))
@@ -141,7 +141,7 @@ def node_details(node: str, result: Mapping[str, Any]) -> dict[str, Any]:
 
 
 class CreditMemoApp:
-    app_id = "credit_memo"
+    app_id = APP_ID
     title = "Credit memo"
     noun = "memo"
     max_revisions = MAX_HUMAN_REVISIONS
@@ -185,8 +185,8 @@ class CreditMemoApp:
     def load_input(self, settings: Settings, input_id: str) -> domain.BorrowerPackage:
         return load_package(settings.packages_dir, input_id)
 
-    def has_recordings(self, recordings_dir: Path, input_id: str) -> bool:
-        return has_recordings(recordings_dir, input_id)
+    def has_recordings(self, settings: Settings, input_id: str) -> bool:
+        return has_recordings(settings.app_recordings_dir(APP_ID), input_id)
 
     async def run(
         self,
@@ -239,8 +239,7 @@ class CreditMemoApp:
             return [
                 PackageOut.model_validate(p)
                 for p in list_packages(settings.packages_dir)
-                if settings.mode != "demo"
-                or has_recordings(settings.recordings_dir, p["package_id"])
+                if settings.mode != "demo" or self.has_recordings(settings, p["package_id"])
             ]
 
         @router.get(

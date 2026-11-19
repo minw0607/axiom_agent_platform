@@ -28,7 +28,7 @@ class PolicyThresholds:
 
 
 def load_policy(path: Path | None = None) -> PolicyThresholds:
-    path = path or Settings.from_env().config_dir / "policy_thresholds.yaml"
+    path = path or Settings.from_env().app_config_dir("credit_memo") / "policy_thresholds.yaml"
     raw = yaml.safe_load(path.read_text())
     return PolicyThresholds(
         version=str(raw["policy_version"]),

@@ -24,8 +24,9 @@ from axiom.apps.credit_memo.agents.base import AgentContext
 from axiom.apps.credit_memo.catalog import load_package
 from axiom.apps.credit_memo.domain import BorrowerPackage, Citation, Claim, MemoDraft
 from axiom.apps.credit_memo.graph import run_workflow
+from axiom.apps.credit_memo.guardrails import controls as credit_memo_controls
 from axiom.apps.credit_memo.tools.policy import load_policy
-from axiom.guardrails import GuardrailSuite, default_controls, load_suite
+from axiom.guardrails import GuardrailSuite, load_suite
 from axiom.jobs.worker import error_codes
 from axiom.mcp_clients.evidence import InMemoryEvidence
 from axiom.router.adapters import RecordedAdapter
@@ -35,7 +36,7 @@ from axiom.settings import REPO_ROOT, Settings
 
 HERE = Path(__file__).parent
 SET = HERE / "v1"
-RECORDINGS = REPO_ROOT / "tests" / "fixtures" / "recorded"
+RECORDINGS = REPO_ROOT / "tests" / "fixtures" / "recorded" / "credit_memo"
 SETTINGS = Settings.from_env()
 CATEGORY = {"document": "Injected instructions", "output": "Model output", "pii": "Personal data"}
 
@@ -118,7 +119,7 @@ def markers(case: dict[str, Any]) -> list[str]:
 
 def configured_switches(path: Path | None = None) -> dict[str, bool]:
     """The guardrail switches as deployed, from config/guardrails.yaml (the release gate)."""
-    return dict(load_suite(path or SETTINGS.guardrails_file, default_controls()).enabled)
+    return dict(load_suite(path or SETTINGS.guardrails_file, credit_memo_controls()).enabled)
 
 
 def context(model: AttackModel, guardrails: bool | dict[str, bool]) -> AgentContext:
@@ -138,12 +139,12 @@ def context(model: AttackModel, guardrails: bool | dict[str, bool]) -> AgentCont
         # The stand-in model runs in this process, so it counts as local.
         local_providers=frozenset({"adversarial"}),
     )
-    controls = default_controls()
+    controls = credit_memo_controls()
     return AgentContext(
         router,
         InMemoryEvidence(SETTINGS.reference_dirs),
-        load_policy(SETTINGS.config_dir / "policy_thresholds.yaml"),
-        SETTINGS.prompts_dir,
+        load_policy(SETTINGS.app_config_dir("credit_memo") / "policy_thresholds.yaml"),
+        SETTINGS.app_prompts_dir("credit_memo"),
         guardrails=GuardrailSuite(
             controls,
             guardrails if isinstance(guardrails, dict) else {c.name: guardrails for c in controls},

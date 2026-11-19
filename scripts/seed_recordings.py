@@ -330,7 +330,7 @@ class ScriptedAdapter:
 
 
 async def main() -> None:
-    root = Path(__file__).resolve().parents[1] / "tests" / "fixtures" / "recorded"
+    root = Path(__file__).resolve().parents[1] / "tests" / "fixtures" / "recorded" / "credit_memo"
     adapter = ScriptedAdapter(root)
 
     def factory(provider: str) -> ModelAdapter:
@@ -343,7 +343,7 @@ async def main() -> None:
         policy, {"scripted": AliasTarget("scripted", "-")}, root, adapter_factory=factory
     )
     evidence = InMemoryEvidence(SETTINGS.reference_dirs)
-    ctx = AgentContext(router, evidence, load_policy(), SETTINGS.prompts_dir)
+    ctx = AgentContext(router, evidence, load_policy(), SETTINGS.app_prompts_dir("credit_memo"))
     saver = InMemorySaver(serde=serializer())
     for entry in list_packages(SETTINGS.packages_dir):
         package = load_package(SETTINGS.packages_dir, entry["package_id"])

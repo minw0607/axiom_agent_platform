@@ -22,9 +22,14 @@ SETTINGS = replace(Settings.from_env(), recordings_override=SCRIPTED_RECORDINGS)
 
 
 def demo_context() -> AgentContext:
-    router = ModelRouter.from_settings(SETTINGS.config_dir, "demo", SETTINGS.recordings_dir)
+    router = ModelRouter.from_settings(
+        SETTINGS.config_dir, "demo", SETTINGS.app_recordings_dir("credit_memo")
+    )
     return AgentContext(
-        router, InMemoryEvidence(SETTINGS.reference_dirs), load_policy(), SETTINGS.prompts_dir
+        router,
+        InMemoryEvidence(SETTINGS.reference_dirs),
+        load_policy(),
+        SETTINGS.app_prompts_dir("credit_memo"),
     )
 
 
@@ -84,8 +89,14 @@ def fake_context(responder: Responder) -> tuple[AgentContext, FakeModel]:
         routes={r: {"primary": "fake"} for r in ("extraction", "narrative", "compliance")}
     )
     router = ModelRouter(
-        policy, {"fake": AliasTarget("fake", "-")}, SETTINGS.recordings_dir, adapter_factory=factory
+        policy,
+        {"fake": AliasTarget("fake", "-")},
+        SETTINGS.app_recordings_dir("credit_memo"),
+        adapter_factory=factory,
     )
     return AgentContext(
-        router, InMemoryEvidence(SETTINGS.reference_dirs), load_policy(), SETTINGS.prompts_dir
+        router,
+        InMemoryEvidence(SETTINGS.reference_dirs),
+        load_policy(),
+        SETTINGS.app_prompts_dir("credit_memo"),
     ), model

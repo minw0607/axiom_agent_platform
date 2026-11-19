@@ -13,11 +13,12 @@ import pytest
 from axiom.apps.credit_memo.catalog import load_package
 from axiom.apps.credit_memo.domain import Citation, Claim, MemoDraft
 from axiom.apps.credit_memo.graph import MemoState, draft_facts, run_workflow
-from axiom.guardrails import GuardrailSuite, Subject, default_controls
+from axiom.apps.credit_memo.guardrails import DECISION_LANGUAGE
+from axiom.apps.credit_memo.guardrails import controls as credit_memo_controls
+from axiom.guardrails import GuardrailSuite, Subject
 from axiom.guardrails.base import DraftFacts
 from axiom.guardrails.output import (
     CITATION_SUPPORT,
-    DECISION_LANGUAGE,
     INVESTMENT_ADVICE,
     NUMBER_PROVENANCE,
     ON_TASK,
@@ -27,7 +28,7 @@ from axiom.jobs.worker import ERROR_CODES
 from axiom.router.types import ModelRequest
 from conftest import SCRIPTED_RECORDINGS, SETTINGS, demo_context, fake_context
 
-LIVE_RECORDINGS = SETTINGS.data_dir / "recorded"
+LIVE_RECORDINGS = SETTINGS.data_dir / "recorded" / "credit_memo"
 DRAFT_CHECKS = (
     DECISION_LANGUAGE,
     INVESTMENT_ADVICE,
@@ -38,7 +39,7 @@ DRAFT_CHECKS = (
 )
 RECORDED = sorted(
     p
-    for root in (LIVE_RECORDINGS, SCRIPTED_RECORDINGS)
+    for root in (LIVE_RECORDINGS, SCRIPTED_RECORDINGS / "credit_memo")
     for p in root.glob("drafter*/v*/pkg-*.json")
     if not p.name.endswith(".retry.json")
 )
@@ -57,7 +58,9 @@ def facts(s: MemoState) -> DraftFacts:
 
 
 def recorded_text(package_id: str = "pkg-01") -> str:
-    raw = json.loads((SCRIPTED_RECORDINGS / "drafter" / "v3" / f"{package_id}.json").read_text())
+    raw = json.loads(
+        (SCRIPTED_RECORDINGS / "credit_memo" / "drafter" / "v3" / f"{package_id}.json").read_text()
+    )
     return str(raw["text"])
 
 
@@ -219,7 +222,7 @@ def bad_draft_text() -> str:
 
 def run_with(responder: Any, **switches: bool) -> tuple[MemoState, list[ModelRequest]]:
     ctx, model = fake_context(responder)
-    controls = default_controls()
+    controls = credit_memo_controls()
     ctx = replace(
         ctx,
         guardrails=GuardrailSuite(controls, {c.name: switches.get(c.name, True) for c in controls}),

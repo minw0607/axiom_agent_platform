@@ -100,7 +100,7 @@ def review_problems(app: App) -> dict[str, tuple[int, str, str, str]]:
 
 def demo_ready(app: App, settings: Settings, input_id: str) -> bool:
     """Demo mode replays recordings, so it offers only inputs that have them."""
-    return settings.mode != "demo" or app.has_recordings(settings.recordings_dir, input_id)
+    return settings.mode != "demo" or app.has_recordings(settings, input_id)
 
 
 def _hash(body: BaseModel) -> str:

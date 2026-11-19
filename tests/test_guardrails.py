@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import shutil
 from dataclasses import dataclass, replace
 from pathlib import Path
 
@@ -259,10 +260,7 @@ def test_switching_a_control_off_shows_in_the_evidence(
     store: InMemoryJobStore, tmp_path: Path
 ) -> None:
     config = tmp_path / "config"
-    config.mkdir()
-    for f in SETTINGS.config_dir.iterdir():
-        if f.is_file():
-            (config / f.name).write_text(f.read_text())
+    shutil.copytree(SETTINGS.config_dir, config)
     (config / "guardrails.yaml").write_text(switches(injection_shield=False))
     settings = replace(SETTINGS_WITH_KEYS, config_dir=config)
     with TestClient(create_app(settings, store)) as client:

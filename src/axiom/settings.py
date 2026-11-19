@@ -120,3 +120,15 @@ class Settings:
     def recordings_dir(self) -> Path:
         """Responses demo mode replays: live recordings by default, or AXIOM_RECORDINGS_DIR."""
         return self.recordings_override or self.data_dir / "recorded"
+
+    # Each app keeps its prompts, recordings and settings in a folder named after it under
+    # these roots (ADR 0016), so one app's files cannot change another's.
+
+    def app_prompts_dir(self, app_id: str) -> Path:
+        return self.prompts_dir / app_id
+
+    def app_recordings_dir(self, app_id: str) -> Path:
+        return self.recordings_dir / app_id
+
+    def app_config_dir(self, app_id: str) -> Path:
+        return self.config_dir / "apps" / app_id

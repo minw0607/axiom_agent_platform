@@ -21,8 +21,8 @@ from typing import Any
 import yaml
 
 from axiom.apps.credit_memo.domain import BorrowerPackage
+from axiom.apps.credit_memo.guardrails import RAILS
 from axiom.guardrails.injection import normalize
-from axiom.guardrails.output import RAILS
 
 HERE = Path(__file__).parent
 SCENARIOS = HERE / "v1" / "scenarios.yaml"

@@ -291,7 +291,7 @@ def _live_env(degrade: bool) -> None:
 
         prompts = Path(tempfile.mkdtemp(prefix="axiom-degraded-")) / "prompts"
         shutil.copytree(REPO_ROOT / "prompts", prompts)
-        target = prompts / "drafter" / f"{PROMPT_VERSIONS['drafter']}.md"
+        target = prompts / "credit_memo" / "drafter" / f"{PROMPT_VERSIONS['drafter']}.md"
         target.write_text(DEGRADED_DRAFTER.read_text(encoding="utf-8"), encoding="utf-8")
         os.environ["AXIOM_PROMPTS_DIR"] = str(prompts)
         print(f"Degraded drafter prompt in place of {target.relative_to(prompts.parent)}")

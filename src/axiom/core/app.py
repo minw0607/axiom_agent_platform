@@ -8,7 +8,6 @@ through these members, so no core module imports an app.
 from __future__ import annotations
 
 from collections.abc import Mapping
-from pathlib import Path
 from types import ModuleType
 from typing import TYPE_CHECKING, Any, Literal, Protocol, runtime_checkable
 
@@ -68,7 +67,7 @@ class App(Protocol):
     def load_input(self, settings: Settings, input_id: str) -> HasDocuments:
         """Load one input. Raises UnknownInput."""
 
-    def has_recordings(self, recordings_dir: Path, input_id: str) -> bool:
+    def has_recordings(self, settings: Settings, input_id: str) -> bool:
         """Whether demo mode can replay a run for this input."""
 
     async def run(

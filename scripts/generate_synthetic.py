@@ -701,7 +701,9 @@ def thresholds() -> dict[str, D]:
     """Threshold values from the policy file; the flag logic below is written separately."""
     import yaml
 
-    raw = yaml.safe_load((ROOT / "config" / "policy_thresholds.yaml").read_text())
+    raw = yaml.safe_load(
+        (ROOT / "config" / "apps" / "credit_memo" / "policy_thresholds.yaml").read_text()
+    )
     return {k: D(str(v["value"])) for k, v in raw["thresholds"].items()}
 
 

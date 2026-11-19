@@ -2,7 +2,7 @@
 
 This page follows one synthetic borrower package through the platform: the documents a relationship manager submits, the figures the platform extracts, the ratios its tools compute, the memo a model drafts, and how every claim in that memo is checked.
 
-The package is **pkg-04**, a fictional specialty printing business asking for a $1,400,000 term loan. Its scenario is *weak DSCR*: the business is profitable, but the new loan's payments would exceed its cash flow. The documents are copied from [`data/synthetic/packages/pkg-04/`](../data/synthetic/packages/pkg-04/). The memo is a real model output, recorded during a live run, which the keyless demo replays ([`data/recorded/drafter/v3/pkg-04.json`](../data/recorded/drafter/v3/pkg-04.json)).
+The package is **pkg-04**, a fictional specialty printing business asking for a $1,400,000 term loan. Its scenario is *weak DSCR*: the business is profitable, but the new loan's payments would exceed its cash flow. The documents are copied from [`data/synthetic/packages/pkg-04/`](../data/synthetic/packages/pkg-04/). The memo is a real model output, recorded during a live run, which the keyless demo replays ([`data/recorded/credit_memo/drafter/v3/pkg-04.json`](../data/recorded/credit_memo/drafter/v3/pkg-04.json)).
 
 All data is synthetic. The business does not exist.
 

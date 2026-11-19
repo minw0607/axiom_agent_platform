@@ -36,6 +36,7 @@ from axiom.apps.credit_memo.agents.base import AgentContext  # noqa: E402
 from axiom.apps.credit_memo.catalog import list_packages, load_package  # noqa: E402
 from axiom.apps.credit_memo.domain import BorrowerPackage  # noqa: E402
 from axiom.apps.credit_memo.graph import MemoState, run_workflow  # noqa: E402
+from axiom.apps.credit_memo.guardrails import suite as credit_memo_suite  # noqa: E402
 from axiom.apps.credit_memo.tools.policy import load_policy  # noqa: E402
 from axiom.guardrails import GuardrailConfigError, GuardrailSuite, default_controls, load_suite  # noqa: E402
 from axiom.guardrails.base import SWITCHED_OFF  # noqa: E402
@@ -55,15 +56,17 @@ PII = (
 
 
 def context(off: str | None = None) -> AgentContext:
-    router = ModelRouter.from_settings(SETTINGS.config_dir, "demo", SETTINGS.recordings_dir)
-    suite = load_suite(SETTINGS.guardrails_file)
+    router = ModelRouter.from_settings(
+        SETTINGS.config_dir, "demo", SETTINGS.app_recordings_dir("credit_memo")
+    )
+    suite = credit_memo_suite(SETTINGS.guardrails_file)
     if off:
         suite = GuardrailSuite(suite.controls, {**suite.enabled, off: False})
     return AgentContext(
         router,
         InMemoryEvidence(SETTINGS.reference_dirs),
-        load_policy(SETTINGS.config_dir / "policy_thresholds.yaml"),
-        SETTINGS.prompts_dir,
+        load_policy(SETTINGS.app_config_dir("credit_memo") / "policy_thresholds.yaml"),
+        SETTINGS.app_prompts_dir("credit_memo"),
         guardrails=suite,
     )
 
@@ -73,7 +76,7 @@ def run(package: BorrowerPackage, off: str | None = None) -> MemoState:
 
 
 def check_switches() -> None:
-    suite = load_suite(SETTINGS.guardrails_file)
+    suite = credit_memo_suite(SETTINGS.guardrails_file)
     check(
         "the config switches every control",
         sorted(suite.enabled) == sorted(CONTROLS),

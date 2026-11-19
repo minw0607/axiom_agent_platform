@@ -45,7 +45,7 @@ Regulus covers the EU AI Act, NIST AI RMF and its GenAI profile, OECD, ISO/IEC 4
 ### 1. Where code lives
 
 - Core packages stay where they are: `api/`, `jobs/`, `evidence/`, `gateway/`, `guardrails/`, `mcp_clients/`, `memory/`, `router/`, `telemetry/`.
-- Each app is a package under `src/axiom/apps/<app_id>/`, with its own `agents/`, `graph.py`, `domain.py`, `tools/`, `catalog.py` and `prompts/`. The credit memo app is `apps/credit_memo/`; app 2 is `apps/model_review/`.
+- Each app is a package under `src/axiom/apps/<app_id>/`, with its own `agents/`, `graph.py`, `domain.py`, `tools/` and `catalog.py`. The credit memo app is `apps/credit_memo/`; app 2 is `apps/model_review/`.
 - **The boundary is a test.** `tests/test_boundary.py` fails if any core module imports `axiom.apps`, so rule 1 of ADR 0015 stops being a convention.
 
 ### 2. What the core defines
@@ -88,14 +88,15 @@ An app registers one object that meets the `App` protocol in `axiom/core/app.py`
 
 What the output checks compare a draft with (`draft_facts`) stays inside the app: the app builds it and hands it to the core guardrails when it calls them.
 
-Configuration and data are grouped by app so that one app's settings can't change another's:
+Configuration and data are grouped by app so that one app's settings can't change another's. Each shared root holds one folder per app, named by its ID (`Settings.app_prompts_dir`, `app_recordings_dir`, `app_config_dir`):
 
-- **Prompts:** `src/axiom/apps/<app_id>/prompts/`, versioned as today.
-- **Recordings:** `data/recorded/<app_id>/`. A recording is keyed by the SHA-256 of its request, so moving files changes nothing as long as each prompt's text is unchanged.
-- **Gateway policy:** callers are named `<app_id>.<step>` (for example `credit_memo.drafter`) in `config/tool_gateway.yaml`, each with its own token.
-- **Guardrails:** `config/guardrails.yaml` gets a section per app, choosing which controls run and with what settings. The decision-language check keeps its logic in the core and takes its phrases from the app ("approve the loan", "the model is validated").
-- **Thresholds and gates:** `config/apps/<app_id>/` for app thresholds; `config/eval_gates.yaml` gets a section per app.
-- **Evaluation sets:** `evals/<app_id>/`, with the golden set, judge calibration and adversarial cases per app. The runner and scoring stay shared.
+- **Prompts:** `prompts/<app_id>/`, versioned as today. They stay outside the Python package (first proposed as `src/axiom/apps/<app_id>/prompts/`) so every per-app folder follows the same rule, and the prompt override used by the degraded-prompt gate and the live-gates path filter keep working.
+- **Recordings:** `data/recorded/<app_id>/`, and the scripted test responses in `tests/fixtures/recorded/<app_id>/`. A recording is keyed by the SHA-256 of its request, so moving files changes nothing as long as each prompt's text is unchanged.
+- **App settings:** `config/apps/<app_id>/`, such as the credit memo's `policy_thresholds.yaml`.
+- **Guardrails:** the decision-language check keeps its logic in the core and takes its phrases, and the words the automated fix uses for them, from the app (`apps/credit_memo/guardrails.py`). Without an app's phrases it records `not_evaluated`. The switches stay one platform-wide list in `config/guardrails.yaml`; a section per app is added when an app needs different switches.
+- **Gateway policy (step 2):** callers are to be named `<app_id>.<step>` (for example `credit_memo.drafter`) in `config/tool_gateway.yaml`, each with its own token. This waits for app 2, which adds the first callers that could clash. Renaming also changes the tokens the keyless demo generates, so it is done once, with the new callers.
+- **Evaluation sets (step 3):** `evals/<app_id>/` for the golden set, judge calibration and adversarial cases, and a section per app in `config/eval_gates.yaml`. The runner and scoring stay shared. This waits for app 2's evaluation set, so the shared runner is shaped by two real apps rather than one.
+- **Injection screen phrases:** the input screen's patterns for steering a decision ("approve this loan") are still lending phrases in the core. App 2 adds its own in step 2, the same way as the decision phrases.
 
 `config/apps.yaml` lists the enabled apps by import path. The worker and the API load only those.
 
