@@ -12,9 +12,9 @@ import pytest
 from fastapi.testclient import TestClient
 
 from axiom.api.app import create_app
-from axiom.domain import ReviewDecision
+from axiom.apps.credit_memo.domain import ReviewDecision
+from axiom.apps.credit_memo.graph import ReviewError, resume_workflow, run_workflow
 from axiom.evidence.log import verify_chain
-from axiom.graph.workflow import ReviewError, resume_workflow, run_workflow
 from axiom.jobs.store import InMemoryJobStore
 from axiom.jobs.worker import build_context, run_once
 from axiom.memory.checkpoint import allowed_types
@@ -244,7 +244,7 @@ def test_an_unknown_job_is_not_found(client: TestClient) -> None:
 def _paused(job_id: str):  # type: ignore[no-untyped-def]
     from langgraph.checkpoint.memory import InMemorySaver
 
-    from axiom.catalog import load_package
+    from axiom.apps.credit_memo.catalog import load_package
     from axiom.memory.checkpoint import serializer
 
     ctx = demo_context()
@@ -287,9 +287,9 @@ def test_checkpoints_load_only_allowlisted_types() -> None:
         approve = ReviewDecision(decision="approve", reviewer="x", round=1)
         state = asyncio.run(resume_workflow(ctx, "g-4", approve, saver))
         # Reload the finished checkpoint, finalize's output included.
-        from axiom.graph.workflow import build_workflow, thread
+        from axiom.apps.credit_memo.graph import build_workflow, thread
 
         snapshot = asyncio.run(build_workflow(ctx, saver).aget_state(thread("g-4")))
     assert state["outcome"] == "approved"
     assert snapshot.values["related_guidance"].status == "not_evaluated"
-    assert ("axiom.domain", "ReviewDecision") in allowed_types()
+    assert ("axiom.core.types", "ReviewDecision") in allowed_types()

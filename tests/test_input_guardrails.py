@@ -11,9 +11,9 @@ from dataclasses import replace
 
 import pytest
 
-from axiom.catalog import list_packages, load_package
-from axiom.domain import BorrowerPackage, Document
-from axiom.graph.workflow import run_workflow
+from axiom.apps.credit_memo.catalog import list_packages, load_package
+from axiom.apps.credit_memo.domain import BorrowerPackage, Document
+from axiom.apps.credit_memo.graph import run_workflow
 from axiom.guardrails import GuardrailSuite, Subject, default_controls, pii_protected
 from axiom.guardrails import pii as pii_module
 from axiom.guardrails.injection import scan

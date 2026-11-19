@@ -8,12 +8,17 @@ from decimal import Decimal
 
 import pytest
 
-from axiom.agents.base import AgentContext
-from axiom.agents.drafter import validate_draft
-from axiom.agents.intake import DOC_FIELDS, ExtractedFigure, check_extraction, verify_figure
-from axiom.catalog import list_packages, load_ground_truth, load_package
-from axiom.domain import Citation, Claim, MemoDraft, MemoSection
-from axiom.graph.workflow import run_workflow
+from axiom.apps.credit_memo.agents.base import AgentContext
+from axiom.apps.credit_memo.agents.drafter import validate_draft
+from axiom.apps.credit_memo.agents.intake import (
+    DOC_FIELDS,
+    ExtractedFigure,
+    check_extraction,
+    verify_figure,
+)
+from axiom.apps.credit_memo.catalog import list_packages, load_ground_truth, load_package
+from axiom.apps.credit_memo.domain import Citation, Claim, MemoDraft, MemoSection
+from axiom.apps.credit_memo.graph import run_workflow
 from axiom.router.types import ModelRequest
 from conftest import SETTINGS, fake_context
 

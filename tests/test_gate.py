@@ -157,7 +157,7 @@ def test_the_degraded_run_swaps_only_the_drafter_prompt(monkeypatch: pytest.Monk
     gate._live_env(degrade=True)
     import os
 
-    from axiom.agents.base import PROMPT_VERSIONS
+    from axiom.apps.credit_memo.agents.base import PROMPT_VERSIONS
 
     prompts = Path(os.environ["AXIOM_PROMPTS_DIR"])
     drafter = prompts / "drafter" / f"{PROMPT_VERSIONS['drafter']}.md"

@@ -16,7 +16,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
-from axiom.domain import BorrowerPackage
+from axiom.apps.credit_memo.domain import BorrowerPackage
 
 Fingerprint = Literal["matches", "differs", "not_recorded"]
 LINE = re.compile(r"line (\d{1,5})")

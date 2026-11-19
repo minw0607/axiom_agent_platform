@@ -8,12 +8,12 @@ from pathlib import Path
 
 import pytest
 
-from axiom.agents.base import AgentContext
+from axiom.apps.credit_memo.agents.base import AgentContext
+from axiom.apps.credit_memo.tools.policy import load_policy
 from axiom.mcp_clients.evidence import InMemoryEvidence
 from axiom.router.router import AliasTarget, ModelRouter, RoutingPolicy
 from axiom.router.types import ModelAdapter, ModelRequest, ModelResponse
 from axiom.settings import Settings
-from axiom.tools.policy import load_policy
 
 # Tests replay scripted recordings (built from ground truth), so their results never depend on
 # a model's judgment. The demo replays the live recordings in data/recorded/.

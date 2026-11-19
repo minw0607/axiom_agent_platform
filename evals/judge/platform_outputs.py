@@ -9,8 +9,8 @@ exactly; this lets citation support judge the words.
 
 from __future__ import annotations
 
-from axiom.domain import CheckResult, RatioResult, RiskFlag
-from axiom.tools.policy import PolicyThresholds
+from axiom.apps.credit_memo.domain import CheckResult, RatioResult, RiskFlag
+from axiom.apps.credit_memo.tools.policy import PolicyThresholds
 
 
 def platform_outputs(

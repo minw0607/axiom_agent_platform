@@ -25,7 +25,7 @@ from dataclasses import dataclass, field
 from functools import cache
 from typing import Any
 
-from axiom.domain import Document
+from axiom.core.types import Document
 from axiom.guardrails.base import Stage, Subject, Verdict
 
 # Presidio entity types that identify a person. Dates, places and organizations stay.
@@ -87,23 +87,23 @@ class Redacted:
     counts: Counter[str] = field(default_factory=Counter)
 
 
-def _protected(line: str, borrower_name: str) -> list[tuple[int, int]]:
+def _protected(line: str, subject_name: str) -> list[tuple[int, int]]:
     spans = [m.span() for m in FINANCIAL.finditer(line)]
-    if borrower_name:
-        start = line.find(borrower_name)
+    if subject_name:
+        start = line.find(subject_name)
         while start != -1:
-            spans.append((start, start + len(borrower_name)))
-            start = line.find(borrower_name, start + 1)
+            spans.append((start, start + len(subject_name)))
+            start = line.find(subject_name, start + 1)
     return spans
 
 
-def redact_line(line: str, borrower_name: str = "", figures: set[str] | None = None) -> Redacted:
+def redact_line(line: str, subject_name: str = "", figures: set[str] | None = None) -> Redacted:
     """Mask identifiers of people in one line. `figures`: numbers known to be the borrower's
     own figures (plain digits, no separators), which are never taken for an identifier."""
     if not line.strip() or line.lstrip().startswith(("|", "#")):
         # Blank lines, table rows (the statements) and headings (titles) are never edited.
         return Redacted(line)
-    protected = _protected(line, borrower_name)
+    protected = _protected(line, subject_name)
     found = _analyzer().analyze(
         line, language="en", entities=list(ENTITIES), score_threshold=MIN_SCORE
     )
@@ -131,8 +131,8 @@ def financial_values(text: str) -> list[str]:
     return [m.group() for m in FINANCIAL.finditer(text)]
 
 
-def redact_document(doc: Document, borrower_name: str = "") -> Redacted:
-    lines = [redact_line(line, borrower_name) for line in doc.text.split("\n")]
+def redact_document(doc: Document, subject_name: str = "") -> Redacted:
+    lines = [redact_line(line, subject_name) for line in doc.text.split("\n")]
     text = "\n".join(r.text for r in lines)
     if financial_values(text) != financial_values(doc.text):
         raise RedactionError(f"redaction would change a financial value in {doc.doc_id}")
@@ -151,7 +151,7 @@ class PIIRedaction:
         documents: list[Document] = []
         by_doc: dict[str, dict[str, int]] = {}
         for doc in subject.documents:
-            r = redact_document(doc, subject.borrower_name)
+            r = redact_document(doc, subject.subject_name)
             documents.append(doc.model_copy(update={"text": r.text}) if r.counts else doc)
             if r.counts:
                 by_doc[doc.doc_id] = dict(sorted(r.counts.items()))

@@ -14,7 +14,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from decimal import Decimal
 
-from axiom.domain import (
+from axiom.apps.credit_memo.domain import (
     BALANCE_SHEET_FIELDS,
     CASH_FLOW_FIELDS,
     INCOME_STATEMENT_FIELDS,
@@ -26,7 +26,7 @@ from axiom.domain import (
     RiskFlag,
     Severity,
 )
-from axiom.tools.policy import PolicyThresholds
+from axiom.apps.credit_memo.tools.policy import PolicyThresholds
 
 REQUIRED_DOCUMENTS = (
     "income_statement",

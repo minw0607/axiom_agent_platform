@@ -13,12 +13,12 @@ from decimal import Decimal
 
 import pytest
 
-from axiom.catalog import ground_truth_statements, list_packages, load_ground_truth
-from axiom.domain import Figure, FinancialStatements, LoanRequest, SourceRef
+from axiom.apps.credit_memo.catalog import ground_truth_statements, list_packages, load_ground_truth
+from axiom.apps.credit_memo.domain import Figure, FinancialStatements, LoanRequest, SourceRef
+from axiom.apps.credit_memo.tools.policy import load_policy, risk_flags
+from axiom.apps.credit_memo.tools.ratios import annual_debt_service, compute_ratios
+from axiom.apps.credit_memo.tools.reconcile import reconcile
 from axiom.settings import Settings
-from axiom.tools.policy import load_policy, risk_flags
-from axiom.tools.ratios import annual_debt_service, compute_ratios
-from axiom.tools.reconcile import reconcile
 
 PACKAGES = Settings.from_env().packages_dir
 SRC = SourceRef(doc_id="d", line=1)

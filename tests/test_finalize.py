@@ -11,8 +11,8 @@ from dataclasses import replace
 import pytest
 from fastapi.testclient import TestClient
 
-from axiom.agents.base import AgentContext
 from axiom.api.app import create_app
+from axiom.apps.credit_memo.agents.base import AgentContext
 from axiom.jobs.store import InMemoryJobStore
 from axiom.jobs.worker import build_context, run_once
 from axiom.mcp_clients.governance import RelatedProvision
@@ -111,7 +111,7 @@ def test_the_approved_draft_is_hashed(client: TestClient, store: InMemoryJobStor
     job_id, _ = approve(client, store, None)
     job = asyncio.run(store.get(job_id))
     assert job is not None and job.result is not None
-    from axiom.domain import MemoDraft
+    from axiom.apps.credit_memo.domain import MemoDraft
 
     draft = MemoDraft.model_validate(job.result["draft"])
     digest = hashlib.sha256(draft.model_dump_json().encode()).hexdigest()

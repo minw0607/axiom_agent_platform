@@ -8,7 +8,7 @@ from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
-from axiom.domain import (
+from axiom.apps.credit_memo.domain import (
     BorrowerPackage,
     Document,
     Figure,

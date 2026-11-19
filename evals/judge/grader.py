@@ -20,8 +20,13 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
-from axiom.agents.base import AgentContext, AgentOutputError, call_structured, sensitivity
-from axiom.agents.prompts import load_prompt
+from axiom.apps.credit_memo.agents.base import (
+    AgentContext,
+    AgentOutputError,
+    call_structured,
+    sensitivity,
+)
+from axiom.apps.credit_memo.agents.prompts import load_prompt
 from axiom.router.types import FailClosed, ProviderError, Sensitivity
 
 PROMPTS = Path(__file__).parent / "prompts"

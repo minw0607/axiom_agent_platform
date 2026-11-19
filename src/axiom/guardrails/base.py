@@ -19,15 +19,7 @@ from typing import Any, Literal, Protocol
 from opentelemetry.trace import Status, StatusCode
 from pydantic import BaseModel, ConfigDict, Field
 
-from axiom.domain import (
-    BorrowerPackage,
-    CheckResult,
-    Document,
-    FinancialStatements,
-    MemoDraft,
-    RatioResult,
-)
-from axiom.mcp_clients.evidence import EvidenceHit
+from axiom.core.types import Document, Draft
 from axiom.telemetry.setup import tracer
 
 Stage = Literal["input", "generation", "output"]
@@ -68,15 +60,29 @@ class Verdict:
 
 
 @dataclass(frozen=True)
-class DraftFacts:
-    """What a draft may draw on: the checks after drafting compare the draft with these."""
+class SourcedValue:
+    """A figure taken from the documents, and the line it was taken from."""
 
-    package: BorrowerPackage
-    financials: FinancialStatements
-    ratios: tuple[RatioResult, ...] = ()
-    checks: tuple[CheckResult, ...] = ()
-    thresholds: tuple[Decimal, ...] = ()
-    evidence: tuple[EvidenceHit, ...] = ()
+    value: Decimal
+    doc_id: str
+    line: int
+
+
+@dataclass(frozen=True)
+class DraftFacts:
+    """What a draft may draw on: the checks after drafting compare the draft with these.
+
+    Each app builds them from its own state (ADR 0016). A number in the draft is supported if
+    it matches a sourced figure, a derived value, or a number written in the documents or the
+    other texts; a sourced figure must also be cited at its line.
+    """
+
+    documents: tuple[Document, ...]
+    sourced: tuple[SourcedValue, ...] = ()
+    derived: tuple[Decimal, ...] = ()
+    texts: tuple[str, ...] = ()
+    # A name that may contain digits but states no figure ("Synthetic Borrower 14").
+    subject_name: str = ""
 
 
 @dataclass(frozen=True)
@@ -86,8 +92,9 @@ class Subject:
     job_id: str
     node: str
     documents: tuple[Document, ...] = ()
-    draft: MemoDraft | None = None
-    borrower_name: str = ""
+    draft: Draft | None = None
+    # A name that is never personal data and never a figure, such as the borrower's.
+    subject_name: str = ""
     facts: DraftFacts | None = None
 
 

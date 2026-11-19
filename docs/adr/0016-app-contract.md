@@ -128,6 +128,8 @@ Configuration and data are grouped by app so that one app's settings can't chang
 - **The core-app boundary is enforced by a test,** not by review.
 - **Existing clients see no change.** `/v1/memos`, its schemas and the role keys stay as they are.
 - **One app's mistake can fail the shared test run.** This is accepted while there are only two apps: one release with all controls tested together is worth more than isolation.
+- **Jobs paused before the move still resume.** A checkpoint names each stored object by its Python module, such as `axiom.domain.MemoDraft`. Without the old names, LangGraph's serializer does not fail: it quietly loads plain dictionaries, and the job breaks later, on resume. Each app therefore declares its old module names (`legacy_modules`), the checkpoint allowlist accepts them, and `tests/test_checkpoint_legacy.py` loads a checkpoint written under the old names.
+- **The checkpoint allowlist comes from `config/apps.yaml`.** It must include each enabled app's state types without the core importing app code, so the core reads the enabled apps from configuration. This is the first piece of the app registry.
 - **Recordings survive the move only if prompts don't change.** Step 1 must not edit prompt text; the replay check proves it didn't.
 - **Some lending vocabulary stays in the API for now:** the `package_id` field and the `/v1/memos` route. Renaming them would break clients, so they stay.
 - **Revisit when:** a third app arrives, an app needs its own release cycle or deployment, or the shared test run becomes a bottleneck. Each would point to the service-per-app option.

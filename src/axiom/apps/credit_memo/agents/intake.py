@@ -12,8 +12,8 @@ from decimal import Decimal, InvalidOperation
 
 from pydantic import BaseModel
 
-from axiom.agents.base import AgentContext, ModelCall, call_structured
-from axiom.domain import (
+from axiom.apps.credit_memo.agents.base import AgentContext, call_structured
+from axiom.apps.credit_memo.domain import (
     BALANCE_SHEET_FIELDS,
     BUSINESS_DESCRIPTION_FIELDS,
     CASH_FLOW_FIELDS,
@@ -26,6 +26,7 @@ from axiom.domain import (
     LoanRequest,
     SourceRef,
 )
+from axiom.core.types import ModelCall
 
 DOC_FIELDS: dict[str, tuple[str, ...]] = {
     "income_statement": INCOME_STATEMENT_FIELDS,

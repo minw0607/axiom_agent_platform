@@ -17,8 +17,15 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-from axiom.agents.base import AgentContext, AgentOutputError, ModelCall, call_structured
-from axiom.domain import BorrowerPackage, Citation, ComplianceFinding, MemoDraft, Severity
+from axiom.apps.credit_memo.agents.base import AgentContext, AgentOutputError, call_structured
+from axiom.apps.credit_memo.domain import (
+    BorrowerPackage,
+    Citation,
+    ComplianceFinding,
+    MemoDraft,
+    Severity,
+)
+from axiom.core.types import ModelCall
 from axiom.mcp_clients.evidence import EvidenceHit
 from axiom.router.types import FailClosed, ProviderError
 

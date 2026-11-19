@@ -8,7 +8,7 @@ from pathlib import Path
 
 import yaml
 
-from axiom.domain import FinancialStatements, RatioResult, RiskFlag, Severity
+from axiom.apps.credit_memo.domain import FinancialStatements, RatioResult, RiskFlag, Severity
 from axiom.settings import Settings
 
 

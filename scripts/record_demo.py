@@ -89,9 +89,9 @@ def summarize(state: dict[str, Any], truth: dict[str, Any]) -> dict[str, Any]:
 
 
 async def run_package(ctx: Any, package_id: str, tag: str) -> dict[str, Any]:
-    from axiom.catalog import load_ground_truth, load_package
-    from axiom.domain import ReviewDecision
-    from axiom.graph.workflow import resume_workflow, run_workflow
+    from axiom.apps.credit_memo.catalog import load_ground_truth, load_package
+    from axiom.apps.credit_memo.domain import ReviewDecision
+    from axiom.apps.credit_memo.graph import resume_workflow, run_workflow
     from axiom.mcp_clients.client import acting_as
     from axiom.memory.checkpoint import serializer
     from axiom.settings import Settings
@@ -144,7 +144,7 @@ async def main() -> int:
         os.environ["AXIOM_RECORD"] = "1"
         os.environ["AXIOM_RECORDINGS_DIR"] = str(args.out.resolve())
 
-    from axiom.catalog import has_recordings, list_packages
+    from axiom.apps.credit_memo.catalog import has_recordings, list_packages
     from axiom.jobs.worker import build_context
     from axiom.settings import Settings
 

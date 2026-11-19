@@ -32,17 +32,17 @@ sys.path[:0] = [str(ROOT / "scripts"), str(ROOT / "evals" / "adversarial")]
 import harness  # noqa: E402
 from check_week4 import call, check, first_key, results, wait_for  # noqa: E402
 
-from axiom.agents.base import AgentContext  # noqa: E402
-from axiom.catalog import list_packages, load_package  # noqa: E402
-from axiom.domain import BorrowerPackage  # noqa: E402
-from axiom.graph.workflow import MemoState, run_workflow  # noqa: E402
+from axiom.apps.credit_memo.agents.base import AgentContext  # noqa: E402
+from axiom.apps.credit_memo.catalog import list_packages, load_package  # noqa: E402
+from axiom.apps.credit_memo.domain import BorrowerPackage  # noqa: E402
+from axiom.apps.credit_memo.graph import MemoState, run_workflow  # noqa: E402
+from axiom.apps.credit_memo.tools.policy import load_policy  # noqa: E402
 from axiom.guardrails import GuardrailConfigError, GuardrailSuite, default_controls, load_suite  # noqa: E402
 from axiom.guardrails.base import SWITCHED_OFF  # noqa: E402
 from axiom.guardrails.pii import financial_values, redact_document  # noqa: E402
 from axiom.mcp_clients.evidence import InMemoryEvidence  # noqa: E402
 from axiom.router.router import ModelRouter  # noqa: E402
 from axiom.settings import Settings  # noqa: E402
-from axiom.tools.policy import load_policy  # noqa: E402
 
 SETTINGS = replace(
     Settings.from_env(), recordings_override=ROOT / "tests" / "fixtures" / "recorded"

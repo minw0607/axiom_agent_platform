@@ -13,7 +13,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "evals"))
 import baseline
 
-from axiom.catalog import load_ground_truth
+from axiom.apps.credit_memo.catalog import load_ground_truth
 from conftest import SETTINGS
 
 KNOWN_GAPS = {"pkg-21", "pkg-23"}  # drafting ignores missing documents and loan scope
@@ -74,7 +74,7 @@ def test_every_pair_is_consistent_and_name_pairs_are_masked(counterfactual: dict
 
 
 def test_pairs_change_only_the_business_description() -> None:
-    from axiom.catalog import load_package
+    from axiom.apps.credit_memo.catalog import load_package
 
     for pair in baseline.load_pairs():
         base = load_package(SETTINGS.packages_dir, pair["package"])

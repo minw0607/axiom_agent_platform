@@ -9,16 +9,16 @@ from dataclasses import replace
 import pytest
 import yaml
 
-from axiom.agents.base import AgentContext
-from axiom.agents.compliance import (
+from axiom.apps.credit_memo.agents.base import AgentContext
+from axiom.apps.credit_memo.agents.compliance import (
     TOPICS,
     ComplianceReview,
     TopicAssessment,
     topics_for,
     validate_review,
 )
-from axiom.catalog import list_packages
-from axiom.domain import MemoDraft, Severity
+from axiom.apps.credit_memo.catalog import list_packages
+from axiom.apps.credit_memo.domain import MemoDraft, Severity
 from axiom.mcp_clients.evidence import InMemoryEvidence
 from axiom.router.types import ModelRequest
 from conftest import SETTINGS, fake_context

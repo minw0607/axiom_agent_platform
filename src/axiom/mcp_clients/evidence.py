@@ -13,7 +13,7 @@ from typing import Literal, Protocol
 
 from pydantic import BaseModel
 
-from axiom.domain import Document
+from axiom.core.types import Document
 from axiom.mcp_clients.client import MCPToolClient
 
 Collection = Literal["job", "credit_policy", "lending_refs"]

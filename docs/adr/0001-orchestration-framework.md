@@ -30,7 +30,7 @@ Use **LangGraph** for orchestration.
 - The graph is a fixed pipeline. A rule-based supervisor (plain code, no LLM) picks the next node. ADR 0011 records that choice in detail.
 - Human review is a LangGraph interrupt, resumed by `POST /v1/memos/{job_id}/review`.
 - State is checkpointed in Postgres, keyed by `job_id`.
-- Graph wiring lives in `src/axiom/graph/`. Each node's logic lives in `src/axiom/agents/` as ordinary functions that take and return typed models, so the logic does not depend on LangGraph.
+- Graph wiring lives in `src/axiom/apps/credit_memo/graph.py`. Each node's logic lives in `src/axiom/apps/credit_memo/agents/` as ordinary functions that take and return typed models, so the logic does not depend on LangGraph.
 
 ## Consequences
 

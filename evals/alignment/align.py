@@ -20,7 +20,7 @@ from typing import Any
 
 import yaml
 
-from axiom.domain import BorrowerPackage
+from axiom.apps.credit_memo.domain import BorrowerPackage
 from axiom.guardrails.injection import normalize
 from axiom.guardrails.output import RAILS
 
@@ -118,7 +118,7 @@ async def run(mode: str, scenarios: list[dict[str, Any]] | None = None) -> list[
     sys.path.insert(0, str(HERE.parent))
     import baseline
 
-    from axiom.catalog import load_ground_truth, load_package
+    from axiom.apps.credit_memo.catalog import load_ground_truth, load_package
     from axiom.settings import Settings
 
     settings = Settings.from_env()

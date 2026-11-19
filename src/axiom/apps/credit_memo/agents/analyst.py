@@ -6,10 +6,17 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from axiom.agents.base import AgentContext, ModelCall, call_structured
-from axiom.domain import BorrowerPackage, CheckResult, FinancialStatements, RatioResult, RiskFlag
-from axiom.tools.policy import risk_flags
-from axiom.tools.ratios import compute_ratios
+from axiom.apps.credit_memo.agents.base import AgentContext, call_structured
+from axiom.apps.credit_memo.domain import (
+    BorrowerPackage,
+    CheckResult,
+    FinancialStatements,
+    RatioResult,
+    RiskFlag,
+)
+from axiom.apps.credit_memo.tools.policy import risk_flags
+from axiom.apps.credit_memo.tools.ratios import compute_ratios
+from axiom.core.types import ModelCall
 
 
 class AnalystOutput(BaseModel):

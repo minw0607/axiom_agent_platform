@@ -9,11 +9,11 @@ on:
     branches: [main]
     paths:
       - "prompts/**"
-      - "src/axiom/agents/**"
-      - "src/axiom/graph/**"
+      - "src/axiom/apps/**"
+      - "src/axiom/core/**"
       - "src/axiom/router/**"
       - "src/axiom/guardrails/**"
-      - "src/axiom/tools/**"
+      - "config/apps.yaml"
       - "config/routing.local.yaml"
       - "config/guardrails.yaml"
       - "config/policy_thresholds.yaml"
@@ -24,11 +24,11 @@ on:
   pull_request:
     paths:
       - "prompts/**"
-      - "src/axiom/agents/**"
-      - "src/axiom/graph/**"
+      - "src/axiom/apps/**"
+      - "src/axiom/core/**"
       - "src/axiom/router/**"
       - "src/axiom/guardrails/**"
-      - "src/axiom/tools/**"
+      - "config/apps.yaml"
       - "config/routing.local.yaml"
       - "config/guardrails.yaml"
       - "config/policy_thresholds.yaml"

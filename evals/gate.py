@@ -248,7 +248,7 @@ async def golden_stack() -> list[dict[str, Any]]:
     _load_stack_env()
     import baseline
 
-    from axiom.catalog import list_packages, load_ground_truth, load_package
+    from axiom.apps.credit_memo.catalog import list_packages, load_ground_truth, load_package
     from axiom.jobs.worker import build_context
     from axiom.mcp_clients.client import acting_as
     from axiom.settings import Settings
@@ -287,7 +287,7 @@ def _live_env(degrade: bool) -> None:
     for name in ("GKN_MCP_URL", "REGULUS_MCP_URL", "TOOL_GATEWAY_URL", "MCP_SHARED_SECRET"):
         os.environ[name] = ""
     if degrade:
-        from axiom.agents.base import PROMPT_VERSIONS
+        from axiom.apps.credit_memo.agents.base import PROMPT_VERSIONS
 
         prompts = Path(tempfile.mkdtemp(prefix="axiom-degraded-")) / "prompts"
         shutil.copytree(REPO_ROOT / "prompts", prompts)

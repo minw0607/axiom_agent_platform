@@ -24,12 +24,12 @@ from langgraph.checkpoint.memory import InMemorySaver
 from mcp.server.mcpserver import MCPServer
 from starlette.types import ASGIApp, Receive, Scope, Send
 
-from axiom.catalog import load_package
+from axiom.apps.credit_memo.catalog import load_package
+from axiom.apps.credit_memo.domain import ReviewDecision
+from axiom.apps.credit_memo.graph import resume_workflow, run_workflow
 from axiom.demo_keys import GATEWAY_STEPS
-from axiom.domain import ReviewDecision
 from axiom.gateway.policy import GatewayPolicy, load_policy
 from axiom.gateway.service import CallLog, Gateway, build_app, verify_log
-from axiom.graph.workflow import resume_workflow, run_workflow
 from axiom.jobs.worker import run_events
 from axiom.mcp_clients.client import (
     GatewayClient,

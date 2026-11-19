@@ -9,9 +9,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from axiom.agents.analyst import check_payload, flag_payload, ratio_payload
-from axiom.agents.base import AgentContext, ModelCall, call_structured
-from axiom.domain import (
+from axiom.apps.credit_memo.agents.analyst import check_payload, flag_payload, ratio_payload
+from axiom.apps.credit_memo.agents.base import AgentContext, call_structured
+from axiom.apps.credit_memo.domain import (
     BorrowerPackage,
     CheckResult,
     FinancialStatements,
@@ -20,6 +20,7 @@ from axiom.domain import (
     ReviewDecision,
     RiskFlag,
 )
+from axiom.core.types import ModelCall
 from axiom.mcp_clients.evidence import EvidenceHit
 
 HEADINGS = ("Borrower and request", "Financial analysis", "Risk factors", "Draft recommendation")

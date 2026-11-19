@@ -29,7 +29,7 @@ from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 from typing import Any
 
-from axiom.domain import Claim, MemoDraft
+from axiom.core.types import Claim, Draft
 from axiom.guardrails.base import DraftFacts, GuardrailResult, Stage, Subject, Verdict
 from axiom.guardrails.injection import PATTERNS as INJECTION_PATTERNS
 from axiom.guardrails.injection import normalize
@@ -79,7 +79,7 @@ RAILS: dict[str, dict[str, re.Pattern[str]]] = {
 }
 
 
-def claims(draft: MemoDraft) -> Iterator[tuple[int, int, Claim]]:
+def claims(draft: Draft) -> Iterator[tuple[int, int, Claim]]:
     for i, section in enumerate(draft.sections):
         for j, claim in enumerate(section.claims):
             yield i, j, claim
@@ -164,25 +164,14 @@ def stated_numbers(text: str) -> list[Stated]:
 
 
 def claim_numbers(text: str, facts: DraftFacts) -> list[Stated]:
-    """The numbers a claim states, leaving out any inside the borrower's name
+    """The numbers a claim states, leaving out any inside the subject's name
     ("Synthetic Borrower 14" states no figure)."""
-    return stated_numbers(text.replace(facts.package.borrower_name, ""))
+    return stated_numbers(text.replace(facts.subject_name, "") if facts.subject_name else text)
 
 
 def known_values(facts: DraftFacts) -> list[Decimal]:
-    values: list[Decimal] = []
-    for fields in facts.financials.years.values():
-        values += [f.value for f in fields.values()]
-    values += [f.value for f in facts.financials.loan_figures()]
-    values += [Decimal(y) for y in facts.financials.years]
-    for r in facts.ratios:
-        if r.value is not None:
-            values += [r.value, r.value * 100]  # a ratio may be shown as a percentage
-    for t in facts.thresholds:
-        values += [t, t * 100]
-    texts = [d.text for d in facts.package.documents] + [h.text for h in facts.evidence]
-    texts += [c.detail for c in facts.checks]  # the reconciliation tool's computed totals
-    for text in texts:
+    values = [s.value for s in facts.sourced] + list(facts.derived)
+    for text in [d.text for d in facts.documents] + list(facts.texts):
         values += [s.value for s in stated_numbers(text)]
     return values
 
@@ -222,13 +211,10 @@ class CitationSupport:
     async def check(self, subject: Subject) -> Verdict:
         if subject.draft is None or subject.facts is None:
             return Verdict("not_evaluated", "no draft or inputs to check against")
-        lines = {d.doc_id: d.text.split("\n") for d in subject.facts.package.documents}
+        lines = {d.doc_id: d.text.split("\n") for d in subject.facts.documents}
         sources: dict[Decimal, set[tuple[str, str]]] = {}
-        for fields in subject.facts.financials.years.values():
-            for f in fields.values():
-                sources.setdefault(f.value, set()).add((f.source.doc_id, f"line {f.source.line}"))
-        for f in subject.facts.financials.loan_figures():
-            sources.setdefault(f.value, set()).add((f.source.doc_id, f"line {f.source.line}"))
+        for s in subject.facts.sourced:
+            sources.setdefault(s.value, set()).add((s.doc_id, f"line {s.line}"))
         issues: list[dict[str, Any]] = []
         for i, j, claim in claims(subject.draft):
             cited = {(c.doc_id, c.locator) for c in claim.citations}
@@ -282,7 +268,7 @@ class PIIOutput:
         issues = [
             {"section": i, "claim": j, "code": "personal_data", "value": entity}
             for i, j, claim in claims(subject.draft)
-            for entity in sorted(redact_line(claim.text, subject.borrower_name, figures).counts)
+            for entity in sorted(redact_line(claim.text, subject.subject_name, figures).counts)
         ]
         return _verdict(self.name, issues, "no personal identifiers found")
 
@@ -308,7 +294,7 @@ PROBLEM = {
 }
 
 
-def problems(results: list[GuardrailResult], draft: MemoDraft) -> list[dict[str, str]]:
+def problems(results: list[GuardrailResult], draft: Draft) -> list[dict[str, str]]:
     """The triggered findings in words the drafter can act on, with the claim they are about.
     For the fix prompt only: the evidence keeps positions and codes, not claim text."""
     out: list[dict[str, str]] = []

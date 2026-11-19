@@ -16,7 +16,7 @@ Something must decide which agent runs next and when the workflow stops. Credit 
 
 ## Decision
 
-A **rule-based supervisor in plain code, with no model**, decides every transition in the LangGraph workflow (`src/axiom/graph/workflow.py`):
+A **rule-based supervisor in plain code, with no model**, decides every transition in the LangGraph workflow (`src/axiom/apps/credit_memo/graph.py`):
 
 - Nodes run in a fixed order: intake, analyst, drafter. Compliance, human review and finalize are added in week 4.
 - After each node, the supervisor stops the run if the node recorded an error, and otherwise moves to the next node.

@@ -24,7 +24,7 @@ from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.checkpoint.memory import InMemorySaver
 from pydantic import BaseModel
 
-from axiom.domain import MAX_HUMAN_REVISIONS, ReviewDecision
+from axiom.core.types import MAX_HUMAN_REVISIONS, ReviewDecision
 from axiom.evidence.log import EventDraft, EvidenceEvent, chain
 from axiom.memory.checkpoint import postgres_checkpointer, serializer
 

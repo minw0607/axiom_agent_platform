@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from decimal import ROUND_HALF_UP, Decimal
 
-from axiom.domain import FinancialStatements, RatioResult
+from axiom.apps.credit_memo.domain import FinancialStatements, RatioResult
 
 TWO_PLACES = Decimal("0.01")
 MONTHS_PER_YEAR = 12

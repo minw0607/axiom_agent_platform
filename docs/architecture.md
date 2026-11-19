@@ -14,9 +14,9 @@ Requests flow top to bottom through five layers. Observability and evidence cut 
 |---|---|---|
 | **API** | The stable `/v1` contract: jobs, memos, reviews, evidence. Authentication, roles, rate limits, idempotency | `src/axiom/api/` |
 | **Jobs** | Job records and the worker loop that runs the workflow | `src/axiom/jobs/` |
-| **Workflow** | A fixed LangGraph pipeline of specialist agents, with a human review pause | `src/axiom/graph/`, `src/axiom/agents/` |
+| **Workflow** | A fixed LangGraph pipeline of specialist agents, with a human review pause | `src/axiom/apps/credit_memo/graph.py`, `src/axiom/apps/credit_memo/agents/` |
 | **Controls** | Guardrails at input, generation, output and process stages | `src/axiom/guardrails/` |
-| **Capabilities** | Model router, deterministic tools, MCP services | `src/axiom/router/`, `src/axiom/tools/`, `src/axiom/mcp_clients/` |
+| **Capabilities** | Model router, deterministic tools, MCP services | `src/axiom/router/`, `src/axiom/apps/credit_memo/tools/`, `src/axiom/mcp_clients/` |
 | Cross-cutting | Telemetry, evidence log, checkpointed memory | `src/axiom/telemetry/`, `src/axiom/evidence/`, `src/axiom/memory/` |
 
 Three rules shape everything:
@@ -109,7 +109,7 @@ Each check returns `passed`, `triggered` or `not_evaluated`, emits a span and an
 
 **Model router** ([ADR 0005](adr/0005-model-routing.md)). Agents ask for a task route (`extraction`, `narrative`, `compliance`), never a model. The router resolves logical aliases from environment settings, applies sensitivity rules first (unredacted PII only to a permitted local model, otherwise fail closed), then the task route, then fallback. Adapters: OpenAI (also Azure OpenAI and OpenAI-compatible endpoints), Anthropic, Ollama, and `recorded` for the keyless demo; one deployment can mix them, alias by alias. Only Ollama counts as local, so an alias allowed unredacted PII must map to it. Every call returns a `RoutingDecision` for the evidence bundle.
 
-**Deterministic tools** ([ADR 0003](adr/0003-tool-integration.md)). Ratio math and policy rules are plain Python in `src/axiom/tools/`, called in-process and unit-tested to 100% exactness.
+**Deterministic tools** ([ADR 0003](adr/0003-tool-integration.md)). Ratio math and policy rules are plain Python in `src/axiom/apps/credit_memo/tools/`, called in-process and unit-tested to 100% exactness.
 
 **MCP services** ([ADR 0003](adr/0003-tool-integration.md)). Two sibling repositories run as separate containers over streamable HTTP, each with its own bearer secret and host-header checks. They publish no ports:
 

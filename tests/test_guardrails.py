@@ -10,9 +10,9 @@ import pytest
 from fastapi.testclient import TestClient
 
 from axiom.api.app import create_app
-from axiom.catalog import load_package
+from axiom.apps.credit_memo.catalog import load_package
+from axiom.apps.credit_memo.graph import run_workflow
 from axiom.evidence.log import verify_chain
-from axiom.graph.workflow import run_workflow
 from axiom.guardrails import (
     GuardrailConfigError,
     GuardrailResult,

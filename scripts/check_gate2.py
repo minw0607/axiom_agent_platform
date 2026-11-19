@@ -160,7 +160,7 @@ def run_checks(root: Path) -> None:
     csp = {k.lower(): v for k, v in headers.items()}.get("content-security-policy", "")
     check("Review page loads with a strict CSP", code == 200 and "default-src 'none'" in csp)
 
-    from axiom.catalog import list_packages
+    from axiom.apps.credit_memo.catalog import list_packages
     from axiom.settings import Settings
 
     catalog = [p["package_id"] for p in list_packages(Settings.from_env().packages_dir)]

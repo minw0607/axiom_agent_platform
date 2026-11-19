@@ -16,6 +16,7 @@ from __future__ import annotations
 import hashlib
 import operator
 from collections.abc import Awaitable, Callable
+from decimal import Decimal
 from typing import Annotated, Any, TypedDict
 
 from langgraph.checkpoint.base import BaseCheckpointSaver
@@ -24,18 +25,17 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.types import Command, interrupt
 from opentelemetry.trace import Status, StatusCode
 
-from axiom.agents.analyst import run_analyst
-from axiom.agents.base import (
+from axiom.apps.credit_memo.agents.analyst import run_analyst
+from axiom.apps.credit_memo.agents.base import (
     AgentContext,
     AgentOutputError,
-    ModelCall,
     collect_calls,
     sensitivity,
 )
-from axiom.agents.compliance import run_compliance_review
-from axiom.agents.drafter import run_drafter
-from axiom.agents.intake import IntakeError, run_intake
-from axiom.domain import (
+from axiom.apps.credit_memo.agents.compliance import run_compliance_review
+from axiom.apps.credit_memo.agents.drafter import run_drafter
+from axiom.apps.credit_memo.agents.intake import IntakeError, run_intake
+from axiom.apps.credit_memo.domain import (
     MAX_HUMAN_REVISIONS,
     BorrowerPackage,
     CheckResult,
@@ -46,8 +46,12 @@ from axiom.domain import (
     ReviewDecision,
     RiskFlag,
 )
+from axiom.apps.credit_memo.tools.policy import PolicyThresholds
+from axiom.apps.credit_memo.tools.policy_rules import RuleInput, evaluate
+from axiom.apps.credit_memo.tools.reconcile import reconcile
+from axiom.core.types import ModelCall
 from axiom.guardrails import GuardrailResult, Subject, pii_protected
-from axiom.guardrails.base import DraftFacts
+from axiom.guardrails.base import DraftFacts, SourcedValue
 from axiom.guardrails.output import problems
 from axiom.mcp_clients.client import ToolCall, acting_as, collect_tool_calls
 from axiom.mcp_clients.evidence import EvidenceHit
@@ -55,8 +59,6 @@ from axiom.mcp_clients.governance import RelatedGuidance
 from axiom.memory.checkpoint import serializer
 from axiom.router.types import FailClosed, ProviderError, Sensitivity
 from axiom.telemetry.setup import tracer
-from axiom.tools.policy_rules import RuleInput, evaluate
-from axiom.tools.reconcile import reconcile
 
 NODE_ORDER = ("intake", "analyst", "drafter", "compliance")
 REVIEW_NODES = ("human_review", "finalize")
@@ -171,6 +173,28 @@ def _traced(name: str, fn: Node) -> Node:
     return run
 
 
+def draft_facts(state: MemoState, hits: list[EvidenceHit], policy: PolicyThresholds) -> DraftFacts:
+    """What the output guardrails compare a draft with: the extracted figures and their
+    lines, the computed ratios (also as percentages), the policy thresholds, and the numbers
+    in the retrieved passages and the reconciliation details."""
+    financials = state["financials"]
+    figures = [f for fields in financials.years.values() for f in fields.values()]
+    figures += financials.loan_figures()
+    derived: list[Decimal] = [Decimal(y) for y in financials.years]
+    for r in state["ratios"]:
+        if r.value is not None:
+            derived += [r.value, r.value * 100]  # a ratio may be shown as a percentage
+    for threshold in (t.value for t in policy.thresholds.values()):
+        derived += [threshold, threshold * 100]
+    return DraftFacts(
+        documents=state["package"].documents,
+        sourced=tuple(SourcedValue(f.value, f.source.doc_id, f.source.line) for f in figures),
+        derived=tuple(derived),
+        texts=tuple(h.text for h in hits) + tuple(c.detail for c in state["checks"]),
+        subject_name=state["package"].borrower_name,
+    )
+
+
 def build_workflow(ctx: AgentContext, checkpointer: BaseCheckpointSaver[Any] | None = None) -> Any:
     async def intake(state: MemoState) -> dict[str, Any]:
         package = state["package"]
@@ -182,7 +206,7 @@ def build_workflow(ctx: AgentContext, checkpointer: BaseCheckpointSaver[Any] | N
                 state["job_id"],
                 "intake",
                 documents=package.documents,
-                borrower_name=package.borrower_name,
+                subject_name=package.borrower_name,
             ),
         )
         if any(r.action == "quarantined" for r in checked):
@@ -237,20 +261,12 @@ def build_workflow(ctx: AgentContext, checkpointer: BaseCheckpointSaver[Any] | N
     async def check_draft(
         state: MemoState, draft: MemoDraft, hits: list[EvidenceHit]
     ) -> list[GuardrailResult]:
-        facts = DraftFacts(
-            package=state["package"],
-            financials=state["financials"],
-            ratios=tuple(state["ratios"]),
-            checks=tuple(state["checks"]),
-            thresholds=tuple(t.value for t in ctx.policy.thresholds.values()),
-            evidence=tuple(hits),
-        )
         subject = Subject(
             state["job_id"],
             "drafter",
             draft=draft,
-            facts=facts,
-            borrower_name=state["package"].borrower_name,
+            facts=draft_facts(state, hits, ctx.policy),
+            subject_name=state["package"].borrower_name,
         )
         return [
             *await ctx.guardrails.run("generation", subject),

@@ -7,17 +7,20 @@ import pytest
 import axiom
 
 SUBPACKAGES = [
-    "agents",
     "api",
+    "apps",
+    "apps.credit_memo",
+    "apps.credit_memo.agents",
+    "apps.credit_memo.tools",
+    "core",
     "evidence",
-    "graph",
+    "gateway",
     "guardrails",
     "jobs",
     "mcp_clients",
     "memory",
     "router",
     "telemetry",
-    "tools",
 ]
 
 

@@ -1,0 +1,6 @@
+# The apps the platform runs (ADR 0016). The worker, the API and the checkpointer load only
+# these. Each entry names the app's Python package; the package says the rest.
+version: 1
+
+apps:
+  - credit_memo: axiom.apps.credit_memo

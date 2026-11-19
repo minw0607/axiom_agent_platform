@@ -22,18 +22,18 @@ from typing import Any
 
 from langgraph.checkpoint.memory import InMemorySaver
 
-from axiom.agents.base import AgentContext
-from axiom.catalog import list_packages, load_ground_truth, load_package
-from axiom.domain import ReviewDecision
-from axiom.graph.workflow import resume_workflow, run_workflow
+from axiom.apps.credit_memo.agents.base import AgentContext
+from axiom.apps.credit_memo.catalog import list_packages, load_ground_truth, load_package
+from axiom.apps.credit_memo.domain import ReviewDecision
+from axiom.apps.credit_memo.graph import resume_workflow, run_workflow
+from axiom.apps.credit_memo.tools.policy import load_policy
+from axiom.apps.credit_memo.tools.policy_rules import PROTECTED
 from axiom.mcp_clients.evidence import InMemoryEvidence
 from axiom.memory.checkpoint import serializer
 from axiom.router.adapters import save_recording
 from axiom.router.router import AliasTarget, ModelRouter, RoutingPolicy
 from axiom.router.types import ModelAdapter, ModelRequest, ModelResponse
 from axiom.settings import Settings
-from axiom.tools.policy import load_policy
-from axiom.tools.policy_rules import PROTECTED
 
 SETTINGS = Settings.from_env()
 # The comments behind the recorded revisions. In demo mode a revision replays the recording

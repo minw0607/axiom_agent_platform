@@ -17,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "evals" / "alignmen
 import align
 import gate
 
-from axiom.catalog import list_packages, load_package
+from axiom.apps.credit_memo.catalog import list_packages, load_package
 from axiom.guardrails.injection import scan
 from conftest import SETTINGS
 

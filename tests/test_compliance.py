@@ -6,11 +6,11 @@ from typing import Any
 
 import pytest
 
-from axiom.agents.base import AgentContext
-from axiom.catalog import list_packages, load_ground_truth
-from axiom.domain import Citation, Claim, MemoDraft, MemoSection
-from axiom.tools import policy_rules
-from axiom.tools.policy_rules import RuleInput, evaluate
+from axiom.apps.credit_memo.agents.base import AgentContext
+from axiom.apps.credit_memo.catalog import list_packages, load_ground_truth
+from axiom.apps.credit_memo.domain import Citation, Claim, MemoDraft, MemoSection
+from axiom.apps.credit_memo.tools import policy_rules
+from axiom.apps.credit_memo.tools.policy_rules import RuleInput, evaluate
 from conftest import SETTINGS
 from test_workflow import run
 

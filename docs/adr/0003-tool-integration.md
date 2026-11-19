@@ -24,7 +24,7 @@ The integration must keep the sibling repos independent (the platform depends on
 Use a **split by tool type**:
 
 - **MCP over streamable HTTP for the external knowledge services.** regulus-mcp exposes `lookup_provisions` and `recommend_mitigants`. gkn-mcp exposes `ingest_documents`, `retrieve_evidence` and `delete_job`. Each runs in its own container, built from a pinned release tag, and requires a shared bearer secret.
-- **Direct, in-process function calls for deterministic tools.** Ratio and policy-rule functions live in `src/axiom/tools/` and are plain, unit-tested Python. A network boundary would add failure modes and nothing else.
+- **Direct, in-process function calls for deterministic tools.** Ratio and policy-rule functions live in `src/axiom/apps/credit_memo/tools/` and are plain, unit-tested Python. A network boundary would add failure modes and nothing else.
 
 The platform calls MCP services through one client, `MCPToolClient` in `src/axiom/mcp_clients/`. Scope-defining arguments such as `job_id` and `collection` are set by platform code, never by model output.
 

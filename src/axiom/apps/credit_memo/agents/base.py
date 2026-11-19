@@ -12,14 +12,15 @@ from typing import Any, TypeVar
 
 from pydantic import BaseModel, ValidationError
 
-from axiom.agents.prompts import Prompt, load_prompt
+from axiom.apps.credit_memo.agents.prompts import Prompt, load_prompt
+from axiom.apps.credit_memo.tools.policy import PolicyThresholds
+from axiom.core.types import ModelCall
 from axiom.guardrails import GuardrailSuite, load_suite
 from axiom.mcp_clients.evidence import EvidenceService
 from axiom.mcp_clients.governance import GovernanceLookup
 from axiom.router.router import ModelRouter
 from axiom.router.types import ChatMessage, ModelRequest, Route, Sensitivity
 from axiom.settings import Settings
-from axiom.tools.policy import PolicyThresholds
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -50,25 +51,6 @@ class AgentContext:
 
     def prompt(self, prompt_id: str) -> Prompt:
         return load_prompt(self.prompts_dir, prompt_id, PROMPT_VERSIONS[prompt_id])
-
-
-class ModelCall(BaseModel):
-    """One model call, for the evidence bundle. Never returned by the public API."""
-
-    node: str
-    route: str
-    alias: str
-    provider: str
-    prompt_id: str
-    prompt_version: str
-    prompt_sha256: str
-    origin: str
-    attempt: int
-    fallback_used: bool
-    input_tokens: int
-    output_tokens: int
-    latency_ms: int
-    valid: bool
 
 
 _CALL_SINK: ContextVar[list[ModelCall] | None] = ContextVar("axiom_model_calls", default=None)

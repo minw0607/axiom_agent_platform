@@ -41,12 +41,12 @@ from grader import (  # noqa: E402
     grade_finding,
 )
 
-from axiom.agents.base import AgentContext  # noqa: E402
+from axiom.apps.credit_memo.agents.base import AgentContext  # noqa: E402
+from axiom.apps.credit_memo.tools.policy import load_policy  # noqa: E402
 from axiom.jobs.worker import build_context  # noqa: E402
 from axiom.mcp_clients.evidence import InMemoryEvidence  # noqa: E402
 from axiom.router.router import ModelRouter  # noqa: E402
 from axiom.settings import REPO_ROOT, Settings  # noqa: E402
-from axiom.tools.policy import load_policy  # noqa: E402
 
 SET = HERE / "v1"
 POSITIVE = {"supported", "covered"}

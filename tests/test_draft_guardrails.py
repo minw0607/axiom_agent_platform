@@ -10,9 +10,9 @@ from typing import Any
 
 import pytest
 
-from axiom.catalog import load_package
-from axiom.domain import Citation, Claim, MemoDraft
-from axiom.graph.workflow import MemoState, run_workflow
+from axiom.apps.credit_memo.catalog import load_package
+from axiom.apps.credit_memo.domain import Citation, Claim, MemoDraft
+from axiom.apps.credit_memo.graph import MemoState, draft_facts, run_workflow
 from axiom.guardrails import GuardrailSuite, Subject, default_controls
 from axiom.guardrails.base import DraftFacts
 from axiom.guardrails.output import (
@@ -53,14 +53,7 @@ def state(package_id: str = "pkg-01") -> MemoState:
 
 
 def facts(s: MemoState) -> DraftFacts:
-    return DraftFacts(
-        package=s["package"],
-        financials=s["financials"],
-        ratios=tuple(s["ratios"]),
-        checks=tuple(s["checks"]),
-        thresholds=tuple(t.value for t in demo_context().policy.thresholds.values()),
-        evidence=tuple(s["evidence"]),
-    )
+    return draft_facts(s, s["evidence"], demo_context().policy)
 
 
 def recorded_text(package_id: str = "pkg-01") -> str:
@@ -79,7 +72,7 @@ def with_claim(draft: MemoDraft, section: int, claim: Claim) -> MemoDraft:
 def check(control: Any, draft: MemoDraft, package_id: str = "pkg-01") -> tuple[str, list[Any]]:
     s = state(package_id)
     subject = Subject(
-        "j", "drafter", draft=draft, facts=facts(s), borrower_name=s["package"].borrower_name
+        "j", "drafter", draft=draft, facts=facts(s), subject_name=s["package"].borrower_name
     )
     v = asyncio.run(control.check(subject))
     return v.outcome, [i["code"] for i in v.details.get("issues", [])]
@@ -296,7 +289,7 @@ def test_personal_data_in_the_draft_is_caught_by_type_not_text() -> None:
     )
     s = state()
     subject = Subject(
-        "j", "drafter", draft=draft, facts=facts(s), borrower_name=s["package"].borrower_name
+        "j", "drafter", draft=draft, facts=facts(s), subject_name=s["package"].borrower_name
     )
     v = asyncio.run(PII_OUTPUT.check(subject))
     assert v.outcome == "triggered"

@@ -11,8 +11,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from axiom.agents.base import ModelCall
-from axiom.domain import ComplianceFinding
+from axiom.apps.credit_memo.domain import ComplianceFinding
+from axiom.core.types import ModelCall
 from axiom.evidence.log import ChainCheck, EvidenceEvent
 from axiom.guardrails import GuardrailResult, latest
 from axiom.jobs.store import JobRecord, JobStatus, JobSummary

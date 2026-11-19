@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from decimal import Decimal
 
-from axiom.domain import CheckResult, FinancialStatements
+from axiom.apps.credit_memo.domain import CheckResult, FinancialStatements
 
 TOLERANCE = Decimal("1")  # figures are whole dollars
 

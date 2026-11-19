@@ -8,9 +8,19 @@ from __future__ import annotations
 
 from decimal import Decimal
 from enum import StrEnum
-from typing import Literal
+from typing import Literal, get_args
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import Field, field_validator
+
+from axiom.core.types import (
+    MAX_HUMAN_REVISIONS,
+    CheckResult,
+    Citation,
+    Claim,
+    Document,
+    Frozen,
+    ReviewDecision,
+)
 
 # Line items extracted from each statement, per fiscal year.
 INCOME_STATEMENT_FIELDS = (
@@ -48,17 +58,19 @@ LOAN_FIELDS = ("requested_amount", "interest_rate_pct", "term_years", "amortizat
 DocumentKind = Literal[
     "income_statement", "balance_sheet", "cash_flow", "loan_application", "business_description"
 ]
+DOCUMENT_KINDS: tuple[str, ...] = get_args(DocumentKind)
 
-
-class Frozen(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
-
-
-class Document(Frozen):
-    doc_id: str
-    kind: DocumentKind
-    title: str
-    text: str
+# The core types this module re-exports, so app code and checkpoints written before
+# ADR 0016 (as axiom.domain.<name>) still find them here.
+__all__ = [
+    "MAX_HUMAN_REVISIONS",
+    "CheckResult",
+    "Citation",
+    "Claim",
+    "Document",
+    "Frozen",
+    "ReviewDecision",
+]
 
 
 class BorrowerPackage(Frozen):
@@ -68,6 +80,14 @@ class BorrowerPackage(Frozen):
     borrower_name: str
     industry: str
     documents: tuple[Document, ...]
+
+    @field_validator("documents")
+    @classmethod
+    def _known_kinds(cls, documents: tuple[Document, ...]) -> tuple[Document, ...]:
+        for d in documents:
+            if d.kind not in DOCUMENT_KINDS:
+                raise ValueError(f"unknown document kind {d.kind!r}")
+        return documents
 
     def document(self, kind: DocumentKind) -> Document | None:
         return next((d for d in self.documents if d.kind == kind), None)
@@ -140,20 +160,6 @@ class RiskFlag(Frozen):
     policy_ref: str | None = None
 
 
-class CheckResult(Frozen):
-    """Outcome of a deterministic check. A check that cannot run is not_evaluated."""
-
-    name: str
-    outcome: Literal["passed", "triggered", "not_evaluated"]
-    detail: str
-    year: int | None = None
-
-
-class Citation(Frozen):
-    doc_id: str
-    locator: str = Field(description="'line N' for a source document, or a GKN chunk id")
-
-
 class ComplianceFinding(Frozen):
     """One credit policy rule or lending-reference check applied to a draft.
 
@@ -170,11 +176,6 @@ class ComplianceFinding(Frozen):
     citations: tuple[Citation, ...] = ()
 
 
-class Claim(Frozen):
-    text: str
-    citations: tuple[Citation, ...] = ()
-
-
 class MemoSection(Frozen):
     heading: str
     claims: tuple[Claim, ...]
@@ -183,15 +184,3 @@ class MemoSection(Frozen):
 class MemoDraft(Frozen):
     sections: tuple[MemoSection, ...]
     draft_recommendation: Literal["approve", "approve_with_conditions", "decline", "refer"]
-
-
-MAX_HUMAN_REVISIONS = 2
-
-
-class ReviewDecision(Frozen):
-    """A credit officer's decision on a draft. The reviewer comes from the authenticated key."""
-
-    decision: Literal["approve", "reject", "revise"]
-    comments: str = Field(default="", max_length=2000)
-    reviewer: str
-    round: int = Field(ge=1)
