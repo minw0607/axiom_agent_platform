@@ -12,7 +12,7 @@ import hashlib
 import operator
 from collections.abc import Callable
 from decimal import Decimal
-from typing import Annotated, Any, TypedDict
+from typing import Annotated, Any, TypedDict, cast
 
 from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.checkpoint.memory import InMemorySaver
@@ -222,11 +222,11 @@ def build_workflow(ctx: ReviewContext, checkpointer: BaseCheckpointSaver[Any] | 
         ("provisions", provisions),
         ("drafter", drafter),
     ):
-        graph.add_node(name, traced(name, fn, CORE_EXPECTED_ERRORS))  # type: ignore[call-overload]
+        graph.add_node(name, cast(Any, traced(name, fn, CORE_EXPECTED_ERRORS)))
     graph.add_edge(START, "intake")
     for name in NODE_ORDER:
         graph.add_conditional_edges(name, supervisor(name))
-    graph.add_node("human_review", review_node(MAX_HUMAN_REVISIONS))  # type: ignore[call-overload]
+    graph.add_node("human_review", cast(Any, review_node(MAX_HUMAN_REVISIONS)))
     graph.add_node("finalize", finalize)
     graph.add_conditional_edges("human_review", after_review)
     graph.add_edge("finalize", END)
