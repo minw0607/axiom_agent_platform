@@ -41,6 +41,8 @@ JobStatus = Literal[
 # A reviewed job waits in one of these until the worker resumes it.
 RESUMABLE: tuple[JobStatus, ...] = ("revising", "finalizing")
 IDEMPOTENCY_TTL = timedelta(hours=24)
+# The app of every job submitted before ADR 0016, when the credit memo was the only app.
+DEFAULT_APP_ID = "credit_memo"
 ReviewConflict = Literal[
     "not-found", "not-awaiting-review", "separation-of-duties", "revision-limit", "key-reused"
 ]
@@ -49,6 +51,7 @@ ReviewConflict = Literal[
 class JobRecord(BaseModel):
     job_id: str
     status: JobStatus
+    app_id: str = DEFAULT_APP_ID
     package_id: str
     submitter: str
     created_at: datetime
@@ -103,13 +106,15 @@ def review_event(review: ReviewDecision) -> EventDraft:
     )
 
 
-def check_review(job: JobRecord, reviewer: str, decision: str) -> ReviewConflict | None:
+def check_review(
+    job: JobRecord, reviewer: str, decision: str, max_revisions: int = MAX_HUMAN_REVISIONS
+) -> ReviewConflict | None:
     """The rules a review must pass, in the order they are reported."""
     if job.status != "awaiting_review":
         return "not-awaiting-review"
     if reviewer == job.submitter:
         return "separation-of-duties"
-    if decision == "revise" and job.human_revisions >= MAX_HUMAN_REVISIONS:
+    if decision == "revise" and job.human_revisions >= max_revisions:
         return "revision-limit"
     return None
 
@@ -124,10 +129,15 @@ class JobStore(Protocol):
         request_hash: str,
         package_id: str,
         daily_cap: int | None = None,
+        app_id: str = DEFAULT_APP_ID,
     ) -> SubmitResult: ...
     async def get(self, job_id: str) -> JobRecord | None: ...
     async def list_jobs(
-        self, submitter: str | None, statuses: tuple[str, ...] | None, limit: int
+        self,
+        submitter: str | None,
+        statuses: tuple[str, ...] | None,
+        limit: int,
+        app_id: str | None = None,
     ) -> list[JobSummary]: ...
     async def claim_next(self) -> JobRecord | None: ...
     async def finish(
@@ -143,15 +153,18 @@ class JobStore(Protocol):
         request_hash: str,
         decision: str,
         comments: str,
+        max_revisions: int = MAX_HUMAN_REVISIONS,
     ) -> ReviewResult: ...
     def checkpointer(self) -> AbstractAsyncContextManager[BaseCheckpointSaver[Any]]: ...
 
 
-def submitted_event(submitter: str, package_id: str, request_hash: str) -> EventDraft:
+def submitted_event(
+    submitter: str, package_id: str, request_hash: str, app_id: str = DEFAULT_APP_ID
+) -> EventDraft:
     return EventDraft(
         type="job_submitted",
         actor=submitter,
-        payload={"package_id": package_id, "request_sha256": request_hash},
+        payload={"app_id": app_id, "package_id": package_id, "request_sha256": request_hash},
     )
 
 
@@ -190,6 +203,7 @@ class InMemoryJobStore:
         request_hash: str,
         package_id: str,
         daily_cap: int | None = None,
+        app_id: str = DEFAULT_APP_ID,
     ) -> SubmitResult:
         async with self._lock:
             existing = self.keys.get((submitter, idem_key))
@@ -206,6 +220,7 @@ class InMemoryJobStore:
             job = JobRecord(
                 job_id=new_job_id(),
                 status="queued",
+                app_id=app_id,
                 package_id=package_id,
                 submitter=submitter,
                 created_at=now,
@@ -214,7 +229,10 @@ class InMemoryJobStore:
             self.jobs[job.job_id] = job
             self.keys[(submitter, idem_key)] = (request_hash, job.job_id, now)
             self.evidence[job.job_id] = chain(
-                job.job_id, [submitted_event(submitter, package_id, request_hash)], None, now
+                job.job_id,
+                [submitted_event(submitter, package_id, request_hash, app_id)],
+                None,
+                now,
             )
             return SubmitResult(job=job)
 
@@ -222,13 +240,18 @@ class InMemoryJobStore:
         return self.jobs.get(job_id)
 
     async def list_jobs(
-        self, submitter: str | None, statuses: tuple[str, ...] | None, limit: int
+        self,
+        submitter: str | None,
+        statuses: tuple[str, ...] | None,
+        limit: int,
+        app_id: str | None = None,
     ) -> list[JobSummary]:
         jobs = [
             j
             for j in self.jobs.values()
             if (submitter is None or j.submitter == submitter)
             and (statuses is None or j.status in statuses)
+            and (app_id is None or j.app_id == app_id)
         ]
         jobs.sort(key=lambda j: j.updated_at, reverse=True)
         return [summary(j) for j in jobs[:limit]]
@@ -277,6 +300,7 @@ class InMemoryJobStore:
         request_hash: str,
         decision: str,
         comments: str,
+        max_revisions: int = MAX_HUMAN_REVISIONS,
     ) -> ReviewResult:
         async with self._lock:
             job = self.jobs.get(job_id)
@@ -287,7 +311,7 @@ class InMemoryJobStore:
                     if stored_hash != request_hash:
                         return ReviewResult(job=job, conflict="key-reused")
                     return ReviewResult(job=job, review=review, replayed=True)
-            conflict = check_review(job, reviewer, decision)
+            conflict = check_review(job, reviewer, decision, max_revisions)
             if conflict:
                 return ReviewResult(job=job, conflict=conflict)
             review = ReviewDecision(
@@ -330,6 +354,7 @@ CREATE INDEX IF NOT EXISTS jobs_queued ON jobs (created_at) WHERE status = 'queu
 CREATE INDEX IF NOT EXISTS jobs_by_update ON jobs (updated_at DESC);
 ALTER TABLE jobs ADD COLUMN IF NOT EXISTS human_revisions INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE jobs ADD COLUMN IF NOT EXISTS pending_review JSONB;
+ALTER TABLE jobs ADD COLUMN IF NOT EXISTS app_id TEXT NOT NULL DEFAULT 'credit_memo';
 CREATE TABLE IF NOT EXISTS reviews (
     job_id       TEXT NOT NULL REFERENCES jobs (job_id),
     round        INTEGER NOT NULL,
@@ -402,7 +427,7 @@ async def _append(conn: Any, job_id: str, drafts: list[EventDraft]) -> list[Evid
 _SUMMARY_FIELDS = tuple(JobSummary.model_fields)
 _COLUMNS = (
     "job_id, status, package_id, submitter, created_at, updated_at, result, error_code, "
-    "human_revisions, pending_review"
+    "human_revisions, pending_review, app_id"
 )
 
 
@@ -443,6 +468,7 @@ class PostgresJobStore:
         request_hash: str,
         package_id: str,
         daily_cap: int | None = None,
+        app_id: str = DEFAULT_APP_ID,
     ) -> SubmitResult:
         async with await self._connect() as conn, conn.transaction():
             # Serialize concurrent submissions with the same key.
@@ -474,9 +500,9 @@ class PostgresJobStore:
                     return SubmitResult(job=None, cap_reached=True)
             job_id = new_job_id()
             cur = await conn.execute(
-                f"INSERT INTO jobs (job_id, status, package_id, submitter) "
-                f"VALUES (%s, 'queued', %s, %s) RETURNING {_COLUMNS}",
-                (job_id, package_id, submitter),
+                f"INSERT INTO jobs (job_id, status, package_id, submitter, app_id) "
+                f"VALUES (%s, 'queued', %s, %s, %s) RETURNING {_COLUMNS}",
+                (job_id, package_id, submitter, app_id),
             )
             job_row = await cur.fetchone()
             await conn.execute(
@@ -486,7 +512,9 @@ class PostgresJobStore:
                 "created_at = now()",
                 (submitter, idem_key, request_hash, job_id),
             )
-            await _append(conn, job_id, [submitted_event(submitter, package_id, request_hash)])
+            await _append(
+                conn, job_id, [submitted_event(submitter, package_id, request_hash, app_id)]
+            )
             return SubmitResult(job=_record(job_row))
 
     async def get(self, job_id: str) -> JobRecord | None:
@@ -496,7 +524,11 @@ class PostgresJobStore:
         return None if row is None else _record(row)
 
     async def list_jobs(
-        self, submitter: str | None, statuses: tuple[str, ...] | None, limit: int
+        self,
+        submitter: str | None,
+        statuses: tuple[str, ...] | None,
+        limit: int,
+        app_id: str | None = None,
     ) -> list[JobSummary]:
         async with await self._connect() as conn:
             cur = await conn.execute(
@@ -504,8 +536,14 @@ class PostgresJobStore:
                 "result->'draft'->>'draft_recommendation', human_revisions FROM jobs "
                 "WHERE (%(sub)s::text IS NULL OR submitter = %(sub)s) "
                 "AND (%(st)s::text[] IS NULL OR status = ANY(%(st)s)) "
+                "AND (%(app)s::text IS NULL OR app_id = %(app)s) "
                 "ORDER BY updated_at DESC LIMIT %(n)s",
-                {"sub": submitter, "st": None if statuses is None else list(statuses), "n": limit},
+                {
+                    "sub": submitter,
+                    "st": None if statuses is None else list(statuses),
+                    "app": app_id,
+                    "n": limit,
+                },
             )
             rows = await cur.fetchall()
         return [JobSummary(**dict(zip(_SUMMARY_FIELDS, r, strict=True))) for r in rows]
@@ -552,6 +590,7 @@ class PostgresJobStore:
         request_hash: str,
         decision: str,
         comments: str,
+        max_revisions: int = MAX_HUMAN_REVISIONS,
     ) -> ReviewResult:
         async with await self._connect() as conn, conn.transaction():
             # Lock the job row: concurrent reviews of one job are serialized here.
@@ -572,7 +611,7 @@ class PostgresJobStore:
                 if prior[4] != request_hash:
                     return ReviewResult(job=job, conflict="key-reused")
                 return ReviewResult(job=job, review=_review_row(prior), replayed=True)
-            conflict = check_review(job, reviewer, decision)
+            conflict = check_review(job, reviewer, decision, max_revisions)
             if conflict:
                 return ReviewResult(job=job, conflict=conflict)
             cur = await conn.execute("SELECT count(*) FROM reviews WHERE job_id = %s", (job_id,))

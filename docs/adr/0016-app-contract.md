@@ -69,18 +69,24 @@ The core keeps doing what every app needs:
 
 ### 3. What an app provides
 
-An app registers one object that meets the `App` protocol in `axiom/core/app.py`:
+An app registers one object that meets the `App` protocol in `axiom/core/app.py`. The table is the protocol as built in step 1b; it replaced the shorter list first proposed here, because the worker and API need more than a graph and a result to stay free of app code.
 
 | Member | What it is | Credit memo |
 |---|---|---|
-| `app_id`, `title` | A stable ID and a display name | `credit_memo`, "Credit memo" |
+| `app_id`, `title`, `noun` | A stable ID, a display name, and what a job produces in API messages | `credit_memo`, "Credit memo", "memo" |
 | `roles` | Display names for the three core roles (submitter, reviewer, auditor) | Relationship manager, credit officer, auditor |
-| `catalog` | Lists inputs, loads one as documents plus metadata, says whether it has recordings | The borrower packages in `data/synthetic/` |
-| `build_graph(ctx, checkpointer)` | The LangGraph workflow over the app's state, ending in the core's review step | `graph.py` |
-| `result(state)` | The public result, a Pydantic model that appears in OpenAPI | The memo |
-| `draft_facts(state)` | What the output checks compare a draft with: the numbers it may use and their sources | Extracted figures and ratio outputs |
-| `error_codes` | The app's own exceptions and their public failure reasons | `invalid_package`, and so on |
+| `inputs`, `load_input`, `has_recordings` | The catalog: lists inputs, loads one (raising `UnknownInput`), says whether demo mode can replay it | The borrower packages in `data/synthetic/` |
+| `build_context`, `started` | What the workflow needs to run, and the versions recorded when a job starts | Router, tools, policy thresholds, prompts, guardrails; policy and prompt versions |
+| `run`, `resume`, `paused_for_review` | Run a new job until it pauses, resume it with a review decision (raising `ReviewError`), and tell whether it is paused | `graph.py` |
+| `serialize`, `node_outputs`, `node_details` | The stored result, and what each node's `node_completed` event hashes and adds | The memo state; risk flags, draft recommendation, triggered rules |
+| `request_model`, `job_model`, `to_public` | The request body and the public job, Pydantic models that appear in OpenAPI | `MemoRequest`, `MemoJob` |
+| `evidence_model`, `to_evidence` | The evidence bundle | `EvidenceBundle`, with compliance findings |
+| `error_codes` | The app's own exceptions and their public failure reasons, added to the core's | `IntakeError` is `invalid_package` |
 | `max_revisions` | How many times a reviewer may ask for a revision | 2 |
+| `state_modules`, `legacy_modules` | Types allowed in a checkpoint, and their module names before a move | `domain`; `axiom.domain` |
+| `legacy_route`, `extra_routes`, `source_description` | A route kept from before this ADR, routes outside the job routes, and the source route's description | `/v1/memos`; `/v1/packages`, `/v1/policy/{ref}` |
+
+What the output checks compare a draft with (`draft_facts`) stays inside the app: the app builds it and hands it to the core guardrails when it calls them.
 
 Configuration and data are grouped by app so that one app's settings can't change another's:
 

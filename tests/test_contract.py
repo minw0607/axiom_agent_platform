@@ -19,7 +19,8 @@ import schemathesis
 from fastapi.testclient import TestClient
 from hypothesis import HealthCheck, settings
 
-from axiom.api.app import MAX_IDEMPOTENCY_KEY, create_app
+from axiom.api.app import create_app
+from axiom.api.jobs import MAX_IDEMPOTENCY_KEY
 from axiom.jobs.store import InMemoryJobStore, PostgresJobStore
 from test_api import KEYS, SETTINGS_WITH_KEYS, work
 from test_store_postgres import BASE_URL, _reachable

@@ -7,15 +7,6 @@ from pathlib import Path
 
 SRC = Path(__file__).resolve().parents[1] / "src" / "axiom"
 
-# Core modules that still import the credit memo app. Each moves behind the app registry in
-# step 1b of ADR 0016; the list may only shrink.
-NOT_YET_SEPARATED = {
-    "api/app.py",
-    "api/explain.py",
-    "api/schemas.py",
-    "jobs/worker.py",
-}
-
 
 def app_imports(path: Path) -> list[str]:
     found: list[str] = []
@@ -35,19 +26,18 @@ def core_modules() -> list[Path]:
 
 
 def test_core_modules_do_not_import_apps() -> None:
-    offenders = {
-        str(p.relative_to(SRC)): app_imports(p)
-        for p in core_modules()
-        if str(p.relative_to(SRC)) not in NOT_YET_SEPARATED and app_imports(p)
-    }
+    offenders = {str(p.relative_to(SRC)): app_imports(p) for p in core_modules() if app_imports(p)}
     assert offenders == {}
 
 
-def test_the_not_yet_separated_list_is_current() -> None:
-    """A module that no longer imports an app comes off the list."""
-    still = {name for name in NOT_YET_SEPARATED if app_imports(SRC / name)}
-    assert still == NOT_YET_SEPARATED
+def test_the_scan_finds_app_imports(tmp_path: Path) -> None:
+    module = tmp_path / "m.py"
+    module.write_text(
+        "import axiom.apps\nfrom axiom.apps.credit_memo import APP\nimport axiom.core\n"
+    )
+    assert app_imports(module) == ["axiom.apps", "axiom.apps.credit_memo"]
 
 
-def test_the_scan_finds_app_imports() -> None:
-    assert app_imports(SRC / "jobs" / "worker.py")
+def test_the_api_and_worker_are_core_modules() -> None:
+    scanned = {str(p.relative_to(SRC)) for p in core_modules()}
+    assert {"api/app.py", "api/jobs.py", "jobs/worker.py", "core/registry.py"} <= scanned

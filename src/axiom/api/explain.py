@@ -1,6 +1,6 @@
-"""Lookups behind the review page's "Explain this": a cited source excerpt and a policy clause.
+"""The lookup behind the review page's "Explain this": the source text of one citation.
 
-No model is involved. A citation is resolved from the borrower package (for "line N") or
+No model is involved. A citation is resolved from the job's input documents (for "line N") or
 from the passages the job stored when it retrieved them (for a passage id). Each excerpt
 says whether its text still matches the fingerprint (SHA-256) recorded during the job, so
 a reader can tell the excerpt is what the platform used.
@@ -10,20 +10,22 @@ from __future__ import annotations
 
 import hashlib
 import re
-from functools import lru_cache
-from pathlib import Path
-from typing import Any, Literal
+from collections.abc import Sequence
+from typing import Any, Literal, Protocol
 
 from pydantic import BaseModel, Field
 
-from axiom.apps.credit_memo.domain import BorrowerPackage
+from axiom.core.types import Document
 
 Fingerprint = Literal["matches", "differs", "not_recorded"]
 LINE = re.compile(r"line (\d{1,5})")
-CLAUSE = re.compile(r"^(CP-\d+\.\d+) (.+)$")
-SECTION = re.compile(r"^## (CP-\d+) (.+)$")
-VERSION = re.compile(r"Policy version (CP-\d+(?:\.\d+)*)")
-POLICY_REF = re.compile(r"CP-\d+(\.\d+)?")
+
+
+class HasDocuments(Protocol):
+    """A job's input, whatever the app: it holds the documents a draft cites."""
+
+    @property
+    def documents(self) -> Sequence[Document]: ...
 
 
 class SourceExcerpt(BaseModel):
@@ -38,16 +40,6 @@ class SourceExcerpt(BaseModel):
     )
     fingerprint: Fingerprint
     note: str = ""
-
-
-class PolicyClause(BaseModel):
-    ref: str
-    policy_version: str
-    section: str
-    text: str
-    clauses: list[str] = Field(
-        default_factory=list, description="For a section reference, the clauses it holds"
-    )
 
 
 def _sha(text: str) -> str:
@@ -67,7 +59,7 @@ def _table_header(lines: list[str], index: int) -> str | None:
 
 
 def source_excerpt(
-    package: BorrowerPackage, result: dict[str, Any], doc_id: str, locator: str
+    package: HasDocuments, result: dict[str, Any], doc_id: str, locator: str
 ) -> SourceExcerpt | None:
     """The cited text, or None when the citation does not resolve in this job."""
     redacted = bool(result.get("pii_redacted"))
@@ -122,33 +114,3 @@ def source_excerpt(
                 note="A passage the platform retrieved while drafting.",
             )
     return None
-
-
-@lru_cache(maxsize=4)
-def _policy(path: Path, mtime: float) -> tuple[str, dict[str, PolicyClause]]:
-    text = path.read_text()
-    version_match = VERSION.search(text)
-    version = version_match.group(1) if version_match else "unknown"
-    clauses: dict[str, PolicyClause] = {}
-    section_ref, section_title = "", ""
-    for line in text.splitlines():
-        if s := SECTION.match(line):
-            section_ref, section_title = s.group(1), s.group(2)
-            clauses[section_ref] = PolicyClause(
-                ref=section_ref, policy_version=version, section=section_title, text=section_title
-            )
-        elif c := CLAUSE.match(line):
-            body = c.group(2).replace("**", "")
-            clauses[c.group(1)] = PolicyClause(
-                ref=c.group(1), policy_version=version, section=section_title, text=body
-            )
-            if section_ref:
-                clauses[section_ref].clauses.append(c.group(1))
-    return version, clauses
-
-
-def policy_clause(policy_dir: Path, ref: str) -> PolicyClause | None:
-    path = policy_dir / "credit_policy.md"
-    if not POLICY_REF.fullmatch(ref) or not path.is_file():
-        return None
-    return _policy(path, path.stat().st_mtime)[1].get(ref)

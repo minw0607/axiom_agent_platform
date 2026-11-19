@@ -7,29 +7,16 @@ on any app. Each entry names an app's package; the package exposes an `APP` obje
 from __future__ import annotations
 
 import importlib
-from dataclasses import dataclass, field
 from functools import cache
 from pathlib import Path
-from types import ModuleType
 
 import yaml
+
+from axiom.core.app import App
 
 
 class AppConfigError(ValueError):
     """config/apps.yaml is malformed or names an app that cannot be loaded."""
-
-
-@dataclass(frozen=True)
-class AppSpec:
-    """What the core needs from an app. Extended as the core takes over more of the work."""
-
-    app_id: str
-    title: str
-    # Modules whose Pydantic models and enums may appear in a paused job's checkpoint.
-    state_modules: tuple[ModuleType, ...] = ()
-    # Names those modules had before they moved, so older checkpoints still load:
-    # {old module name: current module}.
-    legacy_modules: dict[str, ModuleType] = field(default_factory=dict)
 
 
 def read_app_packages(path: Path) -> dict[str, str]:
@@ -50,20 +37,25 @@ def read_app_packages(path: Path) -> dict[str, str]:
     return packages
 
 
-def load_apps(path: Path) -> dict[str, AppSpec]:
-    apps: dict[str, AppSpec] = {}
+def load_apps(path: Path) -> dict[str, App]:
+    apps: dict[str, App] = {}
     for app_id, package in read_app_packages(path).items():
         spec = getattr(importlib.import_module(package), "APP", None)
-        if not isinstance(spec, AppSpec):
-            raise AppConfigError(f"{package} has no APP")
+        if not isinstance(spec, App):
+            raise AppConfigError(f"{package} has no APP meeting the App protocol")
         if spec.app_id != app_id:
             raise AppConfigError(f"{package} is app {spec.app_id!r}, listed as {app_id!r}")
         apps[app_id] = spec
     return apps
 
 
+def get_app(app_id: str) -> App:
+    """An enabled app by ID. Raises KeyError."""
+    return enabled_apps()[app_id]
+
+
 @cache
-def enabled_apps(path: Path | None = None) -> dict[str, AppSpec]:
+def enabled_apps(path: Path | None = None) -> dict[str, App]:
     from axiom.settings import Settings
 
     return load_apps(path or Settings.from_env().config_dir / "apps.yaml")

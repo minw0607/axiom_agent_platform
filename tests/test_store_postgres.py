@@ -223,3 +223,43 @@ def test_daily_cap_is_shared_and_exact_under_a_race(store: PostgresJobStore) -> 
     i = created.index(True)
     replay = asyncio.run(store.submit(f"rm-{i}", f"k{i}", "h", "pkg-01", daily_cap=3))
     assert replay.replayed and replay.job is not None
+
+
+def test_jobs_carry_their_app_and_lists_filter_by_it(store: PostgresJobStore) -> None:
+    memo = asyncio.run(store.submit("rm-a", "k-m", "h", "pkg-01"))
+    other = asyncio.run(store.submit("rm-a", "k-o", "h", "pkg-01", None, "other_app"))
+    assert memo.job is not None and other.job is not None
+    assert memo.job.app_id == "credit_memo" and other.job.app_id == "other_app"
+    got = asyncio.run(store.get(other.job.job_id))
+    assert got is not None and got.app_id == "other_app"
+    listed = asyncio.run(store.list_jobs(None, None, 10, "credit_memo"))
+    assert [j.job_id for j in listed] == [memo.job.job_id]
+    assert len(asyncio.run(store.list_jobs(None, None, 10))) == 2
+    first = asyncio.run(store.events(other.job.job_id))[0]
+    assert first.payload["app_id"] == "other_app"
+
+
+def test_jobs_from_before_the_app_column_become_credit_memo_jobs() -> None:
+    import psycopg
+
+    schema = f"test_{uuid.uuid4().hex[:10]}"
+    sep = "&" if "?" in BASE_URL else "?"
+    url = f"{BASE_URL}{sep}options=-csearch_path%3D{schema}"
+    with psycopg.connect(BASE_URL, autocommit=True) as conn:
+        conn.execute(f"CREATE SCHEMA {schema}")
+    try:
+        with psycopg.connect(url, autocommit=True) as conn:
+            conn.execute(
+                "CREATE TABLE jobs (job_id TEXT PRIMARY KEY, status TEXT NOT NULL, "
+                "package_id TEXT NOT NULL, submitter TEXT NOT NULL, "
+                "created_at TIMESTAMPTZ NOT NULL DEFAULT now(), "
+                "updated_at TIMESTAMPTZ NOT NULL DEFAULT now(), result JSONB, error_code TEXT)"
+            )
+            conn.execute("INSERT INTO jobs VALUES ('job_old', 'approved', 'pkg-01', 'rm-a')")
+        store = PostgresJobStore(url)
+        asyncio.run(store.init())
+        old = asyncio.run(store.get("job_old"))
+        assert old is not None and old.app_id == "credit_memo"
+    finally:
+        with psycopg.connect(BASE_URL, autocommit=True) as conn:
+            conn.execute(f"DROP SCHEMA {schema} CASCADE")

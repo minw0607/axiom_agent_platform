@@ -9,8 +9,9 @@ import pytest
 from fastapi.testclient import TestClient
 
 from axiom.api.app import create_app
-from axiom.api.explain import policy_clause, source_excerpt
+from axiom.api.explain import source_excerpt
 from axiom.apps.credit_memo.catalog import load_package
+from axiom.apps.credit_memo.explain import policy_clause
 from axiom.jobs.store import InMemoryJobStore
 from conftest import SETTINGS
 from test_api import KEYS, SETTINGS_WITH_KEYS, submit, work

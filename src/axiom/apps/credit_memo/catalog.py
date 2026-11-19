@@ -16,11 +16,12 @@ from axiom.apps.credit_memo.domain import (
     LoanRequest,
     SourceRef,
 )
+from axiom.core.types import UnknownInput
 
 PACKAGE_ID = re.compile(r"^pkg-\d{2}$")
 
 
-class UnknownPackage(LookupError):
+class UnknownPackage(UnknownInput):
     pass
 
 

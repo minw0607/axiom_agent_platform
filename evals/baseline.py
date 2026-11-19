@@ -28,13 +28,14 @@ from typing import Any
 
 import yaml
 
+from axiom.apps.credit_memo import APP
 from axiom.apps.credit_memo.agents.base import PROMPT_VERSIONS, AgentContext
 from axiom.apps.credit_memo.catalog import list_packages, load_ground_truth, load_package
 from axiom.apps.credit_memo.domain import BorrowerPackage
 from axiom.apps.credit_memo.graph import MemoState, run_workflow
 from axiom.apps.credit_memo.tools.policy import load_policy
 from axiom.guardrails import latest
-from axiom.jobs.worker import ERROR_CODES, build_context
+from axiom.jobs.worker import build_context, error_codes
 from axiom.mcp_clients.evidence import InMemoryEvidence
 from axiom.router.router import ModelRouter
 from axiom.router.types import Sensitivity
@@ -136,7 +137,7 @@ def score(state: MemoState, truth: dict[str, Any]) -> dict[str, Any]:
         "scenario": truth["scenario"],
         "outcome": "drafted"
         if not error
-        else ERROR_CODES.get(error.split(":", 1)[0], "internal_error"),
+        else error_codes(APP).get(error.split(":", 1)[0], "internal_error"),
         # Enough to diagnose a failure without rerunning it (dev plan 9.4): the error, and
         # which guardrails triggered, by stage. Codes and names only, never memo text.
         "error": (error or "")[:300] or None,

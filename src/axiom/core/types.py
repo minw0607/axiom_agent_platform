@@ -89,3 +89,11 @@ class Draft(Protocol):
 
     @property
     def sections(self) -> Sequence[DraftSection]: ...
+
+
+class ReviewError(RuntimeError):
+    """A reviewer's decision could not be applied to the job's workflow."""
+
+
+class UnknownInput(LookupError):
+    """No input with this ID in the app's catalog."""

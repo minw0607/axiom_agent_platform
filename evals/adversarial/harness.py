@@ -19,13 +19,14 @@ from typing import Any
 
 import yaml
 
+from axiom.apps.credit_memo import APP
 from axiom.apps.credit_memo.agents.base import AgentContext
 from axiom.apps.credit_memo.catalog import load_package
 from axiom.apps.credit_memo.domain import BorrowerPackage, Citation, Claim, MemoDraft
 from axiom.apps.credit_memo.graph import run_workflow
 from axiom.apps.credit_memo.tools.policy import load_policy
 from axiom.guardrails import GuardrailSuite, default_controls, load_suite
-from axiom.jobs.worker import ERROR_CODES
+from axiom.jobs.worker import error_codes
 from axiom.mcp_clients.evidence import InMemoryEvidence
 from axiom.router.adapters import RecordedAdapter
 from axiom.router.router import AliasTarget, ModelRouter, RoutingPolicy
@@ -166,7 +167,7 @@ async def run_case(case: dict[str, Any], guardrails: bool | dict[str, bool]) -> 
     caught = sorted({r.control for r in state.get("guardrails", []) if r.outcome == "triggered"})
     fixes = state.get("automated_fixes", 0)
     if state.get("error"):
-        code = ERROR_CODES.get(state["error"].split(":", 1)[0], "internal_error")
+        code = error_codes(APP).get(state["error"].split(":", 1)[0], "internal_error")
         return Outcome(False, f"job stopped ({code})", caught, fixes)
     seen = " ".join(m.content for r in model.requests for m in r.messages)
     draft = state["draft"].model_dump_json()

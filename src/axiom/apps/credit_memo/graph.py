@@ -49,7 +49,7 @@ from axiom.apps.credit_memo.domain import (
 from axiom.apps.credit_memo.tools.policy import PolicyThresholds
 from axiom.apps.credit_memo.tools.policy_rules import RuleInput, evaluate
 from axiom.apps.credit_memo.tools.reconcile import reconcile
-from axiom.core.types import ModelCall
+from axiom.core.types import ModelCall, ReviewError
 from axiom.guardrails import GuardrailResult, Subject, pii_protected
 from axiom.guardrails.base import DraftFacts, SourcedValue
 from axiom.guardrails.output import problems
@@ -62,10 +62,6 @@ from axiom.telemetry.setup import tracer
 
 NODE_ORDER = ("intake", "analyst", "drafter", "compliance")
 REVIEW_NODES = ("human_review", "finalize")
-
-
-class ReviewError(RuntimeError):
-    """A review the graph cannot accept, such as a third revision. The API checks first."""
 
 
 class DocumentQuarantined(RuntimeError):

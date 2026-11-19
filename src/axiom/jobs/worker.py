@@ -1,8 +1,9 @@
-"""The worker loop: claim a job, run or resume the workflow, store the result.
+"""The worker loop: claim a job, run or resume its app's workflow, store the result.
 
 A new job runs until it pauses for review. A reviewed job resumes from its checkpoint with
-the credit officer's decision: approve finalizes it, revise redrafts and pauses again, and
-reject closes it. Each segment of work appends its own evidence events.
+the reviewer's decision: approve finalizes it, revise redrafts and pauses again, and
+reject closes it. Each segment of work appends its own evidence events. The worker reaches
+each app only through the registry (ADR 0016).
 
 uv run python -m axiom.jobs.worker
 """
@@ -14,33 +15,22 @@ import contextlib
 import hashlib
 import json
 import logging
+from collections.abc import Mapping
 from typing import Any
 
-from axiom.apps.credit_memo.agents.base import PROMPT_VERSIONS, AgentContext
-from axiom.apps.credit_memo.catalog import UnknownPackage, load_package
-from axiom.apps.credit_memo.graph import (
-    MemoState,
-    ReviewError,
-    paused_for_review,
-    resume_workflow,
-    run_workflow,
-)
-from axiom.apps.credit_memo.tools.policy import load_policy
+from axiom.core.app import App
+from axiom.core.registry import enabled_apps, get_app
+from axiom.core.types import ReviewError, UnknownInput
 from axiom.evidence.log import EventDraft
-from axiom.guardrails import load_suite
 from axiom.jobs.store import JobRecord, JobStatus, JobStore, PostgresJobStore
-from axiom.mcp_clients.client import GatewayClient, MCPToolClient
-from axiom.mcp_clients.evidence import EvidenceService, GKNEvidence, InMemoryEvidence
-from axiom.mcp_clients.governance import RegulusGovernance
-from axiom.router.router import ModelRouter
 from axiom.settings import Settings
 from axiom.telemetry.setup import setup_telemetry, shutdown_telemetry, tracer
 
 log = logging.getLogger("axiom.worker")
 
 # Public failure reasons. Internal detail stays in the stored result for auditors.
+# Each app adds its own (App.error_codes).
 ERROR_CODES = {
-    "IntakeError": "invalid_package",
     "AgentOutputError": "output_validation_failed",
     "ProviderError": "model_unavailable",
     "FailClosed": "no_permitted_model",
@@ -50,83 +40,16 @@ ERROR_CODES = {
 }
 
 
-def build_context(settings: Settings) -> AgentContext:
-    """Tools go through the tool gateway when it is configured (the Docker stack), else
-    straight to the services with the shared secret (local development), else in memory."""
-    evidence: EvidenceService
-    governance: RegulusGovernance | None = None
-    if settings.tool_gateway_url and settings.tool_gateway_tokens:
-        gateway = GatewayClient(settings.tool_gateway_url, settings.tool_gateway_tokens)
-        evidence = GKNEvidence(gateway)
-        governance = RegulusGovernance(gateway)
-    elif settings.gkn_mcp_url and settings.mcp_shared_secret:
-        evidence = GKNEvidence(MCPToolClient(settings.gkn_mcp_url, settings.mcp_shared_secret))
-    else:
-        log.warning("GKN not configured; using in-memory evidence retrieval")
-        evidence = InMemoryEvidence(settings.reference_dirs)
-    return AgentContext(
-        router=ModelRouter.from_settings(
-            settings.config_dir, settings.mode, settings.recordings_dir
-        ),
-        evidence=evidence,
-        policy=load_policy(settings.config_dir / "policy_thresholds.yaml"),
-        prompts_dir=settings.prompts_dir,
-        guardrails=load_suite(settings.guardrails_file),
-        governance=governance
-        or (
-            RegulusGovernance(MCPToolClient(settings.regulus_mcp_url, settings.mcp_shared_secret))
-            if settings.regulus_mcp_url and settings.mcp_shared_secret
-            else None
-        ),
-    )
+def error_codes(app: App) -> dict[str, str]:
+    return ERROR_CODES | dict(app.error_codes)
 
 
-def serialize_state(state: MemoState, policy_version: str) -> dict[str, Any]:
-    def dump(value: Any) -> Any:
-        if isinstance(value, list):
-            return [dump(v) for v in value]
-        if hasattr(value, "model_dump"):
-            return value.model_dump(mode="json")
-        return value
-
-    keys = (
-        "source_hashes",
-        "financials",
-        "checks",
-        "ratios",
-        "risk_flags",
-        "narrative",
-        "draft",
-        "findings",
-        "evidence",
-        "reference_evidence",
-        "reviews",
-        "human_revisions",
-        "automated_fixes",
-        "guardrails",
-        "pii_redacted",
-        "outcome",
-        "related_guidance",
-        "approved_draft_sha256",
-        "model_calls",
-        "tool_calls",
-        "completed",
-        "error",
-        "error_node",
-    )
-    out = {k: dump(state[k]) for k in keys if k in state}  # type: ignore[literal-required]
-    out["policy_version"] = policy_version
-    return out
+def build_context(settings: Settings, app_id: str | None = None) -> Any:
+    """The workflow context for one app: by default the first enabled app."""
+    app = get_app(app_id) if app_id else next(iter(enabled_apps().values()))
+    return app.build_context(settings)
 
 
-# State keys that are each node's output, hashed into its node_completed event.
-NODE_OUTPUTS = {
-    "intake": ("source_hashes", "financials", "checks"),
-    "analyst": ("ratios", "risk_flags", "narrative"),
-    "drafter": ("draft", "evidence"),
-    "compliance": ("findings", "reference_evidence"),
-    "finalize": ("approved_draft_sha256", "related_guidance"),
-}
 WORKER = "worker"
 
 
@@ -140,12 +63,14 @@ def run_events(
     completed_before: int = 0,
     guardrails_before: int = 0,
     tools_before: int = 0,
+    app: App | None = None,
 ) -> list[EventDraft]:
     """The evidence events for one segment of a run, in order: for each node, its input
     guardrails, its model calls (every attempt, valid or not), its other guardrails, then
     the node's outcome. Tool calls through the gateway come after the input guardrails.
     A resumed run passes how many calls, completed nodes, guardrail results and tool calls
-    the earlier segments already logged."""
+    the earlier segments already logged. The app adds its own fields to node_completed."""
+    node_outputs = app.node_outputs if app else {}
     events: list[EventDraft] = []
     calls = result.get("model_calls", [])[calls_before:]
     checked = result.get("guardrails", [])[guardrails_before:]
@@ -179,35 +104,19 @@ def run_events(
             continue
         payload: dict[str, Any] = {
             "node": node,
-            "output_sha256": _sha256({k: result.get(k) for k in NODE_OUTPUTS.get(node, ())}),
+            "output_sha256": _sha256({k: result.get(k) for k in node_outputs.get(node, ())}),
         }
-        if node == "analyst":
-            payload["risk_flags"] = [f["code"] for f in result.get("risk_flags", [])]
-        if node == "drafter":
-            payload["draft_recommendation"] = result["draft"]["draft_recommendation"]
-        if node == "compliance":
-            payload["triggered"] = [
-                f["rule_id"] for f in result.get("findings", []) if f["outcome"] == "triggered"
-            ]
-            payload["not_evaluated"] = [
-                f["rule_id"] for f in result.get("findings", []) if f["outcome"] == "not_evaluated"
-            ]
-        if node == "finalize":
-            guidance = result.get("related_guidance") or {}
-            payload["approved_draft_sha256"] = result.get("approved_draft_sha256")
-            payload["related_guidance"] = {
-                "status": guidance.get("status"),
-                "provisions": [p["citation"] for p in guidance.get("provisions", [])],
-            }
+        if app is not None:
+            payload |= app.node_details(node, result)
         events.append(EventDraft(type="node_completed", actor=WORKER, payload=payload))
     return events
 
 
-async def process_job(
-    store: JobStore, ctx: AgentContext, settings: Settings, job: JobRecord
-) -> None:
+async def process_job(store: JobStore, ctx: Any, settings: Settings, job: JobRecord) -> None:
+    app = get_app(job.app_id)
     with tracer().start_as_current_span("job run") as span:
         span.set_attribute("axiom.job_id", job.job_id)
+        span.set_attribute("axiom.app_id", job.app_id)
         trace = span.get_span_context().trace_id
         trace_id = f"{trace:032x}" if trace else None
         await store.append_events(
@@ -218,31 +127,29 @@ async def process_job(
                     actor=WORKER,
                     payload={
                         "mode": settings.mode,
-                        "policy_version": ctx.policy.version,
-                        "prompt_versions": PROMPT_VERSIONS,
+                        **app.started(ctx),
                         "trace_id": trace_id,
                     },
                 )
             ],
         )
         try:
-            package = load_package(settings.packages_dir, job.package_id)
-        except UnknownPackage:
+            inp = app.load_input(settings, job.package_id)
+        except UnknownInput:
             await _fail(store, job.job_id, None, "invalid_package")
             return
         async with store.checkpointer() as saver:
-            state = await run_workflow(ctx, job.job_id, package, saver)
-        result = serialize_state(state, ctx.policy.version)
+            state = await app.run(ctx, job.job_id, inp, saver)
+        result = app.serialize(state, ctx)
         result["trace_id"] = trace_id
-        await store.append_events(job.job_id, run_events(result))
-        status = await _settle(store, job.job_id, state, result)
+        await store.append_events(job.job_id, run_events(result, app=app))
+        status = await _settle(store, app, job.job_id, state, result)
         span.set_attribute("axiom.job.status", status)
 
 
-async def resume_job(
-    store: JobStore, ctx: AgentContext, settings: Settings, job: JobRecord
-) -> None:
-    """Resume a reviewed job from its checkpoint with the credit officer's decision."""
+async def resume_job(store: JobStore, ctx: Any, settings: Settings, job: JobRecord) -> None:
+    """Resume a reviewed job from its checkpoint with the reviewer's decision."""
+    app = get_app(job.app_id)
     review = job.pending_review
     if review is None:
         await _fail(store, job.job_id, job.result, "internal_error")
@@ -263,11 +170,11 @@ async def resume_job(
         )
         try:
             async with store.checkpointer() as saver:
-                state = await resume_workflow(ctx, job.job_id, review, saver)
+                state = await app.resume(ctx, job.job_id, review, saver)
         except ReviewError:
             await _fail(store, job.job_id, before, "review_not_applied")
             return
-        result = serialize_state(state, ctx.policy.version)
+        result = app.serialize(state, ctx)
         result["trace_id"] = before.get("trace_id")
         await store.append_events(
             job.job_id,
@@ -277,22 +184,23 @@ async def resume_job(
                 len(before.get("completed", [])),
                 len(before.get("guardrails", [])),
                 len(before.get("tool_calls", [])),
+                app=app,
             ),
         )
-        status = await _settle(store, job.job_id, state, result)
+        status = await _settle(store, app, job.job_id, state, result)
         span.set_attribute("axiom.job.status", status)
 
 
 async def _settle(
-    store: JobStore, job_id: str, state: MemoState, result: dict[str, Any]
+    store: JobStore, app: App, job_id: str, state: Mapping[str, Any], result: dict[str, Any]
 ) -> JobStatus:
     """Record how a segment ended: paused for review, approved, rejected or failed."""
     if state.get("error"):
         error_type = state["error"].split(":", 1)[0]
-        await _fail(store, job_id, result, ERROR_CODES.get(error_type, "internal_error"))
+        await _fail(store, job_id, result, error_codes(app).get(error_type, "internal_error"))
         return "failed"
     status: JobStatus
-    if paused_for_review(state):
+    if app.paused_for_review(state):
         status, event = "awaiting_review", "job_awaiting_review"
     elif state.get("outcome") == "approved":
         status, event = "approved", "job_approved"
@@ -317,11 +225,15 @@ async def _fail(store: JobStore, job_id: str, result: dict[str, Any] | None, cod
     await store.finish(job_id, "failed", result, code)
 
 
-async def run_once(store: JobStore, ctx: AgentContext, settings: Settings) -> bool:
+async def run_once(store: JobStore, ctx: Any, settings: Settings) -> bool:
+    """Claim and work one job. `ctx` is either one app's context, used for every job (a
+    single-app test), or a mapping of app ID to context."""
     job = await store.claim_next()
     if job is None:
         return False
     try:
+        if isinstance(ctx, Mapping):
+            ctx = ctx[job.app_id]
         if job.pending_review is not None:
             await resume_job(store, ctx, settings, job)
         else:
@@ -335,7 +247,7 @@ async def run_once(store: JobStore, ctx: AgentContext, settings: Settings) -> bo
 async def run_worker(
     store: JobStore, settings: Settings, stop: asyncio.Event, poll_seconds: float = 0.5
 ) -> None:
-    ctx = build_context(settings)
+    ctx = {app_id: app.build_context(settings) for app_id, app in enabled_apps().items()}
     while not stop.is_set():
         if not await run_once(store, ctx, settings):
             with contextlib.suppress(TimeoutError):
