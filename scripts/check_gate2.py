@@ -10,6 +10,9 @@ Checks a running stack:
 6. No model was called: every model call in every evidence bundle is a replayed recording.
 7. Every tool call went through the gateway, was allowed, and came from the step that owns
    the tool (ADR 0014).
+8. Model documentation review (app 2, ADR 0016): demo mode offers every package, and each one
+   runs through the shared job routes to approval the same way, replaying recordings only,
+   with its governance lookups through the gateway from the provisions step.
 
     uv run python scripts/check_gate2.py
 
@@ -59,6 +62,11 @@ TARGET_SECONDS = 600
 COMMENTS = (
     "Add a sentence on liquidity that cites the current ratio.",
     "State the main condition you would propose, or say that none is needed.",
+)
+REVIEW_JOBS = f"{API}/v1/apps/model_review/jobs"
+REVIEW_COMMENTS = (
+    "Say which gaps must be closed before validation can start.",
+    "Name the provision behind each critical gap.",
 )
 
 results: list[tuple[str, bool, str]] = []
@@ -121,11 +129,13 @@ async def mcp_tools(url: str, secret: str) -> list[str]:
     return await MCPToolClient(url, secret).list_tools()
 
 
-def wait_status(job_id: str, key: str, want: set[str], timeout: float = 240) -> str:
+def wait_status(
+    job_id: str, key: str, want: set[str], timeout: float = 240, jobs: str = f"{API}/v1/memos"
+) -> str:
     end = time.monotonic() + timeout
     status = ""
     while time.monotonic() < end:
-        code, job, _ = http("GET", f"{API}/v1/memos/{job_id}", key)
+        code, job, _ = http("GET", f"{jobs}/{job_id}", key)
         status = job["status"] if code == 200 else f"http {code}"
         if status in want:
             return status
@@ -238,6 +248,72 @@ def run_checks(root: Path) -> None:
         "Every tool call went through the gateway, from the step that owns the tool",
         tool_calls > 0 and not tool_problems,
         f"{tool_calls} tool calls" + (f"; {'; '.join(tool_problems[:3])}" if tool_problems else ""),
+    )
+    check_model_review(sub, rev, aud)
+
+
+def check_model_review(sub: str, rev: str, aud: str) -> None:
+    """App 2 through the shared job routes: the same journey, its own recordings."""
+    from axiom.apps.model_review.catalog import list_packages, packages_dir
+    from axiom.settings import Settings
+
+    catalog = [p["package_id"] for p in list_packages(packages_dir(Settings.from_env().data_dir))]
+    code, offered, _ = http("GET", f"{API}/v1/apps/model_review/packages", sub)
+    listed = [p["package_id"] for p in offered] if code == 200 else []
+    check(
+        "App 2: demo mode offers every model documentation package",
+        listed == catalog,
+        f"{len(listed)} of {len(catalog)}",
+    )
+    started = time.monotonic()
+    failures: list[str] = []
+    origins: set[str] = set()
+    calls = lookups = 0
+    tool_problems: list[str] = []
+    for package_id in listed:
+        code, body, _ = http("POST", REVIEW_JOBS, sub, {"package_id": package_id})
+        if code != 202:
+            failures.append(f"{package_id}: submit http {code}")
+            continue
+        job_id = body["job_id"]
+        status = wait_status(job_id, sub, {"awaiting_review", "failed"}, jobs=REVIEW_JOBS)
+        for comments in REVIEW_COMMENTS:
+            if status != "awaiting_review":
+                break
+            review = {"decision": "revise", "comments": comments}
+            http("POST", f"{REVIEW_JOBS}/{job_id}/review", rev, review)
+            status = wait_status(job_id, sub, {"awaiting_review", "failed"}, jobs=REVIEW_JOBS)
+        if status == "awaiting_review":
+            review = {"decision": "approve", "comments": "Gate 2 check."}
+            http("POST", f"{REVIEW_JOBS}/{job_id}/review", rev, review)
+            status = wait_status(job_id, sub, {"approved", "failed"}, jobs=REVIEW_JOBS)
+        code, bundle, _ = http("GET", f"{REVIEW_JOBS}/{job_id}/evidence", aud)
+        verified = code == 200 and bundle["chain"]["verified"]
+        provisions = code == 200 and bundle.get("provisions_status")
+        reviews = len(http("GET", f"{REVIEW_JOBS}/{job_id}", aud)[1].get("reviews", []))
+        if code == 200:
+            origins |= {c["origin"] for c in bundle["model_calls"]}
+            calls += len(bundle["model_calls"])
+            for t in bundle.get("tool_calls", []):
+                lookups += 1
+                if not (t["allowed"] and t["call_id"]) or (t["node"], t["tool"]) != (
+                    "provisions",
+                    "lookup_provisions",
+                ):
+                    tool_problems.append(f"{package_id}: {t['node']} {t['tool']}")
+        if status != "approved" or not verified or provisions != "attached" or reviews != 3:
+            failures.append(f"{package_id}: {status}, chain {verified}, provisions {provisions}")
+    check(
+        "App 2: every package to approval after two revisions, verified chain, provisions attached",
+        bool(listed) and not failures,
+        f"{len(listed) - len(failures)} of {len(listed)} in {time.monotonic() - started:.0f} s"
+        + (f"; {'; '.join(failures[:3])}" if failures else ""),
+    )
+    check(
+        "App 2: no model was called, and every governance lookup came from the provisions step",
+        calls > 0 and origins == {"recorded"} and lookups > 0 and not tool_problems,
+        f"{calls} model calls, origin {', '.join(sorted(origins)) or 'none'}; {lookups} lookups"
+        + (f"; {'; '.join(tool_problems[:3])}" if tool_problems else ""),
     )
 
 

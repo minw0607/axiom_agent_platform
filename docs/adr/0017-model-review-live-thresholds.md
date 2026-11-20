@@ -43,9 +43,23 @@ Add the suite `model_review_golden_live` to `config/eval_gates.yaml`, applied ov
 
 `uv run python evals/gate.py --live --model-review` runs it (about 170k tokens). It is on demand only, as a `model_review` option of the Live gates workflow, not on every push, because of its cost.
 
+## Confirmation (step 3c)
+
+The step 3c recording run (6 packages, one first draft each, about 138k tokens with the two revision rounds) was scored against `model-review-golden-v2` and passed all 11 thresholds:
+
+| Metric | Run 2 (v1 key) | 3c recording (v2 key) | Threshold |
+|---|---|---|---|
+| Jobs completed, code metrics | 1.00 | 1.00 | every run |
+| Status matches | 0.94 | 1.00 | 85% of runs |
+| Weak sections found | 0.67 | 0.67 | mean 0.6 |
+| Adequate sections kept | 0.95 | 0.98 | mean 0.9 |
+| Findings covered (terms) | 0.69 | 0.67 | mean 0.6 |
+
+The same two known misses appeared (mdl-05 and mdl-03 fairness), and mdl-06's stress-testing section was again called weak once. The thresholds stand.
+
 ## Consequences
 
 - Six packages and four weak sections are a small set: these thresholds catch a broken prompt or a guardrail that stops jobs, not a small drift. One more miss in the wrong place can fail a mean.
-- Run 2 was scored on the answer key before its last three fixes. The next live run, the step 3c recording run, is scored against `model-review-golden-v2` and confirms or adjusts these marks.
+- Run 2 was scored on the answer key before its last three fixes; the step 3c recording run, scored on `model-review-golden-v2`, confirmed the marks (above).
 - Each live run spends tokens. The scripted suite stays in every CI run at no cost.
 - The two known misses are prompt work for later: asking the assessor to compare outcomes across groups when a section reports them, and asking the drafter to say why a missing section matters.
