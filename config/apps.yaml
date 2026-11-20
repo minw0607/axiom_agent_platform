@@ -4,3 +4,4 @@ version: 1
 
 apps:
   - credit_memo: axiom.apps.credit_memo
+  - model_review: axiom.apps.model_review

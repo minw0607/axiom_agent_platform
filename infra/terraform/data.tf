@@ -55,8 +55,15 @@ resource "azurerm_postgresql_flexible_server_database" "axiom" {
 
 locals {
   # The same names and shapes docker compose's demo-keys service generates (src/axiom/demo_keys.py).
-  roles         = { submitter = "rm-demo", reviewer = "co-demo", auditor = "audit-demo" }
-  gateway_steps = ["intake", "drafter", "compliance", "finalize"]
+  roles = { submitter = "rm-demo", reviewer = "co-demo", auditor = "audit-demo" }
+  # The workflow steps that call tools, as <app_id>.<step> (config/tool_gateway.yaml).
+  gateway_steps = [
+    "credit_memo.intake",
+    "credit_memo.drafter",
+    "credit_memo.compliance",
+    "credit_memo.finalize",
+    "model_review.provisions",
+  ]
   service_secrets = [
     "gkn-mcp-secret",
     "regulus-mcp-secret",

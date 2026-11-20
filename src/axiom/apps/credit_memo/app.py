@@ -17,6 +17,7 @@ from axiom.apps.credit_memo.agents.base import PROMPT_VERSIONS, AgentContext
 from axiom.apps.credit_memo.catalog import has_recordings, list_packages, load_package
 from axiom.apps.credit_memo.explain import PolicyClause, policy_clause
 from axiom.apps.credit_memo.graph import (
+    APP_ID,
     MemoState,
     paused_for_review,
     resume_workflow,
@@ -43,7 +44,6 @@ from axiom.router.router import ModelRouter
 from axiom.settings import Settings
 
 log = logging.getLogger("axiom.worker")
-APP_ID = "credit_memo"
 
 # The state saved as the job's result, in this order.
 RESULT_KEYS = (

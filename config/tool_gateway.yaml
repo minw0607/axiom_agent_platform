@@ -12,16 +12,19 @@ tools:
   lookup_provisions: regulus
 
 callers:
-  # Workflow steps, used by the worker.
-  intake:
+  # Workflow steps, used by the worker, as <app_id>.<step> (ADR 0016). Each app's steps call
+  # only the tools listed here, so one app's step cannot call another's tools.
+  credit_memo.intake:
     ingest_documents: {}
-  drafter:
+  credit_memo.drafter:
     retrieve_evidence:
       collection: [job]
-  compliance:
+  credit_memo.compliance:
     retrieve_evidence:
       collection: [lending_refs]
-  finalize:
+  credit_memo.finalize:
+    lookup_provisions: {}
+  model_review.provisions:
     lookup_provisions: {}
   # Maintenance scripts on the host (acceptance checks, recording). The worker never holds
   # this token.

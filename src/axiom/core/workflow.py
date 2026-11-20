@@ -61,10 +61,11 @@ def fails(result: GuardrailResult) -> bool:
 Node = Callable[[Any], Awaitable[dict[str, Any]]]
 
 
-def traced(name: str, fn: Node, expected: tuple[type[Exception], ...]) -> Node:
+def traced(name: str, fn: Node, expected: tuple[type[Exception], ...], app_id: str) -> Node:
     """Run a node in its span, with its model calls and tool calls collected for the
     evidence log, its calls marked by whether the documents were redacted, and its tool
-    calls made as this step. An expected failure ends the job with its reason."""
+    calls made as this step (`<app_id>.<step>` at the tool gateway). An expected failure ends
+    the job with its reason."""
 
     async def run(state: Mapping[str, Any]) -> dict[str, Any]:
         with tracer().start_as_current_span(f"node {name}") as span:
@@ -75,7 +76,7 @@ def traced(name: str, fn: Node, expected: tuple[type[Exception], ...]) -> Node:
                 collect_calls() as calls,
                 collect_tool_calls() as tools,
                 sensitivity(level),
-                acting_as(name),
+                acting_as(f"{app_id}.{name}"),
             ):
                 try:
                     update = await fn(state)

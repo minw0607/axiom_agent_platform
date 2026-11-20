@@ -13,7 +13,7 @@ import pytest
 from axiom.apps.credit_memo.catalog import load_package
 from axiom.apps.credit_memo.domain import Citation, Claim, MemoDraft
 from axiom.apps.credit_memo.graph import MemoState, draft_facts, run_workflow
-from axiom.apps.credit_memo.guardrails import DECISION_LANGUAGE
+from axiom.apps.credit_memo.guardrails import DECISION_LANGUAGE, ON_TASK
 from axiom.apps.credit_memo.guardrails import controls as credit_memo_controls
 from axiom.guardrails import GuardrailSuite, Subject
 from axiom.guardrails.base import DraftFacts
@@ -21,7 +21,6 @@ from axiom.guardrails.output import (
     CITATION_SUPPORT,
     INVESTMENT_ADVICE,
     NUMBER_PROVENANCE,
-    ON_TASK,
     PII_OUTPUT,
 )
 from axiom.jobs.worker import ERROR_CODES

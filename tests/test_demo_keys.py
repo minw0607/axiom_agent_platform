@@ -43,6 +43,22 @@ def test_an_older_file_gains_the_missing_values_and_keeps_the_rest(tmp_path: Pat
     assert values["SUBMITTER_API_KEYS"] == "rm-demo:kept" and values["MCP_SHARED_SECRET"] == "abc"
 
 
+def test_tokens_for_the_old_bare_step_names_move_to_the_app_callers(tmp_path: Path) -> None:
+    # Before ADR 0016 the callers were bare step names; a kept file must still work.
+    path = tmp_path / "keys.env"
+    first, _ = ensure(path)
+    old = "intake:t1,drafter:t2,compliance:t3,finalize:t4"
+    path.write_text(path.read_text().replace(first["TOOL_GATEWAY_TOKENS"], old))
+    values, created = ensure(path)
+    steps = dict(item.split(":") for item in values["TOOL_GATEWAY_TOKENS"].split(","))
+    assert not created and list(steps) == list(GATEWAY_STEPS)
+    assert not set(steps.values()) & {"t1", "t2", "t3", "t4"}
+    assert {k: v for k, v in values.items() if k != "TOOL_GATEWAY_TOKENS"} == {
+        k: v for k, v in first.items() if k != "TOOL_GATEWAY_TOKENS"
+    }
+    assert ensure(path) == (values, False)  # and then kept as they are
+
+
 def test_the_summary_never_shows_a_key_set_in_env(tmp_path: Path) -> None:
     values, _ = ensure(tmp_path / "keys.env")
     text = summary(values, True, {"REVIEWER_API_KEYS": "co-mine:secret-from-env"})

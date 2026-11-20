@@ -139,7 +139,7 @@ class GatewayClient(MCPToolClient):
                 call_id = str(result.get("gateway_call_id", "")) or _call_id_from(error)
                 sink.append(
                     ToolCall(
-                        node=caller,
+                        node=caller.rpartition(".")[2],  # the step, without its app
                         tool=tool,
                         allowed="refused by the tool gateway" not in error,
                         call_id=call_id,

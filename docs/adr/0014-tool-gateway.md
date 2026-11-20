@@ -21,6 +21,8 @@ Four workflow steps call tools, and every call has a fixed shape:
 
 No step deletes a job; only maintenance scripts do. `recommend_mitigants` is never used.
 
+Since [ADR 0016](0016-app-contract.md) step 2c, callers carry their app: `credit_memo.intake` and so on, and app 2's one tool step, `model_review.provisions`, which may only call `lookup_provisions`. The table above is the credit memo's.
+
 ## Options considered
 
 | Option | Strengths | Weaknesses |

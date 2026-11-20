@@ -54,21 +54,42 @@ SECRETS = {"gkn": "gkn-secret", "regulus": "regulus-secret"}
 def test_each_step_may_call_only_its_own_tool_and_collection() -> None:
     policy = load_policy(POLICY_FILE)
     job = {"query": "q", "job_id": "j", "k": 1}
-    assert policy.check("drafter", "retrieve_evidence", {**job, "collection": "job"}) == ""
-    assert "may not" in policy.check(
-        "drafter", "retrieve_evidence", {**job, "collection": "lending_refs"}
-    )
-    assert "may not" in policy.check("drafter", "retrieve_evidence", job)  # no collection: refused
     assert (
-        policy.check("compliance", "retrieve_evidence", {**job, "collection": "lending_refs"}) == ""
+        policy.check("credit_memo.drafter", "retrieve_evidence", {**job, "collection": "job"}) == ""
     )
     assert "may not" in policy.check(
-        "compliance", "retrieve_evidence", {**job, "collection": "job"}
+        "credit_memo.drafter", "retrieve_evidence", {**job, "collection": "lending_refs"}
     )
-    assert "may not call delete_job" in policy.check("drafter", "delete_job", {"job_id": "j"})
-    assert "may not call lookup_provisions" in policy.check("intake", "lookup_provisions", {})
-    assert policy.check("finalize", "lookup_provisions", {"description": "d", "k": 5}) == ""
+    assert "may not" in policy.check(
+        "credit_memo.drafter", "retrieve_evidence", job
+    )  # no collection: refused
+    assert (
+        policy.check(
+            "credit_memo.compliance", "retrieve_evidence", {**job, "collection": "lending_refs"}
+        )
+        == ""
+    )
+    assert "may not" in policy.check(
+        "credit_memo.compliance", "retrieve_evidence", {**job, "collection": "job"}
+    )
+    assert "may not call delete_job" in policy.check(
+        "credit_memo.drafter", "delete_job", {"job_id": "j"}
+    )
+    assert "may not call lookup_provisions" in policy.check(
+        "credit_memo.intake", "lookup_provisions", {}
+    )
+    assert (
+        policy.check("credit_memo.finalize", "lookup_provisions", {"description": "d", "k": 5})
+        == ""
+    )
     assert "unknown caller" in policy.check("someone", "delete_job", {"job_id": "j"})
+    # App 2's only tool step looks up provisions; it cannot reach the credit memo's documents,
+    # and the old bare step names are unknown callers now.
+    assert policy.check("model_review.provisions", "lookup_provisions", {"description": "d"}) == ""
+    assert "may not" in policy.check(
+        "model_review.provisions", "retrieve_evidence", {**job, "collection": "job"}
+    )
+    assert "unknown caller" in policy.check("drafter", "retrieve_evidence", job)
 
 
 def test_the_rules_cover_every_workflow_step_and_never_offer_unused_tools() -> None:
@@ -80,7 +101,7 @@ def test_the_rules_cover_every_workflow_step_and_never_offer_unused_tools() -> N
 
 def test_a_rule_naming_an_unknown_tool_is_rejected(tmp_path: Path) -> None:
     raw = yaml.safe_load(POLICY_FILE.read_text())
-    raw["callers"]["drafter"]["recommend_mitigants"] = {}
+    raw["callers"]["credit_memo.drafter"]["recommend_mitigants"] = {}
     with pytest.raises(ValueError, match="unknown tools"):
         GatewayPolicy.model_validate(raw)
 
@@ -210,14 +231,14 @@ def test_an_allowed_call_reaches_the_service_with_that_service_secret(stack: Sta
     client = _client(stack)
 
     async def run() -> list[Any]:
-        with acting_as("finalize"), collect_tool_calls() as calls:
+        with acting_as("credit_memo.finalize"), collect_tool_calls() as calls:
             provisions = await RegulusGovernance(client).lookup("an AI system", k=1)
         return [provisions, calls]
 
     provisions, calls = asyncio.run(run())
     assert provisions[0].citation == "Framework A, 1.1"
     assert stack.seen["regulus"] and set(stack.seen["regulus"]) == {f"Bearer {SECRETS['regulus']}"}
-    assert TOKENS["finalize"] not in " ".join(stack.seen["gkn"] + stack.seen["regulus"])
+    assert TOKENS["credit_memo.finalize"] not in " ".join(stack.seen["gkn"] + stack.seen["regulus"])
     [call] = calls
     assert call.node == "finalize" and call.tool == "lookup_provisions" and call.allowed
     assert call.call_id and call.result_sha256 and not call.error
@@ -228,7 +249,7 @@ def test_a_refused_call_is_recorded_with_its_call_id(stack: Stack) -> None:
     before = len(stack.seen["gkn"])
 
     async def run() -> list[Any]:
-        with acting_as("drafter"), collect_tool_calls() as calls:
+        with acting_as("credit_memo.drafter"), collect_tool_calls() as calls:
             with pytest.raises(MCPToolError, match="refused"):
                 await GKNEvidence(client).retrieve("j", "covenants", collection="lending_refs")
             with pytest.raises(MCPToolError, match="refused"):

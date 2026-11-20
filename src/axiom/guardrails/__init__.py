@@ -52,17 +52,23 @@ def pii_protected(results: list[GuardrailResult]) -> bool:
     )
 
 
-def default_controls(decision: Guardrail = DECISION_LANGUAGE) -> list[Guardrail]:
-    """The platform's controls in the order they run within each stage. `decision` is the
-    decision-language rail with an app's phrases; without them it records not_evaluated."""
+def default_controls(
+    decision: Guardrail = DECISION_LANGUAGE,
+    injection: Guardrail = INJECTION_SCREEN,
+    on_task: Guardrail = ON_TASK,
+) -> list[Guardrail]:
+    """The platform's controls in the order they run within each stage. An app passes the
+    controls that carry its own phrases (ADR 0016): `decision`, the decision-language rail
+    (without phrases it records not_evaluated); `injection`, the input screen with the app's
+    steering phrases; `on_task`, with those phrases as a draft would echo them."""
     # Input order matters: redaction first, so the injection screens see redacted text.
     return [
         PII_REDACTION,
-        INJECTION_SCREEN,
+        injection,
         INJECTION_SHIELD,
         decision,
         INVESTMENT_ADVICE,
-        ON_TASK,
+        on_task,
         NUMBER_PROVENANCE,
         CITATION_SUPPORT,
         PII_OUTPUT,

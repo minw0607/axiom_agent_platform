@@ -72,7 +72,7 @@ async def main() -> int:
     steps = dict(
         item.split(":", 1) for item in load_setting("TOOL_GATEWAY_TOKENS").split(",") if ":" in item
     )
-    if not operator or "drafter" not in steps:
+    if not operator or "credit_memo.drafter" not in steps:
         print("Tool gateway tokens are not set (environment, .env or .demo/keys.env).")
         return 2
 
@@ -86,7 +86,7 @@ async def main() -> int:
 
     # 2. The gateway's own checks.
     check("The gateway rejects calls without a token", http_status(GATEWAY_URL, "POST") == 401)
-    drafter = MCPToolClient(GATEWAY_URL, steps["drafter"])
+    drafter = MCPToolClient(GATEWAY_URL, steps["credit_memo.drafter"])
     job = f"gate1-scope-{uuid.uuid4().hex[:8]}"
     check(
         "The gateway refuses the drafter a tool it does not need",

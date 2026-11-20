@@ -1,9 +1,13 @@
 """A local screen for instructions hidden in borrower documents (prompt injection).
 
-Borrower documents are data. Text in them that addresses the AI, tries to override its
-rules, steers the credit decision, or hides itself from a human reader is a sign of an
-attack. Any match quarantines the package: the job stops before any model sees it, and the
-evidence log records which document, which line and which pattern, never the text itself.
+Submitted documents are data. Text in them that addresses the AI, tries to override its
+rules, steers the decision, or hides itself from a human reader is a sign of an attack. Any
+match quarantines the package: the job stops before any model sees it, and the evidence log
+records which document, which line and which pattern, never the text itself.
+
+What steers a decision depends on the app ("approve this loan", "mark this model as
+validated"), so each app adds its own steering phrases (ADR 0016); the core keeps only the
+app-neutral part, asking for something to be left out.
 
 This is a pattern screen, cheap and explainable but easy to evade with rewording. It runs
 in every mode; the cloud screen (`injection_shield`, Prompt Shields) is meant to sit beside
@@ -15,7 +19,8 @@ from __future__ import annotations
 
 import re
 import unicodedata
-from dataclasses import dataclass
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass, field
 
 from axiom.guardrails.base import Stage, Subject, Verdict
 
@@ -23,6 +28,9 @@ from axiom.guardrails.base import Stage, Subject, Verdict
 INVISIBLE = re.compile(
     "[\u200b-\u200f\u202a-\u202e\u2060-\u2064\u2066-\u2069\ufeff\U000e0000-\U000e007f]"
 )
+
+# Asking for something to be left out: "do not mention the covenant breach".
+SUPPRESSION = re.compile(r"\b(do not|don't|never) (mention|flag|report|include)\b")
 
 PATTERNS: dict[str, re.Pattern[str]] = {
     # "Ignore all previous instructions", "disregard your rules"
@@ -40,13 +48,8 @@ PATTERNS: dict[str, re.Pattern[str]] = {
         r"\b(note|message|instructions?) (to|for) (the )?(ai|assistant|model|llm|reviewer)\b"
         r"|\b(ai|assistant|language model|llm|chatbot)s?\b[^.\n]{0,30}\b(must|should|shall|will)\b"
     ),
-    # "Approve this loan", "rate this borrower as low risk"
-    "steers_the_decision": re.compile(
-        r"\b(approve|grant|accept)\b[^.\n]{0,20}\b(this|the) (loan|application|request|credit)\b"
-        r"|\b(rate|mark|classify|treat|score)\b[^.\n]{0,30}"
-        r"\bas (low[- ]risk|approved|creditworthy)\b"
-        r"|\b(do not|don't|never) (mention|flag|report|include)\b"
-    ),
+    # "Do not mention ...": the app-neutral part. Apps add theirs with with_steering().
+    "steers_the_decision": SUPPRESSION,
     # Chat-template tokens and markup a renderer hides
     "hidden_markup": re.compile(
         r"<\|[a-z_]+\|>|\[/?(inst|system)\]|<!--|<\s*(script|style)\b", re.IGNORECASE
@@ -59,14 +62,26 @@ def normalize(text: str) -> str:
     return unicodedata.normalize("NFKC", INVISIBLE.sub("", text)).casefold()
 
 
-def scan(text: str) -> list[tuple[int, str]]:
+def any_of(*patterns: re.Pattern[str]) -> re.Pattern[str]:
+    """One pattern that matches wherever any of `patterns` does."""
+    return re.compile("|".join(f"(?:{p.pattern})" for p in patterns))
+
+
+def with_steering(steering: Sequence[re.Pattern[str]]) -> dict[str, re.Pattern[str]]:
+    """The core patterns with an app's steering phrases added to steers_the_decision."""
+    if not steering:
+        return PATTERNS
+    return {**PATTERNS, "steers_the_decision": any_of(*steering, SUPPRESSION)}
+
+
+def scan(text: str, patterns: Mapping[str, re.Pattern[str]] = PATTERNS) -> list[tuple[int, str]]:
     """(line number, pattern code) for every suspicious line, numbered from 1."""
     hits: list[tuple[int, str]] = []
     for n, line in enumerate(text.split("\n"), 1):
         if INVISIBLE.search(line):
             hits.append((n, "invisible_characters"))
         folded = normalize(line)
-        hits += [(n, code) for code, pattern in PATTERNS.items() if pattern.search(folded)]
+        hits += [(n, code) for code, pattern in patterns.items() if pattern.search(folded)]
     return hits
 
 
@@ -75,9 +90,12 @@ class InjectionScreen:
     name: str = "injection_screen"
     stage: Stage = "input"
     description: str = "Quarantines documents that carry instructions aimed at the AI"
+    patterns: Mapping[str, re.Pattern[str]] = field(
+        default_factory=lambda: PATTERNS, compare=False, hash=False
+    )
 
     async def check(self, subject: Subject) -> Verdict:
-        found = {d.doc_id: scan(d.text) for d in subject.documents}
+        found = {d.doc_id: scan(d.text, self.patterns) for d in subject.documents}
         found = {doc_id: hits for doc_id, hits in found.items() if hits}
         if not found:
             return Verdict("passed", "no instructions aimed at the AI found")
@@ -97,3 +115,8 @@ class InjectionScreen:
 
 
 INJECTION_SCREEN = InjectionScreen()
+
+
+def injection_screen(steering: Sequence[re.Pattern[str]]) -> InjectionScreen:
+    """The screen with an app's steering phrases."""
+    return InjectionScreen(patterns=with_steering(steering))

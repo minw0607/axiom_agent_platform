@@ -6,7 +6,9 @@ step and for the operator scripts (ADR 0014) to a file (default `.demo/keys.env`
 repo). Each container reads only the values it needs through `docker/with-demo-keys.sh`. A
 value set in `.env` always wins; generated values only fill what `.env` leaves empty. The
 file is kept across restarts, so the keys stay the same until it is deleted; a value missing
-from an older file is added without changing the others.
+from an older file is added without changing the others, and gateway tokens for callers the
+gateway no longer has (the bare step names before ADR 0016) are replaced by tokens for the
+current ones.
 
 These are local demo keys: they open a stack bound to 127.0.0.1 and holding synthetic data.
 
@@ -29,17 +31,35 @@ ROLES = {
     "REVIEWER_API_KEYS": ("co-demo", "Credit officer"),
     "AUDITOR_API_KEYS": ("audit-demo", "Auditor"),
 }
-# The workflow steps that call tools through the gateway (config/tool_gateway.yaml).
-GATEWAY_STEPS = ("intake", "drafter", "compliance", "finalize")
+# The workflow steps that call tools through the gateway, as <app_id>.<step>
+# (config/tool_gateway.yaml).
+GATEWAY_STEPS = (
+    "credit_memo.intake",
+    "credit_memo.drafter",
+    "credit_memo.compliance",
+    "credit_memo.finalize",
+    "model_review.provisions",
+)
 SECRETS = ("GKN_MCP_SECRET", "REGULUS_MCP_SECRET", "TOOL_GATEWAY_OPERATOR_TOKEN")
 REQUIRED = (*SECRETS, "TOOL_GATEWAY_TOKENS", *ROLES)
 
 
+def gateway_tokens(current: str = "") -> str:
+    """A token for each gateway caller: those in `current` kept, missing ones generated, and
+    callers the gateway no longer has dropped."""
+    kept = dict(item.split(":", 1) for item in current.split(",") if ":" in item)
+    return ",".join(
+        f"{caller}:{kept.get(caller) or secrets.token_hex(24)}" for caller in GATEWAY_STEPS
+    )
+
+
+def _callers(tokens: str) -> set[str]:
+    return {item.split(":", 1)[0] for item in tokens.split(",") if ":" in item}
+
+
 def generate() -> dict[str, str]:
     values = {name: secrets.token_hex(32) for name in SECRETS}
-    values["TOOL_GATEWAY_TOKENS"] = ",".join(
-        f"{step}:{secrets.token_hex(24)}" for step in GATEWAY_STEPS
-    )
+    values["TOOL_GATEWAY_TOKENS"] = gateway_tokens()
     for var, (name, _) in ROLES.items():
         values[var] = f"{name}:{secrets.token_hex(24)}"
     return values
@@ -68,11 +88,15 @@ def ensure(path: Path) -> tuple[dict[str, str], bool]:
     """The keys in `path`, generating any that are missing. `created` is True when the file
     is new; values already in the file are never changed."""
     values = read(path) if path.is_file() else {}
-    if all(values.get(k) for k in REQUIRED):
+    tokens = values.get("TOOL_GATEWAY_TOKENS", "")
+    current = _callers(tokens) == set(GATEWAY_STEPS)
+    if current and all(values.get(k) for k in REQUIRED):
         return values, False
     created = not values
     fresh = generate()
     values = {**values, **{k: fresh[k] for k in REQUIRED if not values.get(k)}}
+    if tokens and not current:
+        values["TOOL_GATEWAY_TOKENS"] = gateway_tokens(tokens)
     write(path, values)
     return values, created
 

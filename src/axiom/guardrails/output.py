@@ -24,7 +24,7 @@ issue, never the claim text.
 from __future__ import annotations
 
 import re
-from collections.abc import Iterator, Mapping
+from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import dataclass, field
 from decimal import Decimal, InvalidOperation
 from typing import Any
@@ -32,7 +32,7 @@ from typing import Any
 from axiom.core.types import Claim, Draft
 from axiom.guardrails.base import DraftFacts, GuardrailResult, Stage, Subject, Verdict
 from axiom.guardrails.injection import PATTERNS as INJECTION_PATTERNS
-from axiom.guardrails.injection import normalize
+from axiom.guardrails.injection import SUPPRESSION, any_of, normalize
 
 # The rails every app shares. Decision language is a rail too, but its phrases are the app's
 # ("the loan is approved", "the model is validated"): see decision_language().
@@ -53,19 +53,16 @@ RAILS: dict[str, dict[str, re.Pattern[str]]] = {
             r"|\blet me know\b|\bhere is (the|your) (memo|draft)\b|\bhappy to help\b"
         ),
         "link": re.compile(r"https?://|www\."),
-        # Instructions echoed from documents. "Approve the loan request" is excluded: a draft
-        # recommendation says that legitimately, and stating a decision as made is the
+        # Instructions echoed from documents. The app adds its own echoed steering phrases
+        # with on_task(); its approval phrases are left out, because a draft recommendation
+        # says "approve the loan request" legitimately and stating a decision as made is the
         # decision_language rail's job. Found in the week 6 live baseline.
         **{
             f"echoed_{code}": p
             for code, p in INJECTION_PATTERNS.items()
             if code != "steers_the_decision"
         },
-        "echoed_steers_the_decision": re.compile(
-            r"\b(rate|mark|classify|treat|score)\b[^.\n]{0,30}"
-            r"\bas (low[- ]risk|approved|creditworthy)\b"
-            r"|\b(do not|don't|never) (mention|flag|report|include)\b"
-        ),
+        "echoed_steers_the_decision": SUPPRESSION,
     },
 }
 
@@ -119,9 +116,25 @@ def decision_language(
 
 DECISION_LANGUAGE = decision_language({})
 INVESTMENT_ADVICE = Rail("investment_advice", "No investment advice", RAILS["investment_advice"])
-ON_TASK = Rail(
-    "on_task", "Only memo content: no asides, links or echoed instructions", RAILS["on_task"]
-)
+ON_TASK_DESCRIPTION = "Only memo content: no asides, links or echoed instructions"
+
+
+def on_task_patterns(echoed_steering: Sequence[re.Pattern[str]]) -> dict[str, re.Pattern[str]]:
+    """The on_task patterns with an app's echoed steering phrases added."""
+    patterns = dict(RAILS["on_task"])
+    if echoed_steering:
+        patterns["echoed_steers_the_decision"] = any_of(*echoed_steering, SUPPRESSION)
+    return patterns
+
+
+def on_task(
+    echoed_steering: Sequence[re.Pattern[str]] = (), description: str = ON_TASK_DESCRIPTION
+) -> Rail:
+    """The on_task rail with an app's steering phrases, as they would be echoed in a draft."""
+    return Rail("on_task", description, on_task_patterns(echoed_steering))
+
+
+ON_TASK = on_task()
 
 
 # Numbers -------------------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-"""The app registry and per-app routes (ADR 0016, step 1b)."""
+"""The app registry and per-app routes (ADR 0016, steps 1b and 2c)."""
 
 from __future__ import annotations
 
@@ -43,7 +43,8 @@ def work(store: InMemoryJobStore) -> None:
 
 def test_the_credit_memo_meets_the_app_contract() -> None:
     assert isinstance(APP, App)
-    assert enabled_apps() == {"credit_memo": APP}
+    assert enabled_apps()["credit_memo"] is APP
+    assert list(enabled_apps()) == ["credit_memo", "model_review"]
     assert error_codes(APP)["IntakeError"] == "invalid_package"
     assert error_codes(APP)["GuardrailFailed"] == "guardrail_failed"
 
@@ -67,7 +68,16 @@ def test_apps_are_listed_with_their_role_names(client: TestClient) -> None:
                 "reviewer": "Credit officer",
                 "auditor": "Auditor",
             },
-        }
+        },
+        {
+            "app_id": "model_review",
+            "title": "Model documentation review",
+            "roles": {
+                "submitter": "Model owner",
+                "reviewer": "Model validator",
+                "auditor": "Auditor",
+            },
+        },
     ]
     assert client.get("/v1/apps").status_code == 401
 

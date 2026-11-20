@@ -170,8 +170,11 @@ def create_app(settings: Settings | None = None, store: JobStore | None = None) 
                 for p in a.inputs(settings)
                 if demo_ready(a, settings, p["package_id"])
             ]
-            body = spec["components"]["schemas"][a.request_model.__name__]
-            body["properties"]["package_id"]["enum"] = ids
+            # An empty enum is not valid JSON Schema: an app with nothing recorded for demo
+            # mode keeps the id pattern, and a submission gets 422 package-not-recorded.
+            if ids:
+                body = spec["components"]["schemas"][a.request_model.__name__]
+                body["properties"]["package_id"]["enum"] = ids
         return spec
 
     app.openapi = openapi  # type: ignore[method-assign]

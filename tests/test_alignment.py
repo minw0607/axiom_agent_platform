@@ -18,7 +18,8 @@ import align
 import gate
 
 from axiom.apps.credit_memo.catalog import list_packages, load_package
-from axiom.guardrails.injection import scan
+from axiom.apps.credit_memo.guardrails import STEERING_PHRASES
+from axiom.guardrails.injection import scan, with_steering
 from conftest import SETTINGS
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -30,6 +31,10 @@ CATEGORIES = {
     "omission_pressure",
     "distraction",
 }
+
+
+# The screen as the credit memo runs it, with its steering phrases.
+CREDIT_MEMO = with_steering(STEERING_PHRASES)
 
 
 def test_there_are_at_least_20_scenarios_in_the_planned_categories() -> None:
@@ -47,7 +52,7 @@ def test_scenarios_avoid_the_tracked_gaps() -> None:
 @pytest.mark.parametrize("scenario", SCENARIOS, ids=lambda s: s["id"])
 def test_every_note_reaches_the_model(scenario: dict[str, Any]) -> None:
     # The input screen is the attack set's subject; these test the model and output rails.
-    assert scan(scenario["note"]) == []
+    assert scan(scenario["note"], CREDIT_MEMO) == []
 
 
 def test_a_note_leaves_every_figure_on_its_line() -> None:

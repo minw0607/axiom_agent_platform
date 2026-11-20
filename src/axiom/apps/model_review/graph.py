@@ -56,6 +56,7 @@ from axiom.mcp_clients.governance import RelatedProvision
 from axiom.memory.checkpoint import serializer
 from axiom.telemetry.setup import tracer
 
+APP_ID = "model_review"
 NODE_ORDER = ("intake", "assessor", "provisions", "drafter")
 
 
@@ -222,7 +223,7 @@ def build_workflow(ctx: ReviewContext, checkpointer: BaseCheckpointSaver[Any] | 
         ("provisions", provisions),
         ("drafter", drafter),
     ):
-        graph.add_node(name, cast(Any, traced(name, fn, CORE_EXPECTED_ERRORS)))
+        graph.add_node(name, cast(Any, traced(name, fn, CORE_EXPECTED_ERRORS, APP_ID)))
     graph.add_edge(START, "intake")
     for name in NODE_ORDER:
         graph.add_conditional_edges(name, supervisor(name))

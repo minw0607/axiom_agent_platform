@@ -68,6 +68,7 @@ from axiom.mcp_clients.governance import RelatedGuidance
 from axiom.memory.checkpoint import serializer
 from axiom.telemetry.setup import tracer
 
+APP_ID = "credit_memo"
 NODE_ORDER = ("intake", "analyst", "drafter", "compliance")
 REVIEW_NODES = ("human_review", "finalize")
 
@@ -104,7 +105,7 @@ class MemoState(TypedDict, total=False):
 
 
 def _traced(name: str, fn: Callable[[MemoState], Awaitable[dict[str, Any]]]) -> Any:
-    return traced(name, fn, EXPECTED_ERRORS)
+    return traced(name, fn, EXPECTED_ERRORS, APP_ID)
 
 
 def draft_facts(state: MemoState, hits: list[EvidenceHit], policy: PolicyThresholds) -> DraftFacts:
@@ -230,7 +231,7 @@ def build_workflow(ctx: AgentContext, checkpointer: BaseCheckpointSaver[Any] | N
         if last.decision != "approve":  # unreachable by routing; a hard stop all the same
             raise ReviewError("finalize needs an approval")
         draft = state["draft"]
-        with acting_as("finalize"), collect_tool_calls() as tools:
+        with acting_as(f"{APP_ID}.finalize"), collect_tool_calls() as tools:
             guidance = await related_guidance(ctx, state)
         return {
             "outcome": "approved",
