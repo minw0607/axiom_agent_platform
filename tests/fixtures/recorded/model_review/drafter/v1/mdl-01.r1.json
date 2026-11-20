@@ -3,7 +3,7 @@
   "route": "narrative",
   "prompt_id": "drafter",
   "prompt_version": "v1",
-  "prompt_sha256": "3e632d9d1d30fdae2964f7cf9c53b6b24a9c5e71a00d08362bca389360644c55",
+  "prompt_sha256": "491b2958b31c141526f13cde6ed6974e356ff3e5418a23e3d33b22925dd80eb0",
   "input_tokens": 0,
   "output_tokens": 0,
   "text": "{\n \"sections\": [\n  {\n   \"heading\": \"Summary\",\n   \"claims\": [\n    {\n     \"text\": \"12 of 12 checklist sections are present.\",\n     \"citations\": [\n      {\n       \"doc_id\": \"nist_ai_rmf\",\n       \"locator\": \"MAP 1.1\"\n      }\n     ]\n    }\n   ]\n  },\n  {\n   \"heading\": \"Checklist gaps\",\n   \"claims\": [\n    {\n     \"text\": \"Every checklist section is present.\",\n     \"citations\": [\n      {\n       \"doc_id\": \"nist_ai_rmf\",\n       \"locator\": \"MAP 1.1\"\n      }\n     ]\n    }\n   ]\n  },\n  {\n   \"heading\": \"Section assessments\",\n   \"claims\": [\n    {\n     \"text\": \"Every present section is adequate.\",\n     \"citations\": [\n      {\n       \"doc_id\": \"nist_ai_rmf\",\n       \"locator\": \"MAP 1.1\"\n      }\n     ]\n    }\n   ]\n  },\n  {\n   \"heading\": \"Matters for the validator\",\n   \"claims\": [\n    {\n     \"text\": \"Confirm the points above with the model owner.\",\n     \"citations\": [\n      {\n       \"doc_id\": \"nist_ai_rmf\",\n       \"locator\": \"MAP 1.1\"\n      }\n     ]\n    },\n    {\n     \"text\": \"Revised for the validator's comment: Say which gaps must be closed before validation can start.\",\n     \"citations\": [\n      {\n       \"doc_id\": \"nist_ai_rmf\",\n       \"locator\": \"MAP 1.1\"\n      }\n     ]\n    }\n   ]\n  }\n ]\n}"

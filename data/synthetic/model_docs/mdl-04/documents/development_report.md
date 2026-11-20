@@ -4,18 +4,20 @@ Model type: forecast
 
 ## 1. Purpose and intended use
 Synthetic Model 04 forecasts prepayment speeds of fixed-rate mortgages for hedging.
-The forecast sets the size of the interest rate hedge each quarter.
+The forecast is used by the treasury hedging desk to set the size of the interest rate hedge each quarter.
 It is not used for decisions about individual borrowers.
 
 ## 2. Limitations and conditions of use
 The model covers fixed-rate loans with terms of 15 to 30 years.
 Refinancing incentives beyond 300 basis points were not observed in the data.
 Loans from a portfolio acquired in 2023 are assumed to behave like originated loans.
+Forecasts for rate moves beyond 300 basis points should not be relied on.
 
 ## 3. Methodology and design choices
 A multinomial logit model of monthly prepayment, by loan age and rate incentive.
 Seasonality is captured by a month-of-year factor.
 Burnout is modelled by the number of past months with a refinancing incentive.
+A logit model was chosen over a survival model because it separates refinancing from other prepayment.
 
 ## 4. Performance testing
 The model fits the 2015 to 2024 history closely.

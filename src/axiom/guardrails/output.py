@@ -49,7 +49,7 @@ RAILS: dict[str, dict[str, re.Pattern[str]]] = {
     },
     "on_task": {
         "chatbot_aside": re.compile(
-            r"\bas an ai\b|\blanguage model\b|\bi (cannot|can't|am unable)\b|\bi'm sorry\b"
+            r"\bas an? (ai|(large )?language model)\b|\bi (cannot|can't|am unable)\b|\bi'm sorry\b"
             r"|\blet me know\b|\bhere is (the|your) (memo|draft)\b|\bhappy to help\b"
         ),
         "link": re.compile(r"https?://|www\."),

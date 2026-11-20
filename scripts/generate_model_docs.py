@@ -46,8 +46,9 @@ class Model:
     expected: dict[str, str] = field(default_factory=dict)
 
 
-def _common(name: str, use: str) -> dict[str, list[str]]:
-    """Sections most models share, worded for this model."""
+def _common(name: str, use: str, personal_data: str) -> dict[str, list[str]]:
+    """Sections most models share, worded for this model. Each covers every point its
+    checklist item expects, so only a scenario's own sections are weak (step 3b)."""
     return {
         "MR-7": [
             f"{name} output is reviewed by an analyst before any action is taken.",
@@ -60,12 +61,14 @@ def _common(name: str, use: str) -> dict[str, list[str]]:
             f"The sample covers every region and product the model is used for: {use}.",
         ],
         "MR-10": [
+            f"The personal data the model uses is limited to {personal_data}.",
             "The training data contains no names, addresses or account numbers.",
             "Customer identifiers are replaced with random keys before the data leaves the source system.",
             "Access to the modelling data set is limited to the development team and logged.",
         ],
         "MR-12": [
             "Any change to inputs, method or thresholds is logged and reviewed before release.",
+            "The model owner approves each change, and the model risk team approves material ones.",
             "A material change is validated again before it is used.",
             "Incidents, such as a data feed failure, are reported to the model owner within one business day.",
             "The owner records each incident and its fix in the model inventory.",
@@ -78,7 +81,9 @@ def models() -> list[Model]:
 
     # mdl-01: complete and well documented.
     name = "Synthetic Model 01"
-    s = _common(name, "all retail deposit products")
+    s = _common(
+        name, "all retail deposit products", "each customer's deposit balances, product and tenure"
+    )
     s |= {
         "MR-1": [
             f"{name} forecasts monthly run-off of retail deposit balances for liquidity planning.",
@@ -116,6 +121,7 @@ def models() -> list[Model]:
             "Monthly balances come from the deposit ledger, extracted on the first business day.",
             "Rates come from the published rate history maintained by treasury.",
             "Each extract is reconciled to the general ledger total before use.",
+            "There is no label delay: actual balances are known at each month end.",
         ],
         "MR-11": [
             "Forecast error is measured each month against actual balances.",
@@ -128,7 +134,11 @@ def models() -> list[Model]:
 
     # mdl-02: no monitoring metrics and no change management (one critical gap).
     name = "Synthetic Model 02"
-    s = _common(name, "card transactions in all channels")
+    s = _common(
+        name,
+        "card transactions in all channels",
+        "each cardholder's transaction history and card details",
+    )
     del s["MR-12"]
     s |= {
         "MR-1": [
@@ -140,11 +150,14 @@ def models() -> list[Model]:
             "The model was trained on card-present and online transactions only.",
             "Wallet payments, introduced after the training period, are scored as online transactions.",
             "Fraud patterns change quickly, so the model is expected to degrade without retraining.",
+            "It was tested on card-present and online transactions from 2024.",
+            "Scores for wallet payments should not be relied on until wallet payments are tested.",
         ],
         "MR-3": [
             "A gradient boosted tree model with 140 input features.",
             "Features describe the transaction, the card's recent history and the merchant.",
             "Hyperparameters were chosen by cross-validation on the 2023 data.",
+            "Boosted trees were chosen over a logistic regression because they caught more fraud value at the same alert volume.",
         ],
         "MR-4": [
             "Tested out of time on six months of 2024 transactions.",
@@ -155,6 +168,7 @@ def models() -> list[Model]:
             "Performance was measured separately for each channel and for transaction size bands.",
             "Detection in the smallest size band was 49%, the lowest of any band.",
             "Removing each of the ten strongest features in turn lowered detection by at most 6 points.",
+            "A stress scenario with fraud attempts doubled in one week kept alerts within team capacity.",
         ],
         "MR-6": [
             "Alert rates were compared across age bands and regions on the test data.",
@@ -162,7 +176,8 @@ def models() -> list[Model]:
             "The model uses no protected characteristic as an input.",
         ],
         "MR-8": [
-            "Transactions come from the card authorization system.",
+            "Transactions come from the card authorization system, extracted daily.",
+            "Each daily extract is reconciled to the authorization count before use.",
             "Fraud labels come from confirmed chargebacks, which arrive up to 90 days later.",
             "Labels for the last 90 days of the sample were therefore excluded.",
         ],
@@ -183,12 +198,17 @@ def models() -> list[Model]:
 
     # mdl-03: affects customers but has no fairness assessment.
     name = "Synthetic Model 03"
-    s = _common(name, "consumer loans past due")
+    s = _common(
+        name,
+        "consumer loans past due",
+        "each borrower's loan balance, payment and contact history, and age band",
+    )
     s |= {
         "MR-1": [
             f"{name} ranks past-due consumer loans for the collections team to contact first.",
             "Customers ranked highest are called within two days; others receive a letter.",
             "The ranking decides the order and channel of contact for each customer.",
+            "It must not be used for credit limits, pricing or decisions to sell a debt.",
         ],
         "MR-2": [
             "The model covers unsecured consumer loans only.",
@@ -199,26 +219,32 @@ def models() -> list[Model]:
             "A logistic regression predicts the chance an account is paid up within 30 days without contact.",
             "Accounts least likely to cure on their own are ranked first.",
             "Inputs are days past due, balance, payment history, contact history and customer age band.",
+            "A logistic regression was chosen over boosted trees so that collectors can see why an account ranks high.",
         ],
         "MR-4": [
             "Tested out of time on accounts that went past due in the second half of 2024.",
             "The area under the ROC curve was 0.78 on the test data and 0.80 on the training data.",
             "Calibration by decile was within 2 percentage points of observed cure rates.",
+            "The owner's acceptance threshold was an area under the curve of at least 0.75.",
         ],
         "MR-5": [
             "The ranking was recomputed with each input shifted by one standard deviation.",
             "Days past due and payment history had the largest effect on rank.",
             "Ranks were stable: 90% of accounts moved by fewer than 5 places in 100.",
+            "A downturn scenario with unemployment 3 points higher was run; the top decile kept 85% of its accounts.",
         ],
         "MR-8": [
             "Account data comes from the loan servicing system, extracted daily.",
             "Contact history comes from the collections dialer log.",
             "Both sources are matched on the account number, then the number is replaced by a key.",
+            "Each daily extract is reconciled to the servicing system's count of past-due accounts.",
+            "The cure label is known 30 days after an account goes past due, so the last 30 days are excluded.",
         ],
         "MR-11": [
             "The cure rate of each decile is compared with the forecast every month.",
             "A difference above 5 percentage points in any decile triggers a review.",
             "The share of accounts in each age band is tracked monthly against the training data.",
+            "A change above 3 percentage points in any age band's share triggers a review.",
         ],
     }
     out.append(
@@ -236,22 +262,28 @@ def models() -> list[Model]:
 
     # mdl-04: performance tested in sample only; sensitivity section is a placeholder.
     name = "Synthetic Model 04"
-    s = _common(name, "fixed-rate residential mortgages")
+    s = _common(
+        name,
+        "fixed-rate residential mortgages",
+        "each loan's balance, rate, age and payment history",
+    )
     s |= {
         "MR-1": [
             f"{name} forecasts prepayment speeds of fixed-rate mortgages for hedging.",
-            "The forecast sets the size of the interest rate hedge each quarter.",
+            "The forecast is used by the treasury hedging desk to set the size of the interest rate hedge each quarter.",
             "It is not used for decisions about individual borrowers.",
         ],
         "MR-2": [
             "The model covers fixed-rate loans with terms of 15 to 30 years.",
             "Refinancing incentives beyond 300 basis points were not observed in the data.",
             "Loans from a portfolio acquired in 2023 are assumed to behave like originated loans.",
+            "Forecasts for rate moves beyond 300 basis points should not be relied on.",
         ],
         "MR-3": [
             "A multinomial logit model of monthly prepayment, by loan age and rate incentive.",
             "Seasonality is captured by a month-of-year factor.",
             "Burnout is modelled by the number of past months with a refinancing incentive.",
+            "A logit model was chosen over a survival model because it separates refinancing from other prepayment.",
         ],
         "MR-4": [
             "The model fits the 2015 to 2024 history closely.",
@@ -268,6 +300,8 @@ def models() -> list[Model]:
             "Loan data comes from the mortgage servicing system, extracted monthly.",
             "Market rates come from the published rate history used across the bank.",
             "Acquired loans come from the seller's tape, converted to the same fields.",
+            "Each monthly extract is reconciled to the servicing system's loan count and balance.",
+            "There is no label delay: prepayments are known at each month end.",
         ],
         "MR-11": [
             "Actual and forecast prepayment speeds are compared every quarter.",
@@ -291,13 +325,18 @@ def models() -> list[Model]:
 
     # mdl-05: no data lineage; privacy section is a placeholder.
     name = "Synthetic Model 05"
-    s = _common(name, "existing customers with a current account")
+    s = _common(
+        name,
+        "existing customers with a current account",
+        "each customer's account activity and past product holdings",
+    )
     s["MR-10"] = ["TBD"]
     s |= {
         "MR-1": [
             f"{name} predicts which customers are likely to open a savings account.",
             "Customers above the cut-off receive a savings offer by email.",
             "The offer is the same for everyone who receives it.",
+            "The marketing team uses the output; it must not be used for credit or pricing decisions.",
         ],
         "MR-2": [
             "The model was trained on customers who had a current account for at least a year.",
@@ -308,10 +347,12 @@ def models() -> list[Model]:
             "A random forest with 60 inputs on account activity and past product holdings.",
             "The cut-off was set so that 10% of eligible customers receive the offer.",
             "Inputs were chosen from 300 candidates by their importance on a validation sample.",
+            "A random forest was chosen over a logistic regression because it ranked responders better on the validation sample.",
         ],
         "MR-4": [
             "Tested on a holdout of 20% of customers, drawn at random from the same period.",
             "Customers in the top decile opened accounts at 3.2 times the average rate.",
+            "The marketing team's benchmark was at least 2.5 times the average rate.",
             "The model was not tested on a later period.",
         ],
         "MR-5": [
@@ -328,12 +369,14 @@ def models() -> list[Model]:
             "The response rate of each decile is compared with the forecast every quarter.",
             "A top-decile response rate below twice the average triggers a review.",
             "The share of customers above the cut-off is tracked monthly.",
+            "A change above 2 percentage points in that share triggers a review.",
         ],
     }
     s["MR-9"] = [
         "The sample is all eligible customers at the end of 2023.",
         "Customers who closed their accounts during 2023 are not in the sample.",
         "Activity fields were complete for 97% of customers.",
+        "No duplicate customers were found after matching on the customer key.",
     ]
     out.append(
         Model(
@@ -352,18 +395,24 @@ def models() -> list[Model]:
 
     # mdl-06: a generative AI assistant with no limitations and no human oversight section.
     name = "Synthetic Model 06"
-    s = _common(name, "calls to the customer service center")
+    s = _common(
+        name,
+        "calls to the customer service center",
+        "the call transcript and the customer's record identifier",
+    )
     del s["MR-7"]
     s |= {
         "MR-1": [
             f"{name} drafts a summary of each customer service call from its transcript.",
             "The summary is saved to the customer's record for the next agent to read.",
             "It uses a hosted large language model with a fixed prompt.",
+            "Customer service agents read the summaries; they must not be used to decide complaints.",
         ],
         "MR-3": [
             "The call transcript and a fixed instruction are sent to a hosted language model.",
             "The instruction asks for the reason for the call, actions taken and open items.",
             "No model was trained; the prompt was refined over 40 example calls.",
+            "A hosted model was chosen over training one because no labelled summaries existed.",
         ],
         "MR-4": [
             "The team read 40 summaries and judged them accurate.",
@@ -384,6 +433,8 @@ def models() -> list[Model]:
             "Transcripts come from the call recording system's speech-to-text service.",
             "Transcripts are sent to the hosted model and not stored by the provider.",
             "The prompt is versioned in the team's repository.",
+            "Transcripts are extracted after each call and matched to the call log daily.",
+            "There is no label; agent flags, known within a week, stand in for one.",
         ],
         "MR-11": [
             "Agents can flag a summary as wrong with one click.",

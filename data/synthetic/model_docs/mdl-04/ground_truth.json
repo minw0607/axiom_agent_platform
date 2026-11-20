@@ -19,57 +19,57 @@
       "heading_line": 10,
       "lines": [
         11,
-        13
+        14
       ]
     },
     "MR-3": {
       "outcome": "present",
       "document": "development_report",
       "doc_id": "mdl-04-development_report",
-      "heading_line": 15,
+      "heading_line": 16,
       "lines": [
-        16,
-        18
+        17,
+        20
       ]
     },
     "MR-4": {
       "outcome": "present",
       "document": "development_report",
       "doc_id": "mdl-04-development_report",
-      "heading_line": 20,
+      "heading_line": 22,
       "lines": [
-        21,
-        23
+        23,
+        25
       ]
     },
     "MR-5": {
       "outcome": "empty",
       "document": "development_report",
       "doc_id": "mdl-04-development_report",
-      "heading_line": 25,
+      "heading_line": 27,
       "lines": [
-        26,
-        26
+        28,
+        28
       ]
     },
     "MR-6": {
       "outcome": "present",
       "document": "development_report",
       "doc_id": "mdl-04-development_report",
-      "heading_line": 28,
+      "heading_line": 30,
       "lines": [
-        29,
-        31
+        31,
+        33
       ]
     },
     "MR-7": {
       "outcome": "present",
       "document": "development_report",
       "doc_id": "mdl-04-development_report",
-      "heading_line": 33,
+      "heading_line": 35,
       "lines": [
-        34,
-        36
+        36,
+        38
       ]
     },
     "MR-8": {
@@ -79,27 +79,27 @@
       "heading_line": 5,
       "lines": [
         6,
-        8
+        10
       ]
     },
     "MR-9": {
       "outcome": "present",
       "document": "data_description",
       "doc_id": "mdl-04-data_description",
-      "heading_line": 10,
+      "heading_line": 12,
       "lines": [
-        11,
-        13
+        13,
+        15
       ]
     },
     "MR-10": {
       "outcome": "present",
       "document": "data_description",
       "doc_id": "mdl-04-data_description",
-      "heading_line": 15,
+      "heading_line": 17,
       "lines": [
-        16,
-        18
+        18,
+        21
       ]
     },
     "MR-11": {
@@ -119,7 +119,7 @@
       "heading_line": 10,
       "lines": [
         11,
-        14
+        15
       ]
     }
   },

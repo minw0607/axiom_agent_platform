@@ -11,11 +11,14 @@ The score does not block a transaction on its own.
 The model was trained on card-present and online transactions only.
 Wallet payments, introduced after the training period, are scored as online transactions.
 Fraud patterns change quickly, so the model is expected to degrade without retraining.
+It was tested on card-present and online transactions from 2024.
+Scores for wallet payments should not be relied on until wallet payments are tested.
 
 ## 3. Methodology and design choices
 A gradient boosted tree model with 140 input features.
 Features describe the transaction, the card's recent history and the merchant.
 Hyperparameters were chosen by cross-validation on the 2023 data.
+Boosted trees were chosen over a logistic regression because they caught more fraud value at the same alert volume.
 
 ## 4. Performance testing
 Tested out of time on six months of 2024 transactions.
@@ -26,6 +29,7 @@ The previous rules-based system caught 58% at the same alert volume.
 Performance was measured separately for each channel and for transaction size bands.
 Detection in the smallest size band was 49%, the lowest of any band.
 Removing each of the ten strongest features in turn lowered detection by at most 6 points.
+A stress scenario with fraud attempts doubled in one week kept alerts within team capacity.
 
 ## 6. Fairness assessment
 Alert rates were compared across age bands and regions on the test data.

@@ -16,8 +16,16 @@ from axiom.guardrails.injection import injection_screen
 from axiom.guardrails.output import decision_language, on_task
 
 DECISION_PHRASES: dict[str, re.Pattern[str]] = {
+    # The model as the subject, stated as approved. Not a question about the documentation
+    # ("it does not state how changes are approved"), a negation ("it was not validated on
+    # 2024 data") or the model as an object ("changes to the model are approved by the
+    # owner"): each was a false positive in the step 3b live run.
     "model_stated_as_approved": re.compile(
-        r"\b(model|system|it)\b[^.;]{0,30}"
+        r"(?<!\bto the )(?<!\bof the )(?<!\bfor the )(?<!\bhow )(?<!\bwhether )"
+        r"(?<!\bhow the )(?<!\bwhether the )(?<!\bif the )"
+        r"\b(model|system|it)\b"
+        r"(?:(?!\b(?:not|no|never|how|whether|who|whom|when|if|unless|until|before|changes?)\b)"
+        r"[^.;]){0,30}"
         r"\b(is|has been|was|are|have been) (hereby |now |therefore )?"
         r"(approved|validated|certified|cleared|fit for (use|purpose)|safe to use)\b"
     ),

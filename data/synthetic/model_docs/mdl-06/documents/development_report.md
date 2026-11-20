@@ -6,11 +6,13 @@ Model type: generative
 Synthetic Model 06 drafts a summary of each customer service call from its transcript.
 The summary is saved to the customer's record for the next agent to read.
 It uses a hosted large language model with a fixed prompt.
+Customer service agents read the summaries; they must not be used to decide complaints.
 
 ## 2. Methodology and design choices
 The call transcript and a fixed instruction are sent to a hosted language model.
 The instruction asks for the reason for the call, actions taken and open items.
 No model was trained; the prompt was refined over 40 example calls.
+A hosted model was chosen over training one because no labelled summaries existed.
 
 ## 3. Performance testing
 The team read 40 summaries and judged them accurate.

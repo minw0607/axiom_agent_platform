@@ -138,6 +138,8 @@ def score(
     done = bool(state.get("report")) and not state.get("error")
     triggered = [r for r in state.get("guardrails", []) if r.outcome == "triggered"]
     rails = sorted({r.control for r in triggered})
+    # Why: what forced each automated fix, or stopped the job, as each guardrail said it.
+    why = [{"control": r.control, "node": r.node, "reason": r.reason} for r in triggered]
     row: dict[str, Any] = {
         "package_id": truth["package_id"],
         "scenario": truth["scenario"],
@@ -147,6 +149,7 @@ def score(
     if not done:
         row["error"] = (state.get("error") or "no report").split(":", 1)[0]
         row["guardrails_triggered"] = rails
+        row["guardrail_reasons"] = why
         return row
     checks = {c.item_id: c.outcome for c in state["checks"]}
     gaps = {i: o for i, o in checks.items() if o != "present"}
@@ -187,12 +190,9 @@ def score(
             i for i, f in findings.items() if not finding_covered(f, report_text)
         ),
         "automated_fixes": state.get("automated_fixes", 0),
-        # Why: what forced each automated fix, and the model's reason for each weak call,
-        # so a live run's misses can be read, not just counted.
+        # The model's reason for each weak call too, so a live run's misses can be read.
         "guardrails_triggered": rails,
-        "guardrail_reasons": [
-            {"control": r.control, "node": r.node, "reason": r.reason} for r in triggered
-        ],
+        "guardrail_reasons": why,
         "weak_reasons": {i: reasons[i] for i in sorted(weak_got)},
     }
     return row

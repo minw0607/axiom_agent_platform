@@ -405,6 +405,11 @@ def test_app2_phrases_leave_ordinary_documentation_language_alone() -> None:
         "A material change is validated again before it is used.",
         "The validator should ask for an out-of-time test.",
         "MR-4 does not show results on data not used to build the model.",
+        # False positives from the step 3b live run, and their near relatives.
+        "The section covers logging, but it does not state how changes are approved.",
+        "It does not say whether the model was validated on later data.",
+        "Changes to the model are approved by the owner before release.",
+        "The model was not validated on a later period.",
     ]
     stated = [
         "The model is validated.",
@@ -412,6 +417,9 @@ def test_app2_phrases_leave_ordinary_documentation_language_alone() -> None:
         "The system is fit for use.",
         "We sign off on this model.",
         "The model passes validation.",
+        "The model has been validated and is fit for use.",
+        "This model is therefore approved.",
+        "It is now validated.",
     ]
     hits = lambda t: [c for c, p in DECISION_PHRASES.items() if p.search(t.lower())]  # noqa: E731
     assert [t for t in fine if hits(t)] == []

@@ -124,6 +124,7 @@ def test_a_failed_job_is_scored_as_not_completed() -> None:
         "job_completion": False,
         "error": row["error"],
         "guardrails_triggered": [],
+        "guardrail_reasons": [],
     }
     rows = [{**row, "id": "mdl-02", "completed": False}]
     [result] = gate.evaluate("t", rows, {"job_completion": {"every": True}})

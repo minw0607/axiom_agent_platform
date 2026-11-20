@@ -9,7 +9,7 @@
       "heading_line": 5,
       "lines": [
         6,
-        8
+        9
       ]
     },
     "MR-2": {
@@ -20,40 +20,40 @@
       "outcome": "present",
       "document": "development_report",
       "doc_id": "mdl-06-development_report",
-      "heading_line": 10,
+      "heading_line": 11,
       "lines": [
-        11,
-        13
+        12,
+        15
       ]
     },
     "MR-4": {
       "outcome": "present",
       "document": "development_report",
       "doc_id": "mdl-06-development_report",
-      "heading_line": 15,
+      "heading_line": 17,
       "lines": [
-        16,
-        18
+        18,
+        20
       ]
     },
     "MR-5": {
       "outcome": "present",
       "document": "development_report",
       "doc_id": "mdl-06-development_report",
-      "heading_line": 20,
+      "heading_line": 22,
       "lines": [
-        21,
-        23
+        23,
+        25
       ]
     },
     "MR-6": {
       "outcome": "present",
       "document": "development_report",
       "doc_id": "mdl-06-development_report",
-      "heading_line": 25,
+      "heading_line": 27,
       "lines": [
-        26,
-        28
+        28,
+        30
       ]
     },
     "MR-7": {
@@ -67,27 +67,27 @@
       "heading_line": 5,
       "lines": [
         6,
-        8
+        10
       ]
     },
     "MR-9": {
       "outcome": "present",
       "document": "data_description",
       "doc_id": "mdl-06-data_description",
-      "heading_line": 10,
+      "heading_line": 12,
       "lines": [
-        11,
-        13
+        13,
+        15
       ]
     },
     "MR-10": {
       "outcome": "present",
       "document": "data_description",
       "doc_id": "mdl-06-data_description",
-      "heading_line": 15,
+      "heading_line": 17,
       "lines": [
-        16,
-        18
+        18,
+        21
       ]
     },
     "MR-11": {
@@ -107,7 +107,7 @@
       "heading_line": 10,
       "lines": [
         11,
-        14
+        15
       ]
     }
   },

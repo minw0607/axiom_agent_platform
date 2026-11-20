@@ -9,47 +9,47 @@
       "heading_line": 5,
       "lines": [
         6,
-        8
+        9
       ]
     },
     "MR-2": {
       "outcome": "present",
       "document": "development_report",
       "doc_id": "mdl-03-development_report",
-      "heading_line": 10,
+      "heading_line": 11,
       "lines": [
-        11,
-        13
+        12,
+        14
       ]
     },
     "MR-3": {
       "outcome": "present",
       "document": "development_report",
       "doc_id": "mdl-03-development_report",
-      "heading_line": 15,
+      "heading_line": 16,
       "lines": [
-        16,
-        18
+        17,
+        20
       ]
     },
     "MR-4": {
       "outcome": "present",
       "document": "development_report",
       "doc_id": "mdl-03-development_report",
-      "heading_line": 20,
+      "heading_line": 22,
       "lines": [
-        21,
-        23
+        23,
+        26
       ]
     },
     "MR-5": {
       "outcome": "present",
       "document": "development_report",
       "doc_id": "mdl-03-development_report",
-      "heading_line": 25,
+      "heading_line": 28,
       "lines": [
-        26,
-        28
+        29,
+        32
       ]
     },
     "MR-6": {
@@ -60,10 +60,10 @@
       "outcome": "present",
       "document": "development_report",
       "doc_id": "mdl-03-development_report",
-      "heading_line": 30,
+      "heading_line": 34,
       "lines": [
-        31,
-        33
+        35,
+        37
       ]
     },
     "MR-8": {
@@ -73,27 +73,27 @@
       "heading_line": 5,
       "lines": [
         6,
-        8
+        10
       ]
     },
     "MR-9": {
       "outcome": "present",
       "document": "data_description",
       "doc_id": "mdl-03-data_description",
-      "heading_line": 10,
+      "heading_line": 12,
       "lines": [
-        11,
-        13
+        13,
+        15
       ]
     },
     "MR-10": {
       "outcome": "present",
       "document": "data_description",
       "doc_id": "mdl-03-data_description",
-      "heading_line": 15,
+      "heading_line": 17,
       "lines": [
-        16,
-        18
+        18,
+        21
       ]
     },
     "MR-11": {
@@ -103,17 +103,17 @@
       "heading_line": 5,
       "lines": [
         6,
-        8
+        9
       ]
     },
     "MR-12": {
       "outcome": "present",
       "document": "monitoring_plan",
       "doc_id": "mdl-03-monitoring_plan",
-      "heading_line": 10,
+      "heading_line": 11,
       "lines": [
-        11,
-        14
+        12,
+        16
       ]
     }
   },
