@@ -111,7 +111,7 @@ async def run_assessor(
         prompt=ctx.prompt("assessor"),
         payload=payload,
         schema=Assessments,
-        recording_key=package.package_id,
+        recording_key=f"assessor/{PROMPT_VERSIONS['assessor']}/{package.package_id}",
         validate=validate,
     )
     order = {item_id: n for n, item_id in enumerate(lines)}
@@ -194,7 +194,7 @@ async def run_drafter(
             for item_id, found in provisions.items()
         },
     }
-    key = package.package_id
+    key = f"drafter/{PROMPT_VERSIONS['drafter']}/{package.package_id}"
     if revision is not None:
         previous, reviews = revision
         payload["revision"] = {

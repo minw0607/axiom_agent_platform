@@ -56,7 +56,7 @@ def payload(request: ModelRequest) -> dict[str, Any]:
 
 
 def careful_assessor(request: ModelRequest, data: dict[str, Any]) -> dict[str, Any]:
-    package_id = request.recording_key.removesuffix(".retry")
+    package_id = request.recording_key.removesuffix(".retry").split("/")[2]
     expected = load_ground_truth(FOLDER, package_id)["expected_findings"]
     return {
         "assessments": [
@@ -291,7 +291,7 @@ def test_a_stated_validation_decision_gets_one_automated_fix() -> None:
     assert [r.outcome for r in decision] == ["triggered", "passed"]
     fix = payload(stub.requests[-1])["fix"]["problems"]
     assert "only the validator decides" in fix[0]["problem"]
-    assert stub.requests[-1].recording_key == "mdl-01.fix"
+    assert stub.requests[-1].recording_key == "drafter/v1/mdl-01.fix"
 
 
 def test_a_draft_that_keeps_stating_a_decision_fails_the_job() -> None:
@@ -377,7 +377,7 @@ def test_a_revision_redrafts_with_the_validators_comments_and_pauses_again() -> 
     again = decide("job-mdl-04", stub, checkpoints, "revise", "Say what out-of-time test you need.")
     assert paused_for_review(again) and again["human_revisions"] == 1
     last = stub.requests[-1]
-    assert last.recording_key == "mdl-04.r1"
+    assert last.recording_key == "drafter/v1/mdl-04.r1"
     assert payload(last)["revision"]["comments"] == ["Say what out-of-time test you need."]
 
 

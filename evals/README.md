@@ -5,7 +5,7 @@ Suites run by CI, and on demand with live models: golden-set quality, red-team, 
 **Built (week 8): the release gates.** [`gate.py`](gate.py) applies the thresholds in [`config/eval_gates.yaml`](../config/eval_gates.yaml) ([ADR 0008](../docs/adr/0008-evaluation-thresholds.md)) and exits 1 if any is missed. CI runs it on every push and pull request.
 
 ```bash
-uv run python evals/gate.py           # no keys, no stack, about 7 s: 12 gates
+uv run python evals/gate.py           # no keys, no stack, about 10 s: 24 gates (12 for app 2)
 uv run python evals/gate.py --stack   # the 25 live recordings through the running stack: 10 gates
 ```
 
@@ -14,6 +14,8 @@ uv run python evals/gate.py --stack   # the 25 live recordings through the runni
 - **Attack set:** run with the guardrails as configured in `config/guardrails.yaml`. No case that the committed results show stopped with every guardrail on may get through, so switching a guardrail off fails the build (week 8 acceptance test B; `tests/test_gate.py`).
 
 The rules (`every`, `mean`, `rate`, with named exceptions) know nothing about lending: a suite's runner turns its results into rows, so another app can bring its own suites and thresholds ([ADR 0015](../docs/adr/0015-platform-core-and-apps.md)). Replays test the code and the scoring on fixed model answers, so they pass a changed prompt unchanged. The [live smoke gate](smoke/README.md) tests it against real models: `gate.py --live` drafts five memos (about 66k tokens), scores them per package, and compares the averages with the week 6 baseline; `--live --full` runs all 25 packages three times. A deliberately degraded drafter prompt fails it ([results](smoke/results.md), week 8 acceptance test A). CI runs it when model-affecting files change, once the model keys are repository secrets (`.github/workflows/live-gates.yml`).
+
+**Built (Nov 20): model documentation review (app 2), keyless.** [`model_review/`](model_review/README.md): its golden set (six packages, each `ground_truth.json` the answer key), its attack set (9 cases), and two suites in the release gate, `model_review_golden` and `model_review_attacks`. `gate.py` runs them with the credit memo's suites, on scripted answers, so they test the pipeline and the scoring. The live run and its thresholds come next (ADR 0016, step 3b).
 
 **Built (week 5):** [`adversarial/`](adversarial/): adversarial set v1, 20 synthetic attacks (injected instructions, personal data, and model output that followed an injection), and a harness that runs them in demo mode with every guardrail on and with every one off. `uv run python evals/adversarial/harness.py` rewrites [`v1/results.md`](adversarial/v1/results.md); a test fails if the committed results go stale or a case stops meeting its expectation.
 

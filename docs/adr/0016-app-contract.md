@@ -95,7 +95,7 @@ Configuration and data are grouped by app so that one app's settings can't chang
 - **App settings:** `config/apps/<app_id>/`, such as the credit memo's `policy_thresholds.yaml`.
 - **Guardrails:** the decision-language check keeps its logic in the core and takes its phrases, and the words the automated fix uses for them, from the app (`apps/credit_memo/guardrails.py`). Without an app's phrases it records `not_evaluated`. The injection screen works the same way (step 2c): the core keeps the app-neutral patterns, including asking for something to be left out ("do not mention"), and each app adds the phrases that steer its own decision ("approve this loan", "mark this model as validated") to `steers_the_decision`, and to `on_task` as a draft would echo them. The switches stay one platform-wide list in `config/guardrails.yaml`; a section per app is added when an app needs different switches.
 - **Gateway policy (done in step 2c):** callers are named `<app_id>.<step>` (for example `credit_memo.drafter`, `model_review.provisions`) in `config/tool_gateway.yaml`, each with its own token, so one app's step cannot call another app's tools. The worker sets the caller from the app and the node; the evidence chain still records the bare step, so the worker's per-node evidence and jobs written before the rename read the same. The keyless demo moves an older `.demo/keys.env` to the new names on its next start, keeping its other keys. A `TOOL_GATEWAY_TOKENS` set in `.env` must use the new names.
-- **Evaluation sets (step 3):** `evals/<app_id>/` for the golden set, judge calibration and adversarial cases, and a section per app in `config/eval_gates.yaml`. The runner and scoring stay shared. This waits for app 2's evaluation set, so the shared runner is shaped by two real apps rather than one.
+- **Evaluation sets (step 3):** `evals/<app_id>/` for the golden set, judge calibration and adversarial cases, and a section per app in `config/eval_gates.yaml`. The runner and the rules stay shared; each app's scorer and attack harness are its own. App 2's are in `evals/model_review/` (step 3a); the credit memo's stay at the top of `evals/`, since moving them would change nothing but paths.
 
 `config/apps.yaml` lists the enabled apps by import path. The worker and the API load only those.
 
@@ -121,6 +121,9 @@ Configuration and data are grouped by app so that one app's settings can't chang
    - Gate 2 passes, 13 of 13, from a clean clone.
 2. **Build app 2 keylessly**, with stub model responses in its tests: synthetic documentation packages, the section checklist in code, Regulus retrieval through the gateway, the findings draft, and the core guardrails with app 2's phrases.
 3. **Evaluate and record app 2:** a small golden set, its gate thresholds, and recordings for the keyless demo. This needs live model runs; the token estimate is given and approved first.
+   - **3a (keyless, done):** the golden set and attack set in `evals/model_review/`, scripted test responses from `scripts/seed_model_review.py`, and the `model_review_golden` and `model_review_attacks` suites in `config/eval_gates.yaml`, which `evals/gate.py` runs in CI. Each package's `ground_truth.json` is its answer key. The runner and the rules stay shared; each app brings its own scorer and harness. The credit memo's suites stay where they are.
+   - **3b:** the first live run, 6 packages × 3 repeats, and the live thresholds set from it.
+   - **3c:** live recordings for the keyless demo, with two revision rounds per package, and Gate 2 extended to app 2.
 
 ### 6. Rules for app 2's content
 

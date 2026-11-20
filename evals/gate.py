@@ -7,7 +7,8 @@ bring its own suites and thresholds (ADR 0015).
 
     uv run python evals/gate.py           # no keys, no stack: golden set and fairness pairs
                                           # on scripted recordings, attacks with the
-                                          # guardrails as configured
+                                          # guardrails as configured, and the same for
+                                          # model documentation review (app 2)
     uv run python evals/gate.py --stack   # the golden set on the live recordings, through
                                           # the running stack's tool gateway and GKN
     uv run python evals/gate.py --live    # five packages against real models (spends
@@ -199,6 +200,12 @@ async def attacks_configured(guardrails_file: Path | None = None) -> list[dict[s
     sys.path.insert(0, str(HERE / "adversarial"))
     import harness
 
+    return await _attacks(harness, guardrails_file)
+
+
+async def _attacks(harness: Any, guardrails_file: Path | None) -> list[dict[str, Any]]:
+    """An app's attack set (its harness module: SET, load_cases, configured_switches,
+    run_case) run with the guardrails as configured, against its committed results."""
     committed = {
         c["id"]: c for c in json.loads((harness.SET / "results.json").read_text())["cases"]
     }
@@ -218,6 +225,32 @@ async def attacks_configured(guardrails_file: Path | None = None) -> list[dict[s
             }
         )
     return rows
+
+
+# Model documentation review's suites (app 2) ----------------------------------------------
+
+
+async def model_review_golden() -> list[dict[str, Any]]:
+    sys.path.insert(0, str(HERE / "model_review"))
+    import review_eval
+
+    report_ = await review_eval.run_golden("demo", 1, None)
+    rows = []
+    for r in report_["rows"]:
+        done = r["outcome"] == "drafted"
+        row = {**r, "id": r["package_id"], "completed": done}
+        if not done:
+            rails = r.get("guardrails_triggered") or []
+            row["failed_why"] = r["error"] + (f": {', '.join(rails)}" if rails else "")
+        rows.append(row)
+    return rows
+
+
+async def model_review_attacks(guardrails_file: Path | None = None) -> list[dict[str, Any]]:
+    sys.path.insert(0, str(HERE / "model_review"))
+    import review_attacks
+
+    return await _attacks(review_attacks, guardrails_file)
 
 
 def _load_env_files(*paths: Path) -> None:
@@ -383,6 +416,8 @@ LOCAL: dict[str, tuple[str, Runner]] = {
     "golden": ("golden", golden_scripted),
     "counterfactual": ("counterfactual", counterfactual_scripted),
     "attacks": ("attacks", attacks_configured),
+    "model review golden": ("model_review_golden", model_review_golden),
+    "model review attacks": ("model_review_attacks", model_review_attacks),
 }
 STACK: dict[str, tuple[str, Runner]] = {
     "golden (live recordings)": ("golden", golden_stack),

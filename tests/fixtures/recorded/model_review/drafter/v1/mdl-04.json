@@ -1,0 +1,10 @@
+{
+  "origin": "scripted",
+  "route": "narrative",
+  "prompt_id": "drafter",
+  "prompt_version": "v1",
+  "prompt_sha256": "07322ca5beb6c44fdeee331fbbaf5c7d504dde4d9a22f0476be0a5d33e838129",
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "text": "{\n \"sections\": [\n  {\n   \"heading\": \"Summary\",\n   \"claims\": [\n    {\n     \"text\": \"11 of 12 checklist sections are present.\",\n     \"citations\": [\n      {\n       \"doc_id\": \"nist_ai_rmf\",\n       \"locator\": \"MAP 1.1\"\n      }\n     ]\n    }\n   ]\n  },\n  {\n   \"heading\": \"Checklist gaps\",\n   \"claims\": [\n    {\n     \"text\": \"MR-5 (Sensitivity and stress testing) is empty. Sensitivity and stress testing is a placeholder.\",\n     \"citations\": [\n      {\n       \"doc_id\": \"nist_ai_rmf\",\n       \"locator\": \"MEASURE 2.6\"\n      }\n     ]\n    }\n   ]\n  },\n  {\n   \"heading\": \"Section assessments\",\n   \"claims\": [\n    {\n     \"text\": \"MR-4 is weak: Performance is reported only on the data the model was fitted to; no out-of-time or holdout test.\",\n     \"citations\": [\n      {\n       \"doc_id\": \"mdl-04-development_report\",\n       \"locator\": \"line 21\"\n      },\n      {\n       \"doc_id\": \"mdl-04-development_report\",\n       \"locator\": \"line 22\"\n      }\n     ]\n    }\n   ]\n  },\n  {\n   \"heading\": \"Matters for the validator\",\n   \"claims\": [\n    {\n     \"text\": \"Confirm the points above with the model owner.\",\n     \"citations\": [\n      {\n       \"doc_id\": \"nist_ai_rmf\",\n       \"locator\": \"MAP 1.1\"\n      }\n     ]\n    }\n   ]\n  }\n ]\n}"
+}

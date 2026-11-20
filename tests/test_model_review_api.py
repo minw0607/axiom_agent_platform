@@ -10,6 +10,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Iterator
 from dataclasses import replace
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -25,7 +26,7 @@ from test_api import KEYS, SETTINGS_WITH_KEYS
 from test_model_review_workflow import FakeLibrary, careful, context
 
 ROUTE = "/v1/apps/model_review/jobs"
-# Local mode: demo mode offers only recorded packages, and app 2 has none until step 3.
+# Local mode, so the stub model in `work` drafts every package.
 LOCAL = replace(SETTINGS_WITH_KEYS, mode="local")
 
 
@@ -80,8 +81,14 @@ def test_the_catalog_and_checklist_routes(client: TestClient) -> None:
     assert client.get("/v1/apps/model_review/checklist").status_code == 401
 
 
-def test_demo_mode_offers_no_unrecorded_package(store: InMemoryJobStore) -> None:
+def test_demo_mode_offers_only_recorded_packages(store: InMemoryJobStore, tmp_path: Path) -> None:
+    # The tests' scripted recordings cover all six packages (scripts/seed_model_review.py).
     with TestClient(create_app(SETTINGS_WITH_KEYS, store)) as demo:
+        offered = demo.get("/v1/apps/model_review/packages", headers=h("submitter")).json()
+        assert [p["package_id"] for p in offered] == [f"mdl-0{i}" for i in range(1, 7)]
+    # With no recordings, none is offered and a request is refused.
+    empty = replace(SETTINGS_WITH_KEYS, recordings_override=tmp_path)
+    with TestClient(create_app(empty, store)) as demo:
         assert demo.get("/v1/apps/model_review/packages", headers=h("submitter")).json() == []
         r = demo.post(ROUTE, json={"package_id": "mdl-01"}, headers=h("submitter", "k-d"))
         assert r.status_code == 422 and r.json()["type"].endswith("package-not-recorded")

@@ -1,0 +1,10 @@
+{
+  "origin": "scripted",
+  "route": "narrative",
+  "prompt_id": "drafter",
+  "prompt_version": "v1",
+  "prompt_sha256": "417d9152f779e0f595da7d977339c1521637de1d75b70949962e804c509d222d",
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "text": "{\n \"sections\": [\n  {\n   \"heading\": \"Summary\",\n   \"claims\": [\n    {\n     \"text\": \"12 of 12 checklist sections are present.\",\n     \"citations\": [\n      {\n       \"doc_id\": \"nist_ai_rmf\",\n       \"locator\": \"MAP 1.1\"\n      }\n     ]\n    }\n   ]\n  },\n  {\n   \"heading\": \"Checklist gaps\",\n   \"claims\": [\n    {\n     \"text\": \"Every checklist section is present.\",\n     \"citations\": [\n      {\n       \"doc_id\": \"nist_ai_rmf\",\n       \"locator\": \"MAP 1.1\"\n      }\n     ]\n    }\n   ]\n  },\n  {\n   \"heading\": \"Section assessments\",\n   \"claims\": [\n    {\n     \"text\": \"Every present section is adequate.\",\n     \"citations\": [\n      {\n       \"doc_id\": \"nist_ai_rmf\",\n       \"locator\": \"MAP 1.1\"\n      }\n     ]\n    }\n   ]\n  },\n  {\n   \"heading\": \"Matters for the validator\",\n   \"claims\": [\n    {\n     \"text\": \"Confirm the points above with the model owner.\",\n     \"citations\": [\n      {\n       \"doc_id\": \"nist_ai_rmf\",\n       \"locator\": \"MAP 1.1\"\n      }\n     ]\n    }\n   ]\n  }\n ]\n}"
+}

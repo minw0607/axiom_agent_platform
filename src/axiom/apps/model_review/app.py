@@ -135,7 +135,7 @@ def node_details(node: str, result: Mapping[str, Any]) -> dict[str, Any]:
 def has_recordings(settings: Settings, package_id: str) -> bool:
     """Whether demo mode can replay a run for this package: its assessor was recorded."""
     recordings = settings.app_recordings_dir(APP_ID)
-    return any(p.is_dir() for p in recordings.glob(f"assessor/*/{package_id}"))
+    return any(p.is_file() for p in recordings.glob(f"assessor/*/{package_id}.json"))
 
 
 class ModelReviewApp:
