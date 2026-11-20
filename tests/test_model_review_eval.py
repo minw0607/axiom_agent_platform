@@ -111,6 +111,8 @@ def test_a_harsh_model_loses_the_complete_package() -> None:
     row = score("mdl-01", Stub({"assessor": harsh, "drafter": careful_drafter}))
     assert row["documentation_status"] == "remediation_needed" and not row["status_matches"]
     assert row["adequate_kept"] == 0.0 and row["weak_recall"] is None
+    # The model's reason for every weak call is kept, so a live run's misses can be read.
+    assert set(row["weak_reasons"]) == set(row["weak_found"]) and all(row["weak_reasons"].values())
 
 
 def test_a_failed_job_is_scored_as_not_completed() -> None:

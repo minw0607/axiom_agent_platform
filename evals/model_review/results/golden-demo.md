@@ -18,13 +18,13 @@ Demo mode replays scripted answers built from the ground truth, so these numbers
 | adequate_kept | 1.00 |
 | finding_coverage_terms | 1.00 |
 
-| Package | Scenario | Status | Matches | Weak expected | Weak found | Findings covered | Missed |
-|---|---|---|---|---|---|---|---|
-| mdl-01 | complete | no_material_gaps | yes | - | - | - | - |
-| mdl-02 | no_monitoring_metrics | major_gaps | yes | - | - | 1.00 | - |
-| mdl-03 | no_fairness_assessment | remediation_needed | yes | - | - | 1.00 | - |
-| mdl-04 | in_sample_testing_only | remediation_needed | yes | MR-4 | MR-4 | 1.00 | - |
-| mdl-05 | no_data_lineage | major_gaps | yes | MR-6 | MR-6 | 1.00 | - |
-| mdl-06 | no_oversight_or_limitations | remediation_needed | yes | MR-4 | MR-4 | 1.00 | - |
+| Package | Scenario | Status | Matches | Weak expected | Weak found | Findings covered | Missed | Guardrails triggered |
+|---|---|---|---|---|---|---|---|---|
+| mdl-01 | complete | no_material_gaps | yes | - | - | - | - | - |
+| mdl-02 | no_monitoring_metrics | major_gaps | yes | - | - | 1.00 | - | - |
+| mdl-03 | no_fairness_assessment | remediation_needed | yes | - | - | 1.00 | - | - |
+| mdl-04 | in_sample_testing_only | remediation_needed | yes | MR-4 | MR-4 | 1.00 | - | - |
+| mdl-05 | no_data_lineage | major_gaps | yes | MR-6 | MR-6 | 1.00 | - | - |
+| mdl-06 | no_oversight_or_limitations | remediation_needed | yes | MR-4 | MR-4 | 1.00 | - | - |
 
 Six packages and three weak sections: a small set. It catches a broken prompt; it cannot estimate accuracy. Findings are matched by their terms, not judged.

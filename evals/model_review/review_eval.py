@@ -136,6 +136,8 @@ def score(
     state: ReviewState, truth: dict[str, Any], package: DocumentationPackage
 ) -> dict[str, Any]:
     done = bool(state.get("report")) and not state.get("error")
+    triggered = [r for r in state.get("guardrails", []) if r.outcome == "triggered"]
+    rails = sorted({r.control for r in triggered})
     row: dict[str, Any] = {
         "package_id": truth["package_id"],
         "scenario": truth["scenario"],
@@ -143,7 +145,6 @@ def score(
         "job_completion": done,
     }
     if not done:
-        rails = sorted({r.control for r in state.get("guardrails", []) if r.outcome == "triggered"})
         row["error"] = (state.get("error") or "no report").split(":", 1)[0]
         row["guardrails_triggered"] = rails
         return row
@@ -153,6 +154,7 @@ def score(
     completeness = state["completeness"]
     weak_want = expected_weak(truth)
     assessed = {a.item_id: a.adequacy for a in state["assessments"]}
+    reasons = {a.item_id: a.reason for a in state["assessments"]}
     weak_got = {i for i, a in assessed.items() if a == "weak"}
     adequate_want = {i for i in assessed if i not in weak_want}
     report_text = " ".join(claim.text for s in state["report"].sections for claim in s.claims)
@@ -185,6 +187,13 @@ def score(
             i for i, f in findings.items() if not finding_covered(f, report_text)
         ),
         "automated_fixes": state.get("automated_fixes", 0),
+        # Why: what forced each automated fix, and the model's reason for each weak call,
+        # so a live run's misses can be read, not just counted.
+        "guardrails_triggered": rails,
+        "guardrail_reasons": [
+            {"control": r.control, "node": r.node, "reason": r.reason} for r in triggered
+        ],
+        "weak_reasons": {i: reasons[i] for i in sorted(weak_got)},
     }
     return row
 
@@ -256,21 +265,51 @@ def markdown(report: dict[str, Any]) -> str:
     lines += [
         "",
         "| Package | Scenario | Status | Matches | Weak expected | Weak found | "
-        "Findings covered | Missed |",
-        "|---|---|---|---|---|---|---|---|",
+        "Findings covered | Missed | Guardrails triggered |",
+        "|---|---|---|---|---|---|---|---|---|",
     ]
     for r in report["rows"]:
         if r["outcome"] != "drafted":
             lines.append(
-                f"| {r['package_id']} | {r['scenario']} | failed: {r['error']} | | | | | |"
+                f"| {r['package_id']} | {r['scenario']} | failed: {r['error']} | | | | | | "
+                f"{_cell(r['guardrails_triggered'])} |"
             )
             continue
         lines.append(
             f"| {r['package_id']} | {r['scenario']} | {r['documentation_status']} | "
             f"{_cell(r['status_matches'])} | {_cell(r['weak_expected'])} | "
             f"{_cell(r['weak_found'])} | {_cell(r['finding_coverage_terms'])} | "
-            f"{_cell(r['findings_missed'])} |"
+            f"{_cell(r['findings_missed'])} | {_cell(r['guardrails_triggered'])} |"
         )
+    extra = [
+        (r, i)
+        for r in report["rows"]
+        if r["outcome"] == "drafted"
+        for i in r["weak_found"]
+        if i not in r["weak_expected"]
+    ]
+    if extra:
+        lines += [
+            "",
+            "Sections the model called weak that the answer key expects adequate:",
+            "",
+            "| Package | Repeat | Section | Model's reason |",
+            "|---|---|---|---|",
+        ]
+        lines += [
+            f"| {r['package_id']} | {r.get('repeat', '-')} | {i} | "
+            f"{r['weak_reasons'][i].replace('|', '/')} |"
+            for r, i in extra
+        ]
+    fixes = [(r, g) for r in report["rows"] for g in r.get("guardrail_reasons", [])]
+    if fixes:
+        lines += ["", "Guardrails triggered:", "", "| Package | Repeat | Control | Step | Reason |"]
+        lines += ["|---|---|---|---|---|"]
+        lines += [
+            f"| {r['package_id']} | {r.get('repeat', '-')} | {g['control']} | {g['node']} | "
+            f"{g['reason'].replace('|', '/')} |"
+            for r, g in fixes
+        ]
     lines += [
         "",
         "Six packages and three weak sections: a small set. It catches a broken prompt; it "

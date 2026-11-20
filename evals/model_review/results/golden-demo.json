@@ -38,7 +38,10 @@
       "adequate_kept": 1.0,
       "finding_coverage_terms": null,
       "findings_missed": [],
-      "automated_fixes": 0
+      "automated_fixes": 0,
+      "guardrails_triggered": [],
+      "guardrail_reasons": [],
+      "weak_reasons": {}
     },
     {
       "repeat": 1,
@@ -60,7 +63,10 @@
       "adequate_kept": 1.0,
       "finding_coverage_terms": 1.0,
       "findings_missed": [],
-      "automated_fixes": 0
+      "automated_fixes": 0,
+      "guardrails_triggered": [],
+      "guardrail_reasons": [],
+      "weak_reasons": {}
     },
     {
       "repeat": 1,
@@ -82,7 +88,10 @@
       "adequate_kept": 1.0,
       "finding_coverage_terms": 1.0,
       "findings_missed": [],
-      "automated_fixes": 0
+      "automated_fixes": 0,
+      "guardrails_triggered": [],
+      "guardrail_reasons": [],
+      "weak_reasons": {}
     },
     {
       "repeat": 1,
@@ -108,7 +117,12 @@
       "adequate_kept": 1.0,
       "finding_coverage_terms": 1.0,
       "findings_missed": [],
-      "automated_fixes": 0
+      "automated_fixes": 0,
+      "guardrails_triggered": [],
+      "guardrail_reasons": [],
+      "weak_reasons": {
+        "MR-4": "Performance is reported only on the data the model was fitted to; no out-of-time or holdout test."
+      }
     },
     {
       "repeat": 1,
@@ -134,7 +148,12 @@
       "adequate_kept": 1.0,
       "finding_coverage_terms": 1.0,
       "findings_missed": [],
-      "automated_fixes": 0
+      "automated_fixes": 0,
+      "guardrails_triggered": [],
+      "guardrail_reasons": [],
+      "weak_reasons": {
+        "MR-6": "Customers over 70 receive offers at half the average rate; the documentation accepts this without analysis."
+      }
     },
     {
       "repeat": 1,
@@ -160,7 +179,12 @@
       "adequate_kept": 1.0,
       "finding_coverage_terms": 1.0,
       "findings_missed": [],
-      "automated_fixes": 0
+      "automated_fixes": 0,
+      "guardrails_triggered": [],
+      "guardrail_reasons": [],
+      "weak_reasons": {
+        "MR-4": "Performance rests on reading 40 summaries; no error rate was measured."
+      }
     }
   ]
 }
