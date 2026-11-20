@@ -1,7 +1,7 @@
 {
   "suite": "golden",
   "mode": "demo",
-  "dataset": "model-review-golden-v1",
+  "dataset": "model-review-golden-v2",
   "checklist_version": "MR-2026.1",
   "summary": {
     "runs": 6,
@@ -170,10 +170,12 @@
       "documentation_status": "remediation_needed",
       "status_matches": true,
       "weak_expected": [
-        "MR-4"
+        "MR-4",
+        "MR-6"
       ],
       "weak_found": [
-        "MR-4"
+        "MR-4",
+        "MR-6"
       ],
       "weak_recall": 1.0,
       "adequate_kept": 1.0,
@@ -183,7 +185,8 @@
       "guardrails_triggered": [],
       "guardrail_reasons": [],
       "weak_reasons": {
-        "MR-4": "Performance rests on reading 40 summaries; no error rate was measured."
+        "MR-4": "Performance rests on reading 40 summaries; no error rate was measured.",
+        "MR-6": "Only English calls were read and no comparison across customer groups was made, so the fairness question is not answered."
       }
     }
   ]

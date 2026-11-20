@@ -72,9 +72,9 @@ def test_the_scripted_answers_reach_the_ceiling_and_the_expected_status() -> Non
     report = asyncio.run(review_eval.run_golden("demo", 1, None))
     assert {r["package_id"]: r["documentation_status"] for r in report["rows"]} == GOOD_STATUS
     assert all(v == 1.0 for k, v in report["summary"].items() if k != "runs")
-    # Three present-but-weak sections in the set: the model's real judgment.
+    # Four present-but-weak sections in the set: the model's real judgment.
     weak = {r["package_id"]: r["weak_expected"] for r in report["rows"] if r["weak_expected"]}
-    assert weak == {"mdl-04": ["MR-4"], "mdl-05": ["MR-6"], "mdl-06": ["MR-4"]}
+    assert weak == {"mdl-04": ["MR-4"], "mdl-05": ["MR-6"], "mdl-06": ["MR-4", "MR-6"]}
 
 
 def score(package_id: str, stub: Stub) -> dict[str, Any]:
@@ -174,3 +174,18 @@ def test_demo_mode_finds_an_apps_recorded_assessor(
     (tmp_path / "model_review" / "assessor" / "v1" / "mdl-01.json").write_text("{}")
     settings = replace(SETTINGS, recordings_override=tmp_path)
     assert APP.has_recordings(settings, package_id) is found
+
+
+def test_the_accepted_live_run_meets_the_live_thresholds() -> None:
+    """ADR 0017: the step 3b live run passes the gates set from it, and a run scored like
+    the lenient stub model would not."""
+    report = json.loads((review_eval.RESULTS / "golden-live.json").read_text())
+    rows = [
+        {**r, "id": r["package_id"], "completed": r["outcome"] == "drafted"} for r in report["rows"]
+    ]
+    rules = gate.load_gates()["model_review_golden_live"]
+    assert all(r.ok for r in gate.evaluate("live", rows, rules))
+    lenient_rows = [
+        {**r, "weak_recall": 0.0 if r["weak_recall"] is not None else None} for r in rows
+    ]
+    assert not all(r.ok for r in gate.evaluate("live", lenient_rows, rules))

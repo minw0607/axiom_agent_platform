@@ -19,6 +19,8 @@ bring its own suites and thresholds (ADR 0015).
                                                   # drafter prompt: it must fail (acceptance A)
     uv run python evals/gate.py --live --alignment  # 24 alignment scenarios (about 315k
                                                     # tokens; evals/alignment)
+    uv run python evals/gate.py --live --model-review  # app 2's six packages x 3 against
+                                                       # real models (about 170k tokens)
 
 Exits 1 if a gate fails. In GitHub Actions it also writes the table to the job summary.
 """
@@ -230,11 +232,13 @@ async def _attacks(harness: Any, guardrails_file: Path | None) -> list[dict[str,
 # Model documentation review's suites (app 2) ----------------------------------------------
 
 
-async def model_review_golden() -> list[dict[str, Any]]:
+async def model_review_golden(mode: str = "demo", repeats: int = 1) -> list[dict[str, Any]]:
     sys.path.insert(0, str(HERE / "model_review"))
     import review_eval
 
-    report_ = await review_eval.run_golden("demo", 1, None)
+    report_ = await review_eval.run_golden(mode, repeats, None)
+    if mode == "live":
+        print(review_eval.write(report_))
     rows = []
     for r in report_["rows"]:
         done = r["outcome"] == "drafted"
@@ -387,6 +391,15 @@ def run_alignment(args: argparse.Namespace, gates: dict[str, Any]) -> list[GateR
     return evaluate("alignment (live)", rows, gates[spec["suite"]])
 
 
+def run_model_review(args: argparse.Namespace, gates: dict[str, Any]) -> list[GateResult]:
+    """App 2's golden set against real models. Rules apply over every run, not per package:
+    the model's judgment is gated on its average (ADR 0017)."""
+    spec = load_live(args.gates)["model_review"]
+    _live_env(degrade=False)
+    rows = asyncio.run(model_review_golden("live", spec["repeats"]))
+    return evaluate("model review (live)", rows, gates[spec["suite"]])
+
+
 def _summary(text: str) -> None:
     path = os.environ.get("GITHUB_STEP_SUMMARY")
     if path:
@@ -397,6 +410,8 @@ def _summary(text: str) -> None:
 def run_live(args: argparse.Namespace, gates: dict[str, Any]) -> list[GateResult]:
     if args.alignment:
         return run_alignment(args, gates)
+    if args.model_review:
+        return run_model_review(args, gates)
     spec = load_live(args.gates)["full" if args.full else "smoke"]
     rules = gates[spec["suite"]]
     packages = spec["packages"] if spec["packages"] != "all" else None
@@ -435,14 +450,19 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--alignment", action="store_true", help="with --live: the alignment scenarios"
     )
+    parser.add_argument(
+        "--model-review", action="store_true", help="with --live: app 2's golden set"
+    )
     parser.add_argument("--gates", type=Path, default=GATES_FILE)
     args = parser.parse_args(argv)
     gates = load_gates(args.gates)
     sys.path.insert(0, str(HERE))
-    if (args.full or args.degrade or args.alignment) and not args.live:
-        parser.error("--full, --degrade and --alignment go with --live")
-    if args.alignment and (args.full or args.degrade):
-        parser.error("--alignment runs on its own")
+    if (args.full or args.degrade or args.alignment or args.model_review) and not args.live:
+        parser.error("--full, --degrade, --alignment and --model-review go with --live")
+    if (args.alignment or args.model_review) and (
+        args.full or args.degrade or (args.alignment and args.model_review)
+    ):
+        parser.error("--alignment and --model-review each run on their own")
     results: list[GateResult] = []
     if args.live:
         results = run_live(args, gates)

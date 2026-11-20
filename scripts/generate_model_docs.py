@@ -57,6 +57,7 @@ def _common(name: str, use: str, personal_data: str) -> dict[str, list[str]]:
         ],
         "MR-9": [
             "Records with missing values above 5% in any input field were reviewed by hand.",
+            "After that review, every input field was at least 98% complete.",
             "Duplicate records (0.4% of the sample) were removed before training.",
             f"The sample covers every region and product the model is used for: {use}.",
         ],
@@ -342,6 +343,7 @@ def models() -> list[Model]:
             "The model was trained on customers who had a current account for at least a year.",
             "Newer customers are not scored.",
             "It predicts interest in the offer, not whether the product suits the customer.",
+            "It was tested only on customers from the training period, not on a later period.",
         ],
         "MR-3": [
             "A random forest with 60 inputs on account activity and past product holdings.",
@@ -453,6 +455,7 @@ def models() -> list[Model]:
                 "MR-2": "No limitations section, although long calls are cut and non-English calls were not tested.",
                 "MR-7": "No human oversight section: summaries are saved to customer records with no review.",
                 "MR-4": "Performance rests on reading 40 summaries; no error rate was measured.",
+                "MR-6": "Only English calls were read and no comparison across customer groups was made, so the fairness question is not answered.",
             },
         )
     )

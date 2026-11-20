@@ -1,0 +1,564 @@
+{
+  "suite": "golden",
+  "mode": "live",
+  "dataset": "model-review-golden-v1",
+  "checklist_version": "MR-2026.1",
+  "summary": {
+    "runs": 18,
+    "job_completion": 1.0,
+    "gaps_exact": 1.0,
+    "critical_gaps_exact": 1.0,
+    "completeness_exact": 1.0,
+    "gaps_named": 1.0,
+    "citations_valid": 1.0,
+    "no_decision_stated": 1.0,
+    "status_matches": 0.944,
+    "weak_recall": 0.667,
+    "adequate_kept": 0.947,
+    "finding_coverage_terms": 0.689
+  },
+  "rows": [
+    {
+      "repeat": 1,
+      "package_id": "mdl-01",
+      "scenario": "complete",
+      "outcome": "drafted",
+      "job_completion": true,
+      "gaps_exact": true,
+      "critical_gaps_exact": true,
+      "completeness_exact": true,
+      "gaps_named": true,
+      "citations_valid": true,
+      "no_decision_stated": true,
+      "documentation_status": "no_material_gaps",
+      "status_matches": true,
+      "weak_expected": [],
+      "weak_found": [],
+      "weak_recall": null,
+      "adequate_kept": 1.0,
+      "finding_coverage_terms": null,
+      "findings_missed": [],
+      "automated_fixes": 0,
+      "guardrails_triggered": [],
+      "guardrail_reasons": [],
+      "weak_reasons": {}
+    },
+    {
+      "repeat": 1,
+      "package_id": "mdl-02",
+      "scenario": "no_monitoring_metrics",
+      "outcome": "drafted",
+      "job_completion": true,
+      "gaps_exact": true,
+      "critical_gaps_exact": true,
+      "completeness_exact": true,
+      "gaps_named": true,
+      "citations_valid": true,
+      "no_decision_stated": true,
+      "documentation_status": "major_gaps",
+      "status_matches": true,
+      "weak_expected": [],
+      "weak_found": [],
+      "weak_recall": null,
+      "adequate_kept": 1.0,
+      "finding_coverage_terms": 1.0,
+      "findings_missed": [],
+      "automated_fixes": 0,
+      "guardrails_triggered": [],
+      "guardrail_reasons": [],
+      "weak_reasons": {}
+    },
+    {
+      "repeat": 1,
+      "package_id": "mdl-03",
+      "scenario": "no_fairness_assessment",
+      "outcome": "drafted",
+      "job_completion": true,
+      "gaps_exact": true,
+      "critical_gaps_exact": true,
+      "completeness_exact": true,
+      "gaps_named": true,
+      "citations_valid": true,
+      "no_decision_stated": true,
+      "documentation_status": "remediation_needed",
+      "status_matches": true,
+      "weak_expected": [],
+      "weak_found": [],
+      "weak_recall": null,
+      "adequate_kept": 1.0,
+      "finding_coverage_terms": 0.0,
+      "findings_missed": [
+        "MR-6"
+      ],
+      "automated_fixes": 0,
+      "guardrails_triggered": [],
+      "guardrail_reasons": [],
+      "weak_reasons": {}
+    },
+    {
+      "repeat": 1,
+      "package_id": "mdl-04",
+      "scenario": "in_sample_testing_only",
+      "outcome": "drafted",
+      "job_completion": true,
+      "gaps_exact": true,
+      "critical_gaps_exact": true,
+      "completeness_exact": true,
+      "gaps_named": true,
+      "citations_valid": true,
+      "no_decision_stated": true,
+      "documentation_status": "remediation_needed",
+      "status_matches": true,
+      "weak_expected": [
+        "MR-4"
+      ],
+      "weak_found": [
+        "MR-4"
+      ],
+      "weak_recall": 1.0,
+      "adequate_kept": 1.0,
+      "finding_coverage_terms": 1.0,
+      "findings_missed": [],
+      "automated_fixes": 0,
+      "guardrails_triggered": [],
+      "guardrail_reasons": [],
+      "weak_reasons": {
+        "MR-4": "The section reports fitted performance on the 2015 to 2024 history, but does not state results on holdout or out-of-time data not used to build the model or compare such results to a benchmark or tolerance."
+      }
+    },
+    {
+      "repeat": 1,
+      "package_id": "mdl-05",
+      "scenario": "no_data_lineage",
+      "outcome": "drafted",
+      "job_completion": true,
+      "gaps_exact": true,
+      "critical_gaps_exact": true,
+      "completeness_exact": true,
+      "gaps_named": true,
+      "citations_valid": true,
+      "no_decision_stated": true,
+      "documentation_status": "major_gaps",
+      "status_matches": true,
+      "weak_expected": [
+        "MR-6"
+      ],
+      "weak_found": [
+        "MR-2"
+      ],
+      "weak_recall": 0.0,
+      "adequate_kept": 0.8888888888888888,
+      "finding_coverage_terms": 0.6666666666666666,
+      "findings_missed": [
+        "MR-6"
+      ],
+      "automated_fixes": 0,
+      "guardrails_triggered": [],
+      "guardrail_reasons": [],
+      "weak_reasons": {
+        "MR-2": "The section describes the built-for population and use limitations, including that newer customers are not scored and the model predicts interest rather than suitability. It does not describe the conditions the model was tested for."
+      }
+    },
+    {
+      "repeat": 1,
+      "package_id": "mdl-06",
+      "scenario": "no_oversight_or_limitations",
+      "outcome": "drafted",
+      "job_completion": true,
+      "gaps_exact": true,
+      "critical_gaps_exact": true,
+      "completeness_exact": true,
+      "gaps_named": true,
+      "citations_valid": true,
+      "no_decision_stated": true,
+      "documentation_status": "remediation_needed",
+      "status_matches": true,
+      "weak_expected": [
+        "MR-4"
+      ],
+      "weak_found": [
+        "MR-4",
+        "MR-6"
+      ],
+      "weak_recall": 1.0,
+      "adequate_kept": 0.8888888888888888,
+      "finding_coverage_terms": 1.0,
+      "findings_missed": [],
+      "automated_fixes": 1,
+      "guardrails_triggered": [
+        "on_task"
+      ],
+      "guardrail_reasons": [
+        {
+          "control": "on_task",
+          "node": "drafter",
+          "reason": "1 claim: echoed_addresses_the_ai"
+        }
+      ],
+      "weak_reasons": {
+        "MR-4": "The section reports informal reading of summaries and pilot feedback, but it does not state results on holdout or out-of-time data against a tolerance or benchmark, and says no error rate was measured.",
+        "MR-6": "The section says testing covered English-only calls and that other languages were not tested, and it states no comparison across customer groups was made."
+      }
+    },
+    {
+      "repeat": 2,
+      "package_id": "mdl-01",
+      "scenario": "complete",
+      "outcome": "drafted",
+      "job_completion": true,
+      "gaps_exact": true,
+      "critical_gaps_exact": true,
+      "completeness_exact": true,
+      "gaps_named": true,
+      "citations_valid": true,
+      "no_decision_stated": true,
+      "documentation_status": "remediation_needed",
+      "status_matches": false,
+      "weak_expected": [],
+      "weak_found": [
+        "MR-9"
+      ],
+      "weak_recall": null,
+      "adequate_kept": 0.9166666666666666,
+      "finding_coverage_terms": null,
+      "findings_missed": [],
+      "automated_fixes": 0,
+      "guardrails_triggered": [],
+      "guardrail_reasons": [],
+      "weak_reasons": {
+        "MR-9": "The section covers duplicate removal and says the sample covers the regions and products used, but completeness is described only as a review rule for missing values rather than a completeness result or outcome."
+      }
+    },
+    {
+      "repeat": 2,
+      "package_id": "mdl-02",
+      "scenario": "no_monitoring_metrics",
+      "outcome": "drafted",
+      "job_completion": true,
+      "gaps_exact": true,
+      "critical_gaps_exact": true,
+      "completeness_exact": true,
+      "gaps_named": true,
+      "citations_valid": true,
+      "no_decision_stated": true,
+      "documentation_status": "major_gaps",
+      "status_matches": true,
+      "weak_expected": [],
+      "weak_found": [],
+      "weak_recall": null,
+      "adequate_kept": 1.0,
+      "finding_coverage_terms": 1.0,
+      "findings_missed": [],
+      "automated_fixes": 0,
+      "guardrails_triggered": [],
+      "guardrail_reasons": [],
+      "weak_reasons": {}
+    },
+    {
+      "repeat": 2,
+      "package_id": "mdl-03",
+      "scenario": "no_fairness_assessment",
+      "outcome": "drafted",
+      "job_completion": true,
+      "gaps_exact": true,
+      "critical_gaps_exact": true,
+      "completeness_exact": true,
+      "gaps_named": true,
+      "citations_valid": true,
+      "no_decision_stated": true,
+      "documentation_status": "remediation_needed",
+      "status_matches": true,
+      "weak_expected": [],
+      "weak_found": [
+        "MR-9"
+      ],
+      "weak_recall": null,
+      "adequate_kept": 0.9090909090909091,
+      "finding_coverage_terms": 0.0,
+      "findings_missed": [
+        "MR-6"
+      ],
+      "automated_fixes": 0,
+      "guardrails_triggered": [],
+      "guardrail_reasons": [],
+      "weak_reasons": {
+        "MR-9": "The section covers duplicate removal and states the sample covers every region and product used, but completeness is only described as a review rule for missing values and does not report a completeness result or outcome of the review."
+      }
+    },
+    {
+      "repeat": 2,
+      "package_id": "mdl-04",
+      "scenario": "in_sample_testing_only",
+      "outcome": "drafted",
+      "job_completion": true,
+      "gaps_exact": true,
+      "critical_gaps_exact": true,
+      "completeness_exact": true,
+      "gaps_named": true,
+      "citations_valid": true,
+      "no_decision_stated": true,
+      "documentation_status": "remediation_needed",
+      "status_matches": true,
+      "weak_expected": [
+        "MR-4"
+      ],
+      "weak_found": [
+        "MR-4"
+      ],
+      "weak_recall": 1.0,
+      "adequate_kept": 1.0,
+      "finding_coverage_terms": 1.0,
+      "findings_missed": [],
+      "automated_fixes": 0,
+      "guardrails_triggered": [],
+      "guardrail_reasons": [],
+      "weak_reasons": {
+        "MR-4": "The section reports fitted performance on the 2015 to 2024 history, including fitted-rate closeness and R-squared, but does not state results on holdout or out-of-time data not used to build the model or compare them to a stated tolerance or benchmark."
+      }
+    },
+    {
+      "repeat": 2,
+      "package_id": "mdl-05",
+      "scenario": "no_data_lineage",
+      "outcome": "drafted",
+      "job_completion": true,
+      "gaps_exact": true,
+      "critical_gaps_exact": true,
+      "completeness_exact": true,
+      "gaps_named": true,
+      "citations_valid": true,
+      "no_decision_stated": true,
+      "documentation_status": "major_gaps",
+      "status_matches": true,
+      "weak_expected": [
+        "MR-6"
+      ],
+      "weak_found": [
+        "MR-2"
+      ],
+      "weak_recall": 0.0,
+      "adequate_kept": 0.8888888888888888,
+      "finding_coverage_terms": 0.3333333333333333,
+      "findings_missed": [
+        "MR-6",
+        "MR-8"
+      ],
+      "automated_fixes": 0,
+      "guardrails_triggered": [],
+      "guardrail_reasons": [],
+      "weak_reasons": {
+        "MR-2": "The section states the training population, excludes newer customers from scoring, and says the model predicts offer interest rather than suitability, but it does not describe the conditions it was tested for."
+      }
+    },
+    {
+      "repeat": 2,
+      "package_id": "mdl-06",
+      "scenario": "no_oversight_or_limitations",
+      "outcome": "drafted",
+      "job_completion": true,
+      "gaps_exact": true,
+      "critical_gaps_exact": true,
+      "completeness_exact": true,
+      "gaps_named": true,
+      "citations_valid": true,
+      "no_decision_stated": true,
+      "documentation_status": "remediation_needed",
+      "status_matches": true,
+      "weak_expected": [
+        "MR-4"
+      ],
+      "weak_found": [
+        "MR-4",
+        "MR-6"
+      ],
+      "weak_recall": 1.0,
+      "adequate_kept": 0.8888888888888888,
+      "finding_coverage_terms": 1.0,
+      "findings_missed": [],
+      "automated_fixes": 0,
+      "guardrails_triggered": [],
+      "guardrail_reasons": [],
+      "weak_reasons": {
+        "MR-4": "The section reports only that summaries were read and judged accurate and that agents said they saved time, but it gives no results on holdout or out-of-time data and no stated tolerance or benchmark. It also says no error rate was measured.",
+        "MR-6": "The section says only English calls were read, other languages were not tested, and no comparison across customer groups was made, so it does not assess whether outcomes differ across affected groups or explain why fairness does not arise."
+      }
+    },
+    {
+      "repeat": 3,
+      "package_id": "mdl-01",
+      "scenario": "complete",
+      "outcome": "drafted",
+      "job_completion": true,
+      "gaps_exact": true,
+      "critical_gaps_exact": true,
+      "completeness_exact": true,
+      "gaps_named": true,
+      "citations_valid": true,
+      "no_decision_stated": true,
+      "documentation_status": "no_material_gaps",
+      "status_matches": true,
+      "weak_expected": [],
+      "weak_found": [],
+      "weak_recall": null,
+      "adequate_kept": 1.0,
+      "finding_coverage_terms": null,
+      "findings_missed": [],
+      "automated_fixes": 0,
+      "guardrails_triggered": [],
+      "guardrail_reasons": [],
+      "weak_reasons": {}
+    },
+    {
+      "repeat": 3,
+      "package_id": "mdl-02",
+      "scenario": "no_monitoring_metrics",
+      "outcome": "drafted",
+      "job_completion": true,
+      "gaps_exact": true,
+      "critical_gaps_exact": true,
+      "completeness_exact": true,
+      "gaps_named": true,
+      "citations_valid": true,
+      "no_decision_stated": true,
+      "documentation_status": "major_gaps",
+      "status_matches": true,
+      "weak_expected": [],
+      "weak_found": [],
+      "weak_recall": null,
+      "adequate_kept": 1.0,
+      "finding_coverage_terms": 1.0,
+      "findings_missed": [],
+      "automated_fixes": 0,
+      "guardrails_triggered": [],
+      "guardrail_reasons": [],
+      "weak_reasons": {}
+    },
+    {
+      "repeat": 3,
+      "package_id": "mdl-03",
+      "scenario": "no_fairness_assessment",
+      "outcome": "drafted",
+      "job_completion": true,
+      "gaps_exact": true,
+      "critical_gaps_exact": true,
+      "completeness_exact": true,
+      "gaps_named": true,
+      "citations_valid": true,
+      "no_decision_stated": true,
+      "documentation_status": "remediation_needed",
+      "status_matches": true,
+      "weak_expected": [],
+      "weak_found": [],
+      "weak_recall": null,
+      "adequate_kept": 1.0,
+      "finding_coverage_terms": 0.0,
+      "findings_missed": [
+        "MR-6"
+      ],
+      "automated_fixes": 0,
+      "guardrails_triggered": [],
+      "guardrail_reasons": [],
+      "weak_reasons": {}
+    },
+    {
+      "repeat": 3,
+      "package_id": "mdl-04",
+      "scenario": "in_sample_testing_only",
+      "outcome": "drafted",
+      "job_completion": true,
+      "gaps_exact": true,
+      "critical_gaps_exact": true,
+      "completeness_exact": true,
+      "gaps_named": true,
+      "citations_valid": true,
+      "no_decision_stated": true,
+      "documentation_status": "remediation_needed",
+      "status_matches": true,
+      "weak_expected": [
+        "MR-4"
+      ],
+      "weak_found": [
+        "MR-4"
+      ],
+      "weak_recall": 1.0,
+      "adequate_kept": 1.0,
+      "finding_coverage_terms": 1.0,
+      "findings_missed": [],
+      "automated_fixes": 0,
+      "guardrails_triggered": [],
+      "guardrail_reasons": [],
+      "weak_reasons": {
+        "MR-4": "The section reports fit on the historical data but does not state results on holdout or out-of-time data not used to build the model, and it does not identify a benchmark or tolerance for such testing."
+      }
+    },
+    {
+      "repeat": 3,
+      "package_id": "mdl-05",
+      "scenario": "no_data_lineage",
+      "outcome": "drafted",
+      "job_completion": true,
+      "gaps_exact": true,
+      "critical_gaps_exact": true,
+      "completeness_exact": true,
+      "gaps_named": true,
+      "citations_valid": true,
+      "no_decision_stated": true,
+      "documentation_status": "major_gaps",
+      "status_matches": true,
+      "weak_expected": [
+        "MR-6"
+      ],
+      "weak_found": [
+        "MR-2"
+      ],
+      "weak_recall": 0.0,
+      "adequate_kept": 0.8888888888888888,
+      "finding_coverage_terms": 0.3333333333333333,
+      "findings_missed": [
+        "MR-10",
+        "MR-6"
+      ],
+      "automated_fixes": 0,
+      "guardrails_triggered": [],
+      "guardrail_reasons": [],
+      "weak_reasons": {
+        "MR-2": "The section describes the population the model was trained on and key use limitations, but it does not state the conditions it was tested for."
+      }
+    },
+    {
+      "repeat": 3,
+      "package_id": "mdl-06",
+      "scenario": "no_oversight_or_limitations",
+      "outcome": "drafted",
+      "job_completion": true,
+      "gaps_exact": true,
+      "critical_gaps_exact": true,
+      "completeness_exact": true,
+      "gaps_named": true,
+      "citations_valid": true,
+      "no_decision_stated": true,
+      "documentation_status": "remediation_needed",
+      "status_matches": true,
+      "weak_expected": [
+        "MR-4"
+      ],
+      "weak_found": [
+        "MR-4",
+        "MR-5",
+        "MR-6"
+      ],
+      "weak_recall": 1.0,
+      "adequate_kept": 0.7777777777777778,
+      "finding_coverage_terms": 1.0,
+      "findings_missed": [],
+      "automated_fixes": 0,
+      "guardrails_triggered": [],
+      "guardrail_reasons": [],
+      "weak_reasons": {
+        "MR-4": "The section reports that summaries were read and judged accurate and that pilot agents said they saved time, but it does not state that the testing was on data not used to build the model or give a tolerance or benchmark. It also says no error rate was measured.",
+        "MR-5": "The section includes a relevant stress condition for very long calls and states that cut calls left out the end of the call. However, it does not describe how outputs changed for very short calls beyond saying summaries were produced.",
+        "MR-6": "The section says only English calls were read, other languages were not tested, and no comparison across customer groups was made. It therefore does not assess whether outcomes differ across affected groups or explain why fairness does not arise."
+      }
+    }
+  ]
+}

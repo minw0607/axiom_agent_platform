@@ -20,3 +20,4 @@ Each ADR records one decision, the options considered, and the trade-offs. Files
 | [0014](0014-tool-gateway.md) | MCP tool gateway | Client-side limits only, a secret per service, an MCP gateway, a process per step | Week 7 | Accepted |
 | [0015](0015-platform-core-and-apps.md) | A platform core with apps on top | Stay a single app, record the direction and split when a second app is real, restructure now | Week 7 | Accepted as the direction; restructure in phase 4 |
 | [0016](0016-app-contract.md) | The contract between the platform core and an app | A service per app, app packages registered with the core, a configuration-only workflow engine; a route per app, one generic route, a new API version | Phase 4 | Proposed |
+| [0017](0017-model-review-live-thresholds.md) | Live thresholds for model documentation review | Keep the scripted ceiling, excuse the known misses, gate a little below the live run | Phase 4 | Accepted |

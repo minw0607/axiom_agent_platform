@@ -12,6 +12,7 @@ The marketing team uses the output; it must not be used for credit or pricing de
 The model was trained on customers who had a current account for at least a year.
 Newer customers are not scored.
 It predicts interest in the offer, not whether the product suits the customer.
+It was tested only on customers from the training period, not on a later period.
 
 ## 3. Methodology and design choices
 A random forest with 60 inputs on account activity and past product holdings.

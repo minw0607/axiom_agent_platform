@@ -2,7 +2,8 @@ name: Live gates
 
 # Real models, so it spends tokens. When a change touches what decides a memo's content: the
 # five-package smoke gate (about 66k tokens) and the 24 alignment scenarios (about 315k). On
-# demand: the full golden set (about 1M) or the degraded-prompt proof.
+# demand: the full golden set (about 1M), the degraded-prompt proof, or model documentation
+# review's golden set (about 170k).
 # Model settings come from repository secrets; without them the job says so and skips.
 on:
   push:
@@ -46,6 +47,10 @@ on:
         description: "Use the deliberately degraded drafter prompt (acceptance test A: must fail)"
         type: boolean
         default: false
+      model_review:
+        description: "Model documentation review (app 2): 6 packages x 3 (about 170k tokens)"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -86,7 +91,7 @@ jobs:
         if: steps.keys.outputs.present == 'true'
         run: uv sync --locked
       - name: Live gate
-        if: steps.keys.outputs.present == 'true'
+        if: steps.keys.outputs.present == 'true' && !inputs.model_review
         run: >-
           uv run python evals/gate.py --live
           ${{ inputs.full && '--full' || '' }}
@@ -94,5 +99,11 @@ jobs:
       # The alignment scenarios run after the smoke gate, even if it failed, so one run
       # reports both. Not with --full or --degrade, which ask for one specific run.
       - name: Alignment gate
-        if: always() && steps.keys.outputs.present == 'true' && !inputs.full && !inputs.degrade
+        if: >-
+          always() && steps.keys.outputs.present == 'true'
+          && !inputs.full && !inputs.degrade && !inputs.model_review
         run: uv run python evals/gate.py --live --alignment
+      # On demand only: app 2's golden set (ADR 0017).
+      - name: Model review gate
+        if: steps.keys.outputs.present == 'true' && inputs.model_review
+        run: uv run python evals/gate.py --live --model-review

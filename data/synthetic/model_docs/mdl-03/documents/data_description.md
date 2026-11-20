@@ -11,6 +11,7 @@ The cure label is known 30 days after an account goes past due, so the last 30 d
 
 ## 2. Data quality and representativeness
 Records with missing values above 5% in any input field were reviewed by hand.
+After that review, every input field was at least 98% complete.
 Duplicate records (0.4% of the sample) were removed before training.
 The sample covers every region and product the model is used for: consumer loans past due.
 

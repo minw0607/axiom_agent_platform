@@ -41,7 +41,7 @@ from axiom.settings import REPO_ROOT, Settings
 HERE = Path(__file__).parent
 RESULTS = HERE / "results"
 SCRIPTED = REPO_ROOT / "tests" / "fixtures" / "recorded"
-DATASET = "model-review-golden-v1"
+DATASET = "model-review-golden-v2"
 # Words too common in findings to show that one was made.
 STOPWORDS = {
     "about",
@@ -312,7 +312,7 @@ def markdown(report: dict[str, Any]) -> str:
         ]
     lines += [
         "",
-        "Six packages and three weak sections: a small set. It catches a broken prompt; it "
+        "Six packages and four weak sections: a small set. It catches a broken prompt; it "
         "cannot estimate accuracy. Findings are matched by their terms, not judged.",
     ]
     return "\n".join(lines) + "\n"

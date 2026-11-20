@@ -11,6 +11,7 @@ There is no label; agent flags, known within a week, stand in for one.
 
 ## 2. Data quality and representativeness
 Records with missing values above 5% in any input field were reviewed by hand.
+After that review, every input field was at least 98% complete.
 Duplicate records (0.4% of the sample) were removed before training.
 The sample covers every region and product the model is used for: calls to the customer service center.
 

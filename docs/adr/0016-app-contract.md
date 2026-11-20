@@ -122,7 +122,7 @@ Configuration and data are grouped by app so that one app's settings can't chang
 2. **Build app 2 keylessly**, with stub model responses in its tests: synthetic documentation packages, the section checklist in code, Regulus retrieval through the gateway, the findings draft, and the core guardrails with app 2's phrases.
 3. **Evaluate and record app 2:** a small golden set, its gate thresholds, and recordings for the keyless demo. This needs live model runs; the token estimate is given and approved first.
    - **3a (keyless, done):** the golden set and attack set in `evals/model_review/`, scripted test responses from `scripts/seed_model_review.py`, and the `model_review_golden` and `model_review_attacks` suites in `config/eval_gates.yaml`, which `evals/gate.py` runs in CI. Each package's `ground_truth.json` is its answer key. The runner and the rules stay shared; each app brings its own scorer and harness. The credit memo's suites stay where they are.
-   - **3b:** the first live run, 6 packages × 3 repeats, and the live thresholds set from it.
+   - **3b (done, Nov 20):** two live runs of 6 packages × 3 repeats; the first found three faults on the platform's side, fixed; thresholds set from the second ([ADR 0017](0017-model-review-live-thresholds.md)).
    - **3c:** live recordings for the keyless demo, with two revision rounds per package, and Gate 2 extended to app 2.
 
 ### 6. Rules for app 2's content

@@ -3,7 +3,7 @@
   "route": "narrative",
   "prompt_id": "drafter",
   "prompt_version": "v1",
-  "prompt_sha256": "5e0a35efcd5e0d77c6482bb44be70d841d09972b09d3324098359305d1102a78",
+  "prompt_sha256": "7dbf7386ffca65d1ad67991f1df3f2113fd2129d488e11435f7d395e66ded3fe",
   "input_tokens": 0,
   "output_tokens": 0,
   "text": "{\n \"sections\": [\n  {\n   \"heading\": \"Summary\",\n   \"claims\": [\n    {\n     \"text\": \"11 of 12 checklist sections are present.\",\n     \"citations\": [\n      {\n       \"doc_id\": \"nist_ai_rmf\",\n       \"locator\": \"MAP 1.1\"\n      }\n     ]\n    }\n   ]\n  },\n  {\n   \"heading\": \"Checklist gaps\",\n   \"claims\": [\n    {\n     \"text\": \"MR-6 (Fairness assessment) is missing. No fairness assessment, although the ranking decides how each customer is contacted and uses customer age band as an input.\",\n     \"citations\": [\n      {\n       \"doc_id\": \"nist_ai_rmf\",\n       \"locator\": \"MEASURE 2.11\"\n      }\n     ]\n    }\n   ]\n  },\n  {\n   \"heading\": \"Section assessments\",\n   \"claims\": [\n    {\n     \"text\": \"Every present section is adequate.\",\n     \"citations\": [\n      {\n       \"doc_id\": \"nist_ai_rmf\",\n       \"locator\": \"MAP 1.1\"\n      }\n     ]\n    }\n   ]\n  },\n  {\n   \"heading\": \"Matters for the validator\",\n   \"claims\": [\n    {\n     \"text\": \"Confirm the points above with the model owner.\",\n     \"citations\": [\n      {\n       \"doc_id\": \"nist_ai_rmf\",\n       \"locator\": \"MAP 1.1\"\n      }\n     ]\n    }\n   ]\n  }\n ]\n}"

@@ -77,17 +77,17 @@
       "heading_line": 12,
       "lines": [
         13,
-        15
+        16
       ]
     },
     "MR-10": {
       "outcome": "present",
       "document": "data_description",
       "doc_id": "mdl-06-data_description",
-      "heading_line": 17,
+      "heading_line": 18,
       "lines": [
-        18,
-        21
+        19,
+        22
       ]
     },
     "MR-11": {
@@ -116,6 +116,7 @@
   "expected_findings": {
     "MR-2": "No limitations section, although long calls are cut and non-English calls were not tested.",
     "MR-7": "No human oversight section: summaries are saved to customer records with no review.",
-    "MR-4": "Performance rests on reading 40 summaries; no error rate was measured."
+    "MR-4": "Performance rests on reading 40 summaries; no error rate was measured.",
+    "MR-6": "Only English calls were read and no comparison across customer groups was made, so the fairness question is not answered."
   }
 }
