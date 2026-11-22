@@ -23,7 +23,7 @@
 
 ---
 
-## Contents
+## 📑 Contents
 
 - [What it does](#-what-it-does)
 - [Design principles](#-design-principles)
@@ -289,7 +289,7 @@ curl http://localhost:8000/v1/memos/<job_id>/evidence -H "X-API-Key: <auditor ke
 
 Demo mode replays real model responses recorded from live runs, so no model API key is needed ([what the recordings are](data/recorded/README.md)). The demo offers all 25 fictional packages, each built to test one scenario ([the list](data/synthetic/README.md)). In two of them, pkg-21 and pkg-23, the recorded draft recommends approval where the expected answer is to refer, and the credit policy rules flag the problem for the credit officer. The [recordings page](data/recorded/README.md) explains.
 
-### Use your own models
+### 🔄 Use your own models
 
 The demo needs no models. To draft memos with real ones, bring your own provider account: the calls go to your account, and are billed there. Agents never name a model; they ask for a task, the [routing policy](config/routing.local.yaml) picks a logical alias for it, and `MODEL_ALIAS_MAP` in your `.env` says which provider and model each alias means. Supported providers:
 
