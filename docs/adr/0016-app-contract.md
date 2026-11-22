@@ -123,7 +123,7 @@ Configuration and data are grouped by app so that one app's settings can't chang
 3. **Evaluate and record app 2:** a small golden set, its gate thresholds, and recordings for the keyless demo. This needs live model runs; the token estimate is given and approved first.
    - **3a (keyless, done):** the golden set and attack set in `evals/model_review/`, scripted test responses from `scripts/seed_model_review.py`, and the `model_review_golden` and `model_review_attacks` suites in `config/eval_gates.yaml`, which `evals/gate.py` runs in CI. Each package's `ground_truth.json` is its answer key. The runner and the rules stay shared; each app brings its own scorer and harness. The credit memo's suites stay where they are.
    - **3b (done, Nov 20):** two live runs of 6 packages × 3 repeats; the first found three faults on the platform's side, fixed; thresholds set from the second ([ADR 0017](0017-model-review-live-thresholds.md)).
-   - **3c (done, Nov 20):** live recordings for the keyless demo in `data/recorded/model_review/`, with two revision rounds per package (`scripts/record_demo.py --app model_review`); the recording run passed every live threshold on `model-review-golden-v2`; Gate 2 checks app 2 too.
+   - **3c (done, Nov 20):** live recordings for the keyless demo in `data/recorded/model_review/`, with two revision rounds per package (`scripts/record_demo.py --app model_review`); the recording run passed every live threshold on `model-review-golden-v2`; Gate 2 checks app 2 too, and passed 16/16 from a clean clone (Nov 21).
 
 ### 6. Rules for app 2's content
 

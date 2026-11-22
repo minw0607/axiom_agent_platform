@@ -53,6 +53,8 @@ A relationship manager submits a borrower package for a commercial term loan. Th
 
 The system drafts and recommends. **A human makes every credit decision.**
 
+**A second app on the same platform: model documentation review.** A model validator submits a synthetic model documentation package. Code checks it against a 12-item checklist that cites NIST AI RMF and EU AI Act provisions, finds each required section, and scores completeness. A model judges whether each present section is adequate and drafts a cited findings report, with the related provisions looked up in Regulus through the same tool gateway. The validator approves, rejects or asks for a revision; the report never states that a model is approved. It shares the credit memo's job API, guardrails, human review and evidence log, and has its own prompts, recordings, evaluation set and release gates ([ADR 0016](docs/adr/0016-app-contract.md), [ADR 0017](docs/adr/0017-model-review-live-thresholds.md)). It runs in the keyless demo through the API; the review page shows only the credit memo so far.
+
 ## 🎯 Design principles
 
 | Principle | What it means in the code |
@@ -126,10 +128,11 @@ flowchart LR
 axiom_agent_platform/
 ├── src/axiom/
 │   ├── api/            # FastAPI app, /v1 routers, schemas, auth, idempotency
+│   ├── core/           # what every app uses: the App protocol, registry, agent and workflow plumbing
+│   ├── apps/
+│   │   ├── credit_memo/   # app 1: agents, LangGraph workflow, ratio and policy tools
+│   │   └── model_review/  # app 2: checklist, section finder, assessor and drafter, workflow
 │   ├── jobs/           # job store and worker loop
-│   ├── graph/          # LangGraph state, nodes, routing, interrupts
-│   ├── agents/         # intake, analyst, drafter, compliance logic
-│   ├── tools/          # deterministic ratio and policy tools
 │   ├── mcp_clients/    # clients for the Regulus and GKN MCP servers and the tool gateway
 │   ├── gateway/        # the MCP tool gateway: per-step tokens, rules, call log
 │   ├── router/         # provider adapters and routing policy
@@ -141,9 +144,10 @@ axiom_agent_platform/
 ├── config/             # routing, guardrail, threshold and tool gateway settings
 ├── docker/           # start-up wrapper that hands each container the demo keys
 ├── data/
-│   ├── synthetic/      # borrower packages, credit policy, golden set
+│   ├── synthetic/      # borrower packages, credit policy, model documentation packages
+│   ├── recorded/       # live model responses the keyless demo replays, one folder per app
 │   └── lending_refs/   # public lending references + provenance manifest
-├── evals/              # golden set scoring, grader, fairness pairs, adversarial set
+├── evals/              # golden set scoring, grader, fairness pairs, adversarial set; model_review/ for app 2
 ├── scripts/            # gate checks and developer tools
 ├── tests/              # unit, contract, and integration tests
 ├── infra/terraform/    # Azure resources
@@ -233,13 +237,14 @@ uv run python evals/gate.py --stack
   - the review page has its strict content security policy;
   - all 25 packages go through the API end to end: a draft, two revision rounds and an approval, each with a verified evidence chain;
   - every model response was replayed from a recording;
-  - every tool call went through the gateway from the step that owns the tool.
+  - every tool call went through the gateway from the step that owns the tool;
+  - the same for model documentation review: all 6 packages through `/v1/apps/model_review/jobs` to approval after two revisions, replayed recordings only, governance lookups only from the provisions step.
 
   `--clean-run` first does what this page asks of a newcomer, and times it: clone into an empty folder with no `.env`, start the stack, and wait until it is ready.
 
 **Contract tests:** `uv run pytest tests/test_contract.py` has [Schemathesis](https://schemathesis.readthedocs.io/) generate about 1,300 requests from the API's OpenAPI document, valid and deliberately invalid, and checks each response against it: only declared status codes, bodies that match their schemas, problem details for every error, and never a server error. They run on the in-memory store and on Postgres, and one test walks a real memo through draft, review and audit.
 
-**Release gates (no keys, no stack):** `uv run python evals/gate.py` runs the golden set, the fairness pairs and the attack set and fails if any [threshold](config/eval_gates.yaml) is missed; `--stack` replays the 25 live recordings through the running stack instead. CI runs both. `--live` runs the [smoke gate](evals/smoke/README.md) with the model settings in `.env` (about 66k tokens); `--live --full` the whole golden set, three repeats (about 1M); `--live --alignment` the alignment scenarios (about 315k).
+**Release gates (no keys, no stack):** `uv run python evals/gate.py` runs the golden set, the fairness pairs and the attack set and fails if any [threshold](config/eval_gates.yaml) is missed; `--stack` replays the 25 live recordings through the running stack instead. CI runs both. `--live` runs the [smoke gate](evals/smoke/README.md) with the model settings in `.env` (about 66k tokens); `--live --full` the whole golden set, three repeats (about 1M); `--live --alignment` the alignment scenarios (about 315k); `--live --model-review` app 2's six packages, three repeats (about 170k).
 
 **Read the gateway's log:** `docker compose exec tool-gateway cat /var/lib/axiom-gateway/tool_calls.jsonl` shows every tool call: which step, which tool, allowed or refused, with fingerprints of what went in and out. The same calls appear in each memo's audit trail.
 
@@ -268,6 +273,12 @@ curl http://localhost:8000/v1/memos/<job_id> -H "X-API-Key: <submitter key>"
 
 ```bash
 curl -i -X POST http://localhost:8000/v1/memos/<job_id>/review -H "X-API-Key: <reviewer key>" -H "Idempotency-Key: $(uuidgen)" -H "content-type: application/json" -d '{"decision": "revise", "comments": "Add a sentence on liquidity that cites the current ratio."}'
+```
+
+**Model documentation review** uses the same job routes under `/v1/apps/model_review/jobs`; `GET /v1/apps/model_review/packages` lists the packages (`mdl-01` to `mdl-06`) and `GET /v1/apps/model_review/checklist` the checklist:
+
+```bash
+curl -i -X POST http://localhost:8000/v1/apps/model_review/jobs -H "X-API-Key: <submitter key>" -H "Idempotency-Key: $(uuidgen)" -H "content-type: application/json" -d '{"package_id": "mdl-04"}'
 ```
 
 **Read the evidence bundle** (auditor key, `AUDITOR_API_KEYS=audit-demo:<random key>`). It lists every model call, including rejected attempts, and every job event with its hash, and reports whether the chain verifies:
@@ -311,7 +322,7 @@ The model names stay in your `.env`. The repository, the API's responses and the
 | 1 · Foundations | 1–2 | Scaffold, threat model, Regulus and GKN as MCP services |
 | 2 · Flagship MVP | 3–7 | API, agents, human review, guardrails, eval baseline, keyless demo |
 | 3 · Ship and publish | 8–10 | CI release gates, Azure deployment, documentation |
-| 4 · Extend | from Jan 11 | A platform core that hosts more agentic apps, with the credit memo as the first ([ADR 0015](docs/adr/0015-platform-core-and-apps.md)); canary and shadow routing, Helm, webhooks, long-term memory |
+| 4 · Extend | from Jan 11 | A platform core that hosts more agentic apps, with the credit memo as the first ([ADR 0015](docs/adr/0015-platform-core-and-apps.md)); started early: the core and app 2, model documentation review, built, evaluated live and recorded for the demo (Nov 18–20); next, app 2 on the review page; canary and shadow routing, Helm, webhooks, long-term memory |
 
 Progress on each milestone, with its result, is on the [status page](docs/status.md).
 
@@ -330,13 +341,13 @@ Progress on each milestone, with its result, is on the [status page](docs/status
 - [Platform design principles](docs/platform-principles.md): model choice and cost, the API contract, LLM judges, multi-agent design, build or buy, data for AI; each checked against the credit memo app
 - [AI-assisted engineering log](docs/ai-assisted-engineering.md): what was delegated to Claude Code and what review changed
 - [Threat model](docs/threat-model.md): threats, trust boundaries, and controls, mapped to the OWASP LLM and agentic Top 10 lists
-- [Evaluation suite](evals/README.md): the golden set, scoring, the grader and its calibration, fairness pairs, and the adversarial set
+- [Evaluation suite](evals/README.md): the golden set, scoring, the grader and its calibration, fairness pairs, and the adversarial set; app 2's in [evals/model_review](evals/model_review/README.md)
 - [API errors](docs/api-errors.md): every error type and job failure reason
 - Model card and control mapping: added during the build
 
 ## 🧪 Data
 
-All data is synthetic. Borrower packages are generated numbers-first, so every figure has a known ground truth. Lending references come from public sources, each listed with its source and retrieval date. Nothing here is legal advice or a credit decision.
+All data is synthetic. Borrower packages are generated numbers-first, so every figure has a known ground truth. Model documentation packages describe fictional models, each written with an answer key for its checklist sections and findings. Lending references come from public sources, each listed with its source and retrieval date. Nothing here is legal advice or a credit decision.
 
 ## 🧾 Disclaimer
 
